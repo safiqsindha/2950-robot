@@ -23,16 +23,11 @@ public final class Constants {
 
   public static final Matter kChassis =
       new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), kRobotMassKg);
-  public static final double kLoopTime = 0.13; // 20ms + 110ms SPARK MAX velocity lag
 
   /** Operator interface constants. */
   public static final class OI {
     public static final int kDriverControllerPort = 0;
-    public static final int kOperatorControllerPort = 1;
     public static final double kDriveDeadband = 0.1;
-    public static final double kLeftYDeadband = 0.1;
-    public static final double kRightXDeadband = 0.1;
-    public static final double kTurnConstant = 6;
   }
 
   /** Swerve drive constants. These mirror the hardware-verified YAGSL JSON configs. */
@@ -49,19 +44,6 @@ public final class Constants {
     public static final double kWheelDiameterInches = 4.0;
     public static final double kDriveGearRatio = 6.23; // Thrifty Swerve drive ratio
     public static final double kSteerGearRatio = 25.0; // Thrifty Swerve steer ratio
-
-    // CAN IDs — Drive motors (hardware-verified from swerve-test branch)
-    public static final int kFrontLeftDriveId = 13;
-    public static final int kFrontLeftSteerId = 5;
-    public static final int kFrontRightDriveId = 7;
-    public static final int kFrontRightSteerId = 19;
-    public static final int kBackLeftDriveId = 10;
-    public static final int kBackLeftSteerId = 6;
-    public static final int kBackRightDriveId = 8;
-    public static final int kBackRightSteerId = 12;
-
-    // Wheel lock hold time when disabled
-    public static final double kWheelLockTime = 10; // seconds
   }
 
   /** Flywheel subsystem CAN IDs and tuning constants. */
@@ -105,25 +87,6 @@ public final class Constants {
     public static final int kSpindexerMotorId = 18;
   }
 
-  /** Climber subsystem CAN IDs and tuning. */
-  public static final class Climber {
-    public static final int kVerticalMotorId = 11;
-
-    public static final double kP = 0.01;
-    public static final double kS = 0.03;
-    public static final double kV = 12.0 / 5767.0;
-  }
-
-  /** Side claw subsystem CAN IDs and tuning. */
-  public static final class SideClaw {
-    // Was 18, conflicted with Conveyor.kSpindexerMotorId — moved to 20
-    public static final int kVerticalMotorId = 20;
-
-    public static final double kP = 0.01;
-    public static final double kS = 0.03;
-    public static final double kV = 12.0 / 5767.0;
-  }
-
   /** LED constants. */
   public static final class LEDs {
     public static final int kLedPort = 0;
@@ -136,21 +99,8 @@ public final class Constants {
     public static final int kPriorityAlert = 3;
   }
 
-  /** Autonomous constants. */
-  public static final class Auto {
-    public static final String kChoreoDirectory = "choreo";
-  }
-
   /** Pathfinding and autonomous strategy constants. */
   public static final class Pathfinding {
-    // Maximum deviation from planned path before re-planning (meters)
-    public static final double kReplanThresholdMeters = 0.30;
-    // Navigation grid cell size (must match navgrid.json)
-    public static final double kNavGridCellSizeMeters = 0.10;
-    // Navigation grid dimensions (must match navgrid.json)
-    public static final int kNavGridColumns = 164;
-    public static final int kNavGridRows = 82;
-
     // Dynamic avoidance
     public static final double kOpponentInfluenceRadiusMeters = 2.0;
     public static final double kMaxRobotSpeedMps = 4.5;

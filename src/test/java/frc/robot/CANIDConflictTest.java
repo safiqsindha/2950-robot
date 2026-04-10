@@ -59,19 +59,8 @@ class CANIDConflictTest {
 
   @Test
   void knownCriticalIDsPresent() throws Exception {
-    String source = Files.readString(CONSTANTS_PATH);
-    Matcher matcher = CAN_ID_PATTERN.matcher(source);
-
-    int motorIdCount = 0;
-    while (matcher.find()) {
-      String name = matcher.group(1);
-      // Count drive and steer motor IDs (swerve has 4 drive + 4 steer = 8 minimum)
-      if (name.contains("Drive") || name.contains("Steer")) {
-        motorIdCount++;
-      }
-    }
-    assertTrue(
-        motorIdCount >= 8,
-        "Should find at least 8 swerve motor IDs (4 drive + 4 steer), found " + motorIdCount);
+    Map<Integer, String> idMap = parseAllCANIDs();
+    // Flywheel (4) + Intake (3) + Conveyor (2) = at least 9 motor CAN IDs
+    assertTrue(idMap.size() >= 9, "Should find at least 9 motor CAN IDs, found " + idMap.size());
   }
 }

@@ -174,11 +174,6 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput("Vision/Pipeline", "Neural");
   }
 
-  /** The most recent accepted MegaTag2 pose estimate. */
-  public Pose2d getLastPose() {
-    return lastPose;
-  }
-
   /**
    * Confirmed FUEL positions from the Limelight neural detector. Requires 3 consecutive frames at
    * ≥80% confidence. Capped at {@link Constants.Pathfinding#kMaxFuelDetections} entries.
@@ -220,6 +215,9 @@ public class VisionSubsystem extends SubsystemBase {
     }
     double x = botpose[0];
     double y = botpose[1];
-    return x >= 0 && x <= Constants.kFieldLengthMeters && y >= 0 && y <= Constants.kFieldWidthMeters;
+    return x >= 0
+        && x <= Constants.kFieldLengthMeters
+        && y >= 0
+        && y <= Constants.kFieldWidthMeters;
   }
 }

@@ -23,8 +23,6 @@ import frc.robot.Constants;
 import java.io.File;
 import org.littletonrobotics.junction.Logger;
 import swervelib.SwerveDrive;
-import swervelib.math.SwerveMath;
-import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -212,16 +210,6 @@ public final class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Drive using a ChassisSpeeds object (field-oriented). Used by YAGSL SwerveInputStream and Choreo
-   * trajectory following.
-   *
-   * @param velocity field-relative chassis speeds
-   */
-  public void driveFieldOriented(ChassisSpeeds velocity) {
-    swerveDrive.driveFieldOriented(velocity);
-  }
-
-  /**
    * Drive the robot using robot-relative ChassisSpeeds. Used by Choreo trajectory following.
    *
    * <p>In simulation, the maple-sim motor-force pipeline is currently non-functional (propelling
@@ -263,79 +251,14 @@ public final class SwerveSubsystem extends SubsystemBase {
     return swerveDrive.getRobotVelocity();
   }
 
-  /** Get the robot's current field-relative chassis speeds. */
-  public ChassisSpeeds getFieldVelocity() {
-    return swerveDrive.getFieldVelocity();
-  }
-
-  /**
-   * Get target chassis speeds from two-joystick heading control (absolute heading mode).
-   *
-   * @param xInput X translation (-1 to 1)
-   * @param yInput Y translation (-1 to 1)
-   * @param headingX heading vector X component
-   * @param headingY heading vector Y component
-   * @return target ChassisSpeeds
-   */
-  public ChassisSpeeds getTargetSpeeds(
-      double xInput, double yInput, double headingX, double headingY) {
-    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
-    return swerveDrive.swerveController.getTargetSpeeds(
-        scaledInputs.getX(),
-        scaledInputs.getY(),
-        headingX,
-        headingY,
-        getHeading().getRadians(),
-        Constants.Swerve.kMaxSpeedMetersPerSec);
-  }
-
-  /**
-   * Get target chassis speeds from translation + absolute angle (heading setpoint mode).
-   *
-   * @param xInput X translation (-1 to 1)
-   * @param yInput Y translation (-1 to 1)
-   * @param angle target heading as Rotation2d
-   * @return target ChassisSpeeds
-   */
-  public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle) {
-    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
-    return swerveDrive.swerveController.getTargetSpeeds(
-        scaledInputs.getX(),
-        scaledInputs.getY(),
-        angle.getRadians(),
-        getHeading().getRadians(),
-        Constants.Swerve.kMaxSpeedMetersPerSec);
-  }
-
   /** Zero the gyroscope heading. Call this when robot is facing away from driver. */
   public void zeroGyro() {
     swerveDrive.zeroGyro();
   }
 
-  /**
-   * Zero gyro with alliance-relative heading. Red alliance: faces 180 degrees after zero. Blue
-   * alliance: faces 0 degrees (same as zeroGyro).
-   */
-  public void zeroGyroWithAlliance() {
-    if (isRedAlliance()) {
-      zeroGyro();
-      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
-    } else {
-      zeroGyro();
-    }
-  }
-
   /** Lock the swerve modules in an X pattern to prevent pushing. */
   public void lock() {
     swerveDrive.lockPose();
-  }
-
-  /**
-   * Returns the raw YAGSL SwerveModule array. Used by {@link
-   * frc.robot.commands.EncoderCalibrationCommand} to read absolute encoder positions.
-   */
-  public swervelib.SwerveModule[] getModules() {
-    return swerveDrive.getModules();
   }
 
   /**
@@ -345,16 +268,6 @@ public final class SwerveSubsystem extends SubsystemBase {
    */
   public void setMotorBrake(boolean brake) {
     swerveDrive.setMotorIdleMode(brake);
-  }
-
-  /**
-   * Add a vision pose measurement to the pose estimator.
-   *
-   * @param pose the measured robot pose
-   * @param timestampSeconds the timestamp of the measurement in seconds
-   */
-  public void addVisionMeasurement(Pose2d pose, double timestampSeconds) {
-    swerveDrive.addVisionMeasurement(pose, timestampSeconds);
   }
 
   /**
@@ -370,21 +283,6 @@ public final class SwerveSubsystem extends SubsystemBase {
       edu.wpi.first.math.Matrix<edu.wpi.first.math.numbers.N3, edu.wpi.first.math.numbers.N1>
           stdDevs) {
     swerveDrive.addVisionMeasurement(pose, timestampSeconds, stdDevs);
-  }
-
-  /** Get the current pitch angle from the IMU. */
-  public Rotation2d getPitch() {
-    return swerveDrive.getPitch();
-  }
-
-  /** Get the YAGSL SwerveDriveConfiguration. Used by velocity limiting utilities. */
-  public SwerveDriveConfiguration getSwerveDriveConfiguration() {
-    return swerveDrive.swerveDriveConfiguration;
-  }
-
-  /** Get the underlying SwerveDrive for advanced operations. Use sparingly. */
-  public SwerveDrive getSwerveDrive() {
-    return swerveDrive;
   }
 
   /**

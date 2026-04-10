@@ -2,16 +2,13 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.List;
-import java.util.Optional;
 import limelight.Limelight;
 import limelight.results.RawFiducial;
 
 /**
- * Utility methods for game-state logic, Limelight integration, and RPM-distance lookup. Migrated
- * from the confirmed-working swerve-test branch.
+ * Utility methods for Limelight integration and RPM-distance lookup. Migrated from the
+ * confirmed-working swerve-test branch.
  */
 public class Helper {
 
@@ -28,61 +25,6 @@ public class Helper {
   private static int printCounter = 0;
 
   private Helper() {}
-
-  /**
-   * Returns true if our alliance's HUB is currently active, based on match time and game-specific
-   * message. Hub activity follows the 25-second shift schedule defined in the 2026 game manual.
-   */
-  public static boolean isOurHubActive() {
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-    if (alliance.isEmpty()) {
-      return false;
-    } else if (DriverStation.isAutonomousEnabled()) {
-      return true;
-    } else if (!DriverStation.isTeleopEnabled()) {
-      return false;
-    }
-
-    String gameData = DriverStation.getGameSpecificMessage();
-    if (gameData.isEmpty()) {
-      return true;
-    }
-
-    boolean redInactiveFirst =
-        switch (gameData.charAt(0)) {
-          case 'R' -> true;
-          case 'B' -> false;
-          default -> {
-            yield true; // invalid data → assume active
-          }
-        };
-
-    boolean shift1Active =
-        switch (alliance.get()) {
-          case Red -> !redInactiveFirst;
-          case Blue -> redInactiveFirst;
-        };
-
-    double matchTime = DriverStation.getMatchTime();
-    if (matchTime > 130) {
-      return true; // Transition period
-    } else if (matchTime > 105) {
-      return shift1Active;
-    } else if (matchTime > 80) {
-      return !shift1Active;
-    } else if (matchTime > 55) {
-      return shift1Active;
-    } else if (matchTime > 30) {
-      return !shift1Active;
-    } else {
-      return true; // Endgame — hub always active
-    }
-  }
-
-  /** Seconds until the next hub shift. */
-  public static double timeTillShift() {
-    return (DriverStation.getMatchTime() - 30) % 25;
-  }
 
   /**
    * Calculate flywheel RPM setpoint from distance to hub using piecewise-linear interpolation.

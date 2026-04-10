@@ -179,14 +179,4 @@ public class SuperstructureStateMachine extends SubsystemBase {
   public boolean hasGamePiece() {
     return currentState == State.STAGING || currentState == State.SCORING;
   }
-
-  /** Whether the superstructure is currently in the scoring sequence. */
-  public boolean isScoring() {
-    return currentState == State.SCORING;
-  }
-
-  /** Whether the superstructure is intaking or staging (intake mechanism active). */
-  public boolean isIntaking() {
-    return currentState == State.INTAKING || currentState == State.STAGING;
-  }
 }

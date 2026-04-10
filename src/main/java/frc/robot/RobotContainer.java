@@ -51,8 +51,6 @@ public class RobotContainer {
   private final CommandXboxController driver =
       new CommandXboxController(Constants.OI.kDriverControllerPort);
   private final ControllerAdapter driverAdapter = new ControllerAdapter(driver);
-  private final CommandXboxController operator =
-      new CommandXboxController(Constants.OI.kOperatorControllerPort);
 
   // ─── Autonomous ───
   private final AutoFactory autoFactory = ChoreoAutoCommand.factory(swerve);
