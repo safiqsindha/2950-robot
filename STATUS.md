@@ -53,7 +53,10 @@ Format:
 
 [2026-04-16 22:45] [SONNET] [4.2] — Intake IO layer refactored (2590 pattern). IntakeIO + IntakeIOInputs (@AutoLog). IntakeIOReal wraps left/right arm SPARK MAX (position PID, no follow) + wheel SPARK MAX; setPid() reconfigures both arm controllers. IntakeIOSim: pure Java — no DCMotorSim; wheel current synthesised from wheelPercent*30A when simGamePieceAcquired=true (preserves Phase 3.2 SSM contract); arm positions track commanded setpoint; simulationPeriodic() removed from Intake. 13 HAL-free tests covering current synthesis lifecycle, proportionality, reset, and arm tracking. Weight: 7.0h ✓
 
-█ CURRENT: Phase 4.2 complete — Phase 4.3 ready    ████████████████  ~78%  (31.5 / 40.0h)
-█ OVERALL: Phase 0-3 done + Phase 4.1 + 4.2 done
+
+[2026-04-16 23:10] [SONNET] [4.3] — Conveyor IO layer refactored (2590 pattern). ConveyorIO + ConveyorIOInputs (@AutoLog). ConveyorIOReal wraps brushed conveyor + brushless spindexer SPARK MAX (both open-loop, no PID). ConveyorIOSim: pure Java — tracks percent output; currents always 0 (matches SPARK MAX sim behaviour). Conveyor thin consumer reads currents from inputs struct. 9 HAL-free tests. Phase 4 complete. Weight: 6.0h ✓
+
+█ CURRENT: Phase 4 complete — Phase 5 ready    ████████████████████  ~95%  (37.5 / 40.0h)
+█ OVERALL: Phase 0-3 done + Phase 4 done (all IO layers)
 █ IN FLIGHT: —
-█ LAST DONE: 4.2 Intake IO layer (IntakeIO/Real/Sim, thin Intake consumer, 13 tests)
+█ LAST DONE: 4.3 Conveyor IO layer (ConveyorIO/Real/Sim, thin consumer, 9 tests)

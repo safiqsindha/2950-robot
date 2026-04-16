@@ -23,10 +23,10 @@
   - [x] 3.1 Replace Helper.rpmFromMeters with Lagrange quadratic + linear tail (3.0h) ✓
   - [x] 3.2 Fix Intake sim wheel-current model (simGamePieceAcquired gate) (2.0h) ✓
   - [x] 3.3 Wire MovingShotCompensation chassis-velocity term into RPM lookup (1.5h) ✓
-- [ ] Phase 4 — IO-layer refactor (3 tasks, ~20h — sequential)
+- [x] Phase 4 — IO-layer refactor (3 tasks, ~20h — sequential) ✓
   - [x] 4.1 Flywheel → IO layer (2590 pattern) (7.0h) ✓
   - [x] 4.2 Intake → IO layer (7.0h) ✓
-  - [ ] 4.3 Conveyor → IO layer (6.0h)
+  - [x] 4.3 Conveyor → IO layer (6.0h) ✓
 - [ ] Phase 5 — Stretch (1 task, ~3h)
   - [ ] 5.1 Investigate 604 QuixSwerveDriveSimulation for YAGSL+SPARK maple-sim bug (3.0h)
 
