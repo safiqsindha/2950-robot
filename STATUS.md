@@ -40,7 +40,14 @@ Format:
 
 [2026-04-16 20:45] [SONNET] [2.2] — SystemTestCommand ported (Team 862 pattern). 3-phase sequence (~1.1s total): Flywheel (500 RPM) → IntakeWheel (15%) → Conveyor (15%). Each phase samples current/RPM, emits per-subsystem pass/fail to Logger and SmartDashboard. TestResult record (public) holds name/amps/pass. allPass gated on !interrupted AND all 3 results AND non-empty list. Added getConveyorCurrentAmps()/getSpindexerCurrentAmps() to Conveyor. RobotContainer.configureTestMode() registers SmartDashboard "Run System Test" button. 13 SystemTestCommandTest tests, HAL-free. Weight: 2.5h ✓
 
-█ CURRENT: Phase 2 complete — Phase 3 ready    ████████░░  ~29%  (11.0 / 40.0h)
-█ OVERALL: Phase 0 + Phase 1 + Phase 2 done
+
+[2026-04-16 21:30] [SONNET] [3.1] — rpmFromMeters replaced with hybrid Lagrange quadratic + linear tail. Lagrange through 3 calibration points (1.125m→2500, 1.714m→3000, 2.500m→3500) gives smooth curve with no kink at X2 (confirmed by finite-difference slope test). Linear extrapolation beyond X3 ensures far-distance output clamps to kMaxRpm rather than diverging negative. 15 tests updated/added in HelperTest: calibration-point accuracy (1 RPM tolerance), concave-down midpoints above linear chord, continuity at X2, clamping at both ends, sweep 0–10m never leaves [kMinRpm, kMaxRpm]. Weight: 3.0h ✓
+
+[2026-04-16 21:30] [SONNET] [3.2] — Intake sim current gating fixed. simWheelCurrentAmps now synthesizes only when simGamePieceAcquired=true, preventing false INTAKING→STAGING transitions on every wheel spin in simulation. Added simulateGamePieceAcquired() / simulateGamePieceConsumed() helpers for DriverPracticeMode and test scaffolding. Two new SSM tests: intaking_withUngatedSimCurrent_staysIntaking (documents the pre-fix failure mode) and intaking_withInjectedSimCurrent_advancesToStaging (verifies the fix). Weight: 2.0h ✓
+
+[2026-04-16 21:30] [SONNET] [3.3] — Moving-shot RPM overload added. rpmFromMeters(double, ChassisSpeeds) computes effectiveMeters = d*(1 + vx/kBallExitVelocityMps) then delegates to the base overload. kBallExitVelocityMps=12.0 extracted into Constants.Flywheel (was a magic literal in MovingShotCompensation). 6 new overload tests: stationary=base, movingAway>stationary, movingToward<stationary, lateralOnly=base, correction proportional to speed, bounds never violated at ±20 m/s. Weight: 1.5h ✓
+
+█ CURRENT: Phase 3 complete — Phase 4 ready    ████████████  ~42%  (17.5 / 40.0h)
+█ OVERALL: Phase 0 + Phase 1 + Phase 2 + Phase 3 done
 █ IN FLIGHT: —
-█ LAST DONE: 2.2 SystemTestCommand (3-phase motor test, SmartDashboard button, 13 tests)
+█ LAST DONE: 3.3 Moving-shot RPM overload (kBallExitVelocityMps constant, 6 tests)

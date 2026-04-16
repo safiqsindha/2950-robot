@@ -19,10 +19,10 @@
 - [x] Phase 2 — Near-free borrows (2 tasks, ~4.5h) ✓
   - [x] 2.1 Wrap Flywheel + Intake PID gains with LoggedTunableNumber (2.0h) ✓
   - [x] 2.2 Port Team 862 SystemTestCommand (2.5h) ✓
-- [ ] Phase 3 — Flywheel scoring physics (3 tasks, ~6.5h)
-  - [ ] 3.1 Replace Helper.rpmFromMeters with projectile model or PolynomialRegression (3.0h)
-  - [ ] 3.2 Fix Intake sim wheel-current model (2.0h)
-  - [ ] 3.3 Wire MovingShotCompensation chassis-velocity term into RPM lookup (1.5h)
+- [x] Phase 3 — Flywheel scoring physics (3 tasks, ~6.5h) ✓
+  - [x] 3.1 Replace Helper.rpmFromMeters with Lagrange quadratic + linear tail (3.0h) ✓
+  - [x] 3.2 Fix Intake sim wheel-current model (simGamePieceAcquired gate) (2.0h) ✓
+  - [x] 3.3 Wire MovingShotCompensation chassis-velocity term into RPM lookup (1.5h) ✓
 - [ ] Phase 4 — IO-layer refactor (3 tasks, ~20h — sequential)
   - [ ] 4.1 Flywheel → IO layer (2590 pattern) (7.0h)
   - [ ] 4.2 Intake → IO layer (7.0h)
