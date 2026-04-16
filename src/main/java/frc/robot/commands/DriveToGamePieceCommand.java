@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.subsystems.FuelDetectionConsumer;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -72,7 +73,7 @@ public class DriveToGamePieceCommand extends Command {
       } else {
         translation =
             new Translation2d(toTarget.getX() / norm, toTarget.getY() / norm)
-                .times(speed * Constants.Swerve.kMaxSpeedMetersPerSec);
+                .times(speed * Constants.Swerve.kMaxSpeedMetersPerSec * Robot.getBrownoutScale());
       }
       Logger.recordOutput("DriveToGamePiece/Status", "DRIVING");
       Logger.recordOutput("DriveToGamePiece/TargetPos", nearest.toString());
@@ -85,7 +86,8 @@ public class DriveToGamePieceCommand extends Command {
     // Driver keeps rotation
     double rotInput =
         MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.OI.kDriveDeadband);
-    double rotation = rotInput * Constants.Swerve.kMaxAngularSpeedRadPerSec;
+    double rotation =
+        rotInput * Constants.Swerve.kMaxAngularSpeedRadPerSec * Robot.getBrownoutScale();
 
     swerve.drive(translation, rotation, true);
   }

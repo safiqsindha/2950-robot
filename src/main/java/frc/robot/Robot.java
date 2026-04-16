@@ -22,6 +22,9 @@ public class Robot extends LoggedRobot {
   /** Voltage below which we log a critical warning. */
   private static final double kCriticalVoltageVolts = 6.5;
 
+  /** Floor voltage for the brownout scale ramp — output is clamped to 50% below this point. */
+  private static final double kBrownoutFloorVolts = 6.0;
+
   private RobotContainer robotContainer;
 
   // ── Match phase tracking ──
@@ -83,7 +86,10 @@ public class Robot extends LoggedRobot {
     double brownoutScale =
         batteryVolts >= kBrownoutThresholdVolts
             ? 1.0
-            : Math.max(0.5, (batteryVolts - 6.0) / (kBrownoutThresholdVolts - 6.0));
+            : Math.max(
+                0.5,
+                (batteryVolts - kBrownoutFloorVolts)
+                    / (kBrownoutThresholdVolts - kBrownoutFloorVolts));
     Logger.recordOutput("Robot/BrownoutScale", brownoutScale);
   }
 
@@ -94,7 +100,8 @@ public class Robot extends LoggedRobot {
   public static double getBrownoutScale() {
     double volts = RobotController.getBatteryVoltage();
     if (volts >= kBrownoutThresholdVolts) return 1.0;
-    return Math.max(0.5, (volts - 6.0) / (kBrownoutThresholdVolts - 6.0));
+    return Math.max(
+        0.5, (volts - kBrownoutFloorVolts) / (kBrownoutThresholdVolts - kBrownoutFloorVolts));
   }
 
   private void logPhaseTransition(MatchPhase newPhase) {
