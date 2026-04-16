@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.AllianceFlip;
 import frc.lib.pathfinding.DynamicAvoidanceLayer;
 import frc.lib.pathfinding.NavigationGrid;
 import frc.robot.Constants;
@@ -239,7 +240,8 @@ public class FullAutonomousCommand extends Command {
         .withHubActive(true)
         .withTimeRemaining(timeRemaining)
         .withDetectedFuel(fuel)
-        .withDetectedOpponents(opponents);
+        .withDetectedOpponents(opponents)
+        .withRedAlliance(AllianceFlip.isRedAlliance());
   }
 
   /**

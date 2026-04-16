@@ -38,31 +38,34 @@ public final class AllianceFlip {
     return flip(pose, isRedAlliance());
   }
 
-  // ─── Package-private overloads (used by unit tests to avoid HAL dependency) ─
+  // ─── Explicit-alliance overloads ────────────────────────────────────────────
+  // Pass isRed=true/false directly to avoid the DriverStation HAL call.
+  // Use these in code-paths that already know the alliance (e.g. strategy logic
+  // seeded from GameState) and in unit tests.
 
-  static Translation2d flip(Translation2d translation, boolean isRed) {
+  public static Translation2d flip(Translation2d translation, boolean isRed) {
     if (isRed) {
       return new Translation2d(kFieldLengthMeters - translation.getX(), translation.getY());
     }
     return translation;
   }
 
-  static Rotation2d flip(Rotation2d rotation, boolean isRed) {
+  public static Rotation2d flip(Rotation2d rotation, boolean isRed) {
     if (isRed) {
       return new Rotation2d(Math.PI - rotation.getRadians());
     }
     return rotation;
   }
 
-  static Pose2d flip(Pose2d pose, boolean isRed) {
+  public static Pose2d flip(Pose2d pose, boolean isRed) {
     if (isRed) {
       return new Pose2d(flip(pose.getTranslation(), true), flip(pose.getRotation(), true));
     }
     return pose;
   }
 
-  /** The field length constant, exposed for test assertions. */
-  static double getFieldLengthMeters() {
+  /** The field length constant, exposed for test assertions and for strategy calculations. */
+  public static double getFieldLengthMeters() {
     return kFieldLengthMeters;
   }
 }

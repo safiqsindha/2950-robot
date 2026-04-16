@@ -28,7 +28,9 @@ Format:
 
 [2026-04-16 19:27] [SONNET] [1.2+1.5] — SSM cleaned up. CLIMBING state deleted (no Climber exists): removed State.CLIMBING enum value, climbRequested field, requestClimb() method, and all CLIMBING branches. FullAutonomousCommand.notifySSM CLIMB case made a no-op. SCORING auto-exit added: 2.0s timeout (kScoringTimeoutSeconds in Constants.Superstructure) — prevents missed requestIdle() from permanently locking the superstructure. SSM uses DoubleSupplier injection for testable time source. computeNextState signature updated (climbReq removed, scoringDurationSeconds added). FaultInjectionTest updated for new signature. 18/18 SSM tests green, SpotBugs clean. Weight: 1.0h ✓
 
-█ CURRENT: Phase 1.3 AllianceFlip starting   ░░░░░░░░░░   0%
-█ OVERALL: 0 + 1.1 + 1.2+1.5 done           ████░░░░░░  ~9%  (3.5 / 40.0h)
-█ IN FLIGHT: 1.3 AllianceFlip
-█ LAST DONE: 1.2+1.5 SSM CLIMBING removal + SCORING timeout
+[2026-04-16 19:35] [SONNET] [1.3] — AllianceFlip wired into AutonomousStrategy. HUB_POSE/CLIMB_POSE/fallback-collect-pose now pass through AllianceFlip.flip(pose, isRed) instead of being used raw. Alliance flag propagated via GameState.withRedAlliance(boolean) — added field+builder+getter to the immutable GameState record. FullAutonomousCommand.buildGameState() seeds it from AllianceFlip.isRedAlliance(). AllianceFlip.flip(T, boolean) overloads promoted from package-private to public so frc.robot.autos can call them. 2 new red-alliance tests (hub pose flipped, blue pose unchanged); 10/10 AutonomousStrategyTest green, SpotBugs clean. Weight: 1.0h ✓
+
+█ CURRENT: Phase 1.4 sysout cleanup starting   ░░░░░░░░░░   0%
+█ OVERALL: 0 + 1.1 + 1.2+1.5 + 1.3 done       █████░░░░░  ~11%  (4.5 / 40.0h)
+█ IN FLIGHT: 1.4 Sysout cleanup
+█ LAST DONE: 1.3 AllianceFlip HUB/CLIMB poses (red alliance test passes)

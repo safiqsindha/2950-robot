@@ -20,8 +20,11 @@ public final class GameState {
   private final double timeRemaining;
   private final List<Translation2d> detectedFuel;
   private final List<Translation2d> detectedOpponents;
+  // true = red alliance; false (default) = blue alliance.
+  // Used by AutonomousStrategy to flip HUB_POSE / CLIMB_POSE without calling DriverStation.
+  private final boolean redAlliance;
 
-  /** Create a default GameState (robot at origin, no fuel, hub inactive, 150 s remaining). */
+  /** Create a default GameState (robot at origin, no fuel, hub inactive, 150 s remaining, blue). */
   public GameState() {
     this(
         new Pose2d(0, 0, new Rotation2d()),
@@ -29,7 +32,8 @@ public final class GameState {
         false,
         150.0,
         Collections.emptyList(),
-        Collections.emptyList());
+        Collections.emptyList(),
+        false);
   }
 
   private GameState(
@@ -38,43 +42,65 @@ public final class GameState {
       boolean hubActive,
       double timeRemaining,
       List<Translation2d> detectedFuel,
-      List<Translation2d> detectedOpponents) {
+      List<Translation2d> detectedOpponents,
+      boolean redAlliance) {
     this.robotPose = robotPose;
     this.fuelHeld = fuelHeld;
     this.hubActive = hubActive;
     this.timeRemaining = timeRemaining;
     this.detectedFuel = detectedFuel;
     this.detectedOpponents = detectedOpponents;
+    this.redAlliance = redAlliance;
   }
 
   // ---- fluent builders (return new immutable copy) ----
 
   public GameState withRobotPose(Pose2d pose) {
-    return new GameState(pose, fuelHeld, hubActive, timeRemaining, detectedFuel, detectedOpponents);
+    return new GameState(
+        pose, fuelHeld, hubActive, timeRemaining, detectedFuel, detectedOpponents, redAlliance);
   }
 
   public GameState withFuelHeld(int count) {
     return new GameState(
-        robotPose, count, hubActive, timeRemaining, detectedFuel, detectedOpponents);
+        robotPose, count, hubActive, timeRemaining, detectedFuel, detectedOpponents, redAlliance);
   }
 
   public GameState withHubActive(boolean active) {
     return new GameState(
-        robotPose, fuelHeld, active, timeRemaining, detectedFuel, detectedOpponents);
+        robotPose, fuelHeld, active, timeRemaining, detectedFuel, detectedOpponents, redAlliance);
   }
 
   public GameState withTimeRemaining(double seconds) {
-    return new GameState(robotPose, fuelHeld, hubActive, seconds, detectedFuel, detectedOpponents);
+    return new GameState(
+        robotPose, fuelHeld, hubActive, seconds, detectedFuel, detectedOpponents, redAlliance);
   }
 
   public GameState withDetectedFuel(List<Translation2d> fuel) {
     return new GameState(
-        robotPose, fuelHeld, hubActive, timeRemaining, List.copyOf(fuel), detectedOpponents);
+        robotPose,
+        fuelHeld,
+        hubActive,
+        timeRemaining,
+        List.copyOf(fuel),
+        detectedOpponents,
+        redAlliance);
   }
 
   public GameState withDetectedOpponents(List<Translation2d> opponents) {
     return new GameState(
-        robotPose, fuelHeld, hubActive, timeRemaining, detectedFuel, List.copyOf(opponents));
+        robotPose,
+        fuelHeld,
+        hubActive,
+        timeRemaining,
+        detectedFuel,
+        List.copyOf(opponents),
+        redAlliance);
+  }
+
+  /** Set the alliance. {@code true} = red, {@code false} (default) = blue. */
+  public GameState withRedAlliance(boolean isRed) {
+    return new GameState(
+        robotPose, fuelHeld, hubActive, timeRemaining, detectedFuel, detectedOpponents, isRed);
   }
 
   // ---- getters ----
@@ -101,5 +127,10 @@ public final class GameState {
 
   public List<Translation2d> getDetectedOpponents() {
     return detectedOpponents;
+  }
+
+  /** {@code true} if the robot is on the red alliance; {@code false} for blue (default). */
+  public boolean isRedAlliance() {
+    return redAlliance;
   }
 }
