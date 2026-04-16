@@ -24,7 +24,9 @@ Format:
 
 [2026-04-16 19:15] [OPUS-direct] [0.3] — LoggedTunableNumber vendored. Sonnet sub-agent hit account rate-limit mid-task; Opus took over. Initial NT-backed test rev crashed the JVM at native NT4 load. Refactored class to StallDetector pattern — package-private ctor takes a DoubleSupplier, public ctor wraps NT. Tests now inject mutable suppliers (zero HAL/NT dependency), matching 2950 convention from StallDetectorTest / VisionSubsystemTest. 7/7 tests green, SpotBugs clean, jacoco ≥80% gate passes on frc.lib. Weight: 0.5h ✓
 
-█ CURRENT: Phase 1.1 Panic button starting   ░░░░░░░░░░   0%
-█ OVERALL: Phase 0 complete                  ██░░░░░░░░  ~5%  (2.0 / 40.0h)
-█ IN FLIGHT: 1.1 Panic button
-█ LAST DONE: 0.3 LoggedTunableNumber (refactored to DoubleSupplier injection pattern)
+[2026-04-16 19:20] [OPUS-direct] [1.1] — Panic button wired. Driver back+start → cancel every scheduled command, force SSM to IDLE, raise ERROR_FLASH (red) at kPriorityAlert. `.ignoringDisable(true)` so it works disabled. Practice-reset relocated to start+povUp. PanicCommand uses the StallDetector injection pattern — package-visible `fire(Runnable, Runnable, Runnable)` is unit-testable; public `build(ssm, leds)` wires real WPILib calls. 3/3 tests green (order, exactly-once, short-circuit-on-throw), SpotBugs clean, build clean. Weight: 0.5h ✓
+
+█ CURRENT: Phase 1.2+1.5 SSM cleanup starting   ░░░░░░░░░░   0%
+█ OVERALL: Phase 0 + 1.1 complete                ███░░░░░░░  ~6%  (2.5 / 40.0h)
+█ IN FLIGHT: 1.2+1.5 SSM cleanup
+█ LAST DONE: 1.1 Panic button (back+start → cancel/idle/red-flash)

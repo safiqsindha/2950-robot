@@ -11,7 +11,7 @@
   - [x] 0.2 Wire `@AutoLog` annotation processor (0.5h) ✓
   - [x] 0.3 Vendor `LoggedTunableNumber` (0.5h) ✓
 - [ ] Phase 1 — Small wins (6 tasks, ~4.5h — scope grew slightly from audit)
-  - [ ] 1.1 Panic button binding (0.5h)
+  - [x] 1.1 Panic button binding (0.5h) ✓
   - [ ] 1.2 + 1.5 SuperstructureStateMachine cleanup (SCORING timeout + CLIMBING removal) (1.0h)
   - [ ] 1.3 AllianceFlip on HUB_POSE / CLIMB_POSE (1.0h)
   - [ ] 1.4 Sysout cleanup + 2 log-key bugs (Helper, Robot.logPhaseTransition, FullAuto/AvoidanceVelocity, StallDetector) (1.0h)

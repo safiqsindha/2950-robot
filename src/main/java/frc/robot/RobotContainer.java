@@ -15,6 +15,7 @@ import frc.robot.commands.DriveCommand;
 import frc.robot.commands.DriveToGamePieceCommand;
 import frc.robot.commands.FullAutonomousCommand;
 import frc.robot.commands.IntakeControl;
+import frc.robot.commands.PanicCommand;
 import frc.robot.commands.flywheel.FlywheelAim;
 import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelDynamic;
@@ -134,9 +135,13 @@ public class RobotContainer {
     // X: automated vision-aligned scoring sequence
     driver.x().onTrue(AutoScoreCommand.build(swerve, flywheel, conveyor, vision, ssm, leds));
 
-    // Back + Start together: teleport robot back to scenario start pose (sim practice reset)
-    // Uses combo to prevent accidental resets — Pro Controller ZR maps to Xbox Start (button 8)
-    driver.back().and(driver.start()).onTrue(Commands.runOnce(practiceMode::resetToStart));
+    // Back + Start together: PANIC BUTTON — cancel every scheduled command, force SSM to IDLE,
+    // flash LEDs red. Works while disabled so the driver can abort everything from the stand.
+    driver.back().and(driver.start()).onTrue(PanicCommand.build(ssm, leds));
+
+    // Start + POV-Up together: teleport robot back to scenario start pose (sim practice reset).
+    // Relocated from back+start so the panic combo owns the "two-finger emergency" gesture.
+    driver.start().and(driver.povUp()).onTrue(Commands.runOnce(practiceMode::resetToStart));
   }
 
   private void configureAutonomous() {
