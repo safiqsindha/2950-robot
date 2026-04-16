@@ -50,7 +50,10 @@ Format:
 
 [2026-04-16 22:15] [SONNET] [4.1] — Flywheel IO layer refactored (2590 pattern). FlywheelIO interface + FlywheelIOInputs (@AutoLog → FlywheelIOInputsAutoLogged). FlywheelIOReal wraps SPARK Flex MAXMotion + SPARK MAX lower wheels; setPid() reconfigures leftVortex in-place. FlywheelIOSim wraps DCMotorSim (2× Vortex 1:1 4g·m²) + software P+FF; stop() avoids setInputVoltage() (would trigger wpiHaljni load) to stay HAL-safe. Flywheel becomes thin consumer: delegates every public method, reads velocity/current from inputs struct, AtSpeed telemetry derived from setpointRpm. FlywheelDynamic: leftVortex.set() → flywheel.setVortexOutput(). RobotContainer: wires IOSim/IOReal via isSimulation(). SpotBugs exclusion added for CN_IDIOM_NO_SUPER_CALL on *AutoLogged classes (AdvantageKit codegen). 10 HAL-free tests. Weight: 7.0h ✓
 
-█ CURRENT: Phase 4.1 complete — Phase 4.2 ready    ██████████████  ~60%  (24.5 / 40.0h)
-█ OVERALL: Phase 0-3 done + Phase 4.1 done
+
+[2026-04-16 22:45] [SONNET] [4.2] — Intake IO layer refactored (2590 pattern). IntakeIO + IntakeIOInputs (@AutoLog). IntakeIOReal wraps left/right arm SPARK MAX (position PID, no follow) + wheel SPARK MAX; setPid() reconfigures both arm controllers. IntakeIOSim: pure Java — no DCMotorSim; wheel current synthesised from wheelPercent*30A when simGamePieceAcquired=true (preserves Phase 3.2 SSM contract); arm positions track commanded setpoint; simulationPeriodic() removed from Intake. 13 HAL-free tests covering current synthesis lifecycle, proportionality, reset, and arm tracking. Weight: 7.0h ✓
+
+█ CURRENT: Phase 4.2 complete — Phase 4.3 ready    ████████████████  ~78%  (31.5 / 40.0h)
+█ OVERALL: Phase 0-3 done + Phase 4.1 + 4.2 done
 █ IN FLIGHT: —
-█ LAST DONE: 4.1 Flywheel IO layer (FlywheelIO/Real/Sim, thin Flywheel consumer, 10 tests)
+█ LAST DONE: 4.2 Intake IO layer (IntakeIO/Real/Sim, thin Intake consumer, 13 tests)
