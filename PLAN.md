@@ -10,12 +10,12 @@
   - [x] 0.1 Audit sweep → `AUDIT_2026-04-16.md` (1.0h) ✓
   - [x] 0.2 Wire `@AutoLog` annotation processor (0.5h) ✓
   - [x] 0.3 Vendor `LoggedTunableNumber` (0.5h) ✓
-- [ ] Phase 1 — Small wins (6 tasks, ~4.5h — scope grew slightly from audit)
+- [x] Phase 1 — Small wins (6 tasks, ~4.5h — scope grew slightly from audit) ✓
   - [x] 1.1 Panic button binding (0.5h) ✓
   - [x] 1.2 + 1.5 SuperstructureStateMachine cleanup (SCORING timeout + CLIMBING removal) (1.0h) ✓
   - [x] 1.3 AllianceFlip on HUB_POSE / CLIMB_POSE (1.0h) ✓
   - [x] 1.4 Sysout cleanup + 2 log-key bugs (Helper, Robot.logPhaseTransition, FullAuto/AvoidanceVelocity, StallDetector) (1.0h) ✓
-  - [ ] 1.6 Brownout scale — wire into AutoAlignCommand + DriveToGamePieceCommand + de-dup 6.0 magic (1.0h)
+  - [x] 1.6 Brownout scale — wire into AutoAlignCommand + DriveToGamePieceCommand + de-dup 6.0 magic (1.0h) ✓
 - [ ] Phase 2 — Near-free borrows (2 tasks, ~4.5h)
   - [ ] 2.1 Wrap Flywheel + Intake PID gains with LoggedTunableNumber (2.0h)
   - [ ] 2.2 Port Team 862 SystemTestCommand (2.5h)
