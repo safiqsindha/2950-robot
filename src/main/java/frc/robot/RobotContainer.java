@@ -16,6 +16,7 @@ import frc.robot.commands.DriveToGamePieceCommand;
 import frc.robot.commands.FullAutonomousCommand;
 import frc.robot.commands.IntakeControl;
 import frc.robot.commands.PanicCommand;
+import frc.robot.commands.SystemTestCommand;
 import frc.robot.commands.flywheel.FlywheelAim;
 import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelDynamic;
@@ -65,6 +66,7 @@ public class RobotContainer {
     configureDefaultCommands();
     configureDriverBindings();
     configureAutonomous();
+    configureTestMode();
   }
 
   private void configureDefaultCommands() {
@@ -218,6 +220,13 @@ public class RobotContainer {
                 .withTimeout(3.0)));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
+
+  /** Registers SmartDashboard buttons and bindings available in test mode. */
+  private void configureTestMode() {
+    // "Run System Test" button on SmartDashboard — tests motor connectivity and response.
+    // Safe to press only when the robot is in a clear area; command self-limits to low output.
+    SmartDashboard.putData("Run System Test", new SystemTestCommand(flywheel, intake, conveyor));
   }
 
   public Command getAutonomousCommand() {

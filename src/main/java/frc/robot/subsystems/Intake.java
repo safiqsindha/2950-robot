@@ -14,6 +14,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.LoggedTunableNumber;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
@@ -38,6 +39,12 @@ public class Intake extends SubsystemBase {
   private final RelativeEncoder rightEncoder = rightArm.getEncoder();
 
   private static final double kFeedForward = 0.0;
+
+  // ─── Tunable PID gains (visible and editable via AdvantageScope / NT) ───
+  private final LoggedTunableNumber tunableKP =
+      new LoggedTunableNumber("Intake/kP", Constants.Intake.kP);
+  private final LoggedTunableNumber tunableKD =
+      new LoggedTunableNumber("Intake/kD", Constants.Intake.kD);
 
   /**
    * Simulated wheel current (amps). SPARK MAX getOutputCurrent() returns 0 in sim, so we synthesize
@@ -76,6 +83,17 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/RightArmPosition", rightEncoder.getPosition());
     Logger.recordOutput("Intake/WheelCurrentAmps", getWheelCurrent());
     Logger.recordOutput("Intake/WheelVoltage", wheel.getBusVoltage() * wheel.getAppliedOutput());
+
+    // Apply updated PID gains if any tunable changed since last check.
+    // Both arm controllers share the same gains (symmetric arm geometry).
+    if (!RobotBase.isSimulation()
+        && (tunableKP.hasChanged(hashCode()) || tunableKD.hasChanged(hashCode()))) {
+      SparkMaxConfig update = new SparkMaxConfig();
+      update.closedLoop.p(tunableKP.get()).d(tunableKD.get());
+      leftArm.configure(update, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      rightArm.configure(
+          update, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    }
   }
 
   @Override

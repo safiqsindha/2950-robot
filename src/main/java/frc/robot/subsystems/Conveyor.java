@@ -50,4 +50,20 @@ public class Conveyor extends SubsystemBase {
     conveyorMotor.set(percent);
     spindexerMotor.set(percent);
   }
+
+  /**
+   * Current drawn by the brushed conveyor belt motor. Used by {@link
+   * frc.robot.commands.SystemTestCommand} to verify motor connectivity.
+   */
+  public double getConveyorCurrentAmps() {
+    return conveyorMotor.getOutputCurrent();
+  }
+
+  /**
+   * Current drawn by the brushless spindexer motor. Used by {@link
+   * frc.robot.commands.SystemTestCommand} to verify motor connectivity.
+   */
+  public double getSpindexerCurrentAmps() {
+    return spindexerMotor.getOutputCurrent();
+  }
 }

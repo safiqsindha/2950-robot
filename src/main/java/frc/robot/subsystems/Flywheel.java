@@ -18,6 +18,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.LoggedTunableNumber;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
@@ -49,6 +50,14 @@ public class Flywheel extends SubsystemBase {
       leftVortex.getClosedLoopController();
 
   private final RelativeEncoder encoder = leftVortex.getEncoder();
+
+  // ─── Tunable PID gains (visible and editable via AdvantageScope / NT) ───
+  private final LoggedTunableNumber tunableKP =
+      new LoggedTunableNumber("Flywheel/kP", Constants.Flywheel.kP);
+  private final LoggedTunableNumber tunableKI =
+      new LoggedTunableNumber("Flywheel/kI", Constants.Flywheel.kI);
+  private final LoggedTunableNumber tunableKD =
+      new LoggedTunableNumber("Flywheel/kD", Constants.Flywheel.kD);
 
   // ─── Simulation ──────────────────────────────────────────────────────────
   // Moment of inertia for a typical FRC flywheel disk (~4 kg·m² × 10⁻³).
@@ -136,6 +145,19 @@ public class Flywheel extends SubsystemBase {
               && Math.abs(simCurrentRpm - simTargetRpm) / simTargetRpm
                   < Constants.Flywheel.kReadyThreshold);
     }
+
+    // Apply updated PID gains if any tunable changed since last check.
+    // Only reconfigure on real hardware — sim uses a software P controller instead.
+    if (!RobotBase.isSimulation()
+        && (tunableKP.hasChanged(hashCode())
+            || tunableKI.hasChanged(hashCode())
+            || tunableKD.hasChanged(hashCode()))) {
+      SparkFlexConfig update = new SparkFlexConfig();
+      update.closedLoop.p(tunableKP.get()).i(tunableKI.get()).d(tunableKD.get());
+      leftVortex.configure(
+          update, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      // rightVortex follows leftVortex output — PID runs only on leftVortex, no reconfigure needed.
+    }
   }
 
   /**
@@ -171,5 +193,14 @@ public class Flywheel extends SubsystemBase {
       return simCurrentRpm;
     }
     return Math.abs(encoder.getVelocity());
+  }
+
+  /**
+   * Get the output current drawn by the primary Vortex motor. Used by {@link
+   * frc.robot.commands.SystemTestCommand} to verify motor connectivity. Returns 0 in simulation
+   * (SPARK Flex getOutputCurrent() is not modeled by DCMotorSim).
+   */
+  public double getMotorCurrentAmps() {
+    return leftVortex.getOutputCurrent();
   }
 }
