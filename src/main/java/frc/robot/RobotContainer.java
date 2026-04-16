@@ -26,6 +26,8 @@ import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.FlywheelIOReal;
 import frc.robot.subsystems.FlywheelIOSim;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.IntakeIOReal;
+import frc.robot.subsystems.IntakeIOSim;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.LEDs.AnimationType;
 import frc.robot.subsystems.SuperstructureStateMachine;
@@ -44,7 +46,9 @@ public class RobotContainer {
   private final SwerveSubsystem swerve = new SwerveSubsystem();
   public final VisionSubsystem vision = new VisionSubsystem(swerve);
   private final LEDs leds = new LEDs();
-  public final Intake intake = new Intake();
+  public final Intake intake =
+      new Intake(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation() ? new IntakeIOSim() : new IntakeIOReal());
   private final Conveyor conveyor = new Conveyor();
   private final Flywheel flywheel =
       new Flywheel(
