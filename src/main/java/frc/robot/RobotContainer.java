@@ -23,6 +23,8 @@ import frc.robot.commands.flywheel.FlywheelDynamic;
 import frc.robot.commands.flywheel.FlywheelStatic;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Flywheel;
+import frc.robot.subsystems.FlywheelIOReal;
+import frc.robot.subsystems.FlywheelIOSim;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.LEDs.AnimationType;
@@ -44,7 +46,11 @@ public class RobotContainer {
   private final LEDs leds = new LEDs();
   public final Intake intake = new Intake();
   private final Conveyor conveyor = new Conveyor();
-  private final Flywheel flywheel = new Flywheel();
+  private final Flywheel flywheel =
+      new Flywheel(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation()
+              ? new FlywheelIOSim()
+              : new FlywheelIOReal());
   private final SuperstructureStateMachine ssm = new SuperstructureStateMachine(intake);
 
   // ─── Controllers ───

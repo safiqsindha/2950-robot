@@ -31,4 +31,14 @@
   <Match>
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
+  <!--
+    CN_IDIOM_NO_SUPER_CALL: AdvantageKit @AutoLog annotation processor generates clone()
+    without super.clone(). The generated deep-copy creates a fresh instance and copies all
+    fields manually — the correct behaviour for LoggableInputs structs. Cannot be suppressed
+    at source level since *AutoLogged files are auto-generated and must not be edited.
+  -->
+  <Match>
+    <Bug pattern="CN_IDIOM_NO_SUPER_CALL" />
+    <Class name="~.*AutoLogged" />
+  </Match>
 </FindBugsFilter>
