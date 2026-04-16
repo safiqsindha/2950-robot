@@ -47,11 +47,18 @@ public class Intake extends SubsystemBase {
       new LoggedTunableNumber("Intake/kD", Constants.Intake.kD);
 
   /**
-   * Simulated wheel current (amps). SPARK MAX getOutputCurrent() returns 0 in sim, so we synthesize
-   * a current proportional to applied output so the SuperstructureStateMachine's current-spike
-   * game-piece detection works in simulation.
+   * Simulated wheel current (amps). Only non-zero when {@link #simGamePieceAcquired} is true, so
+   * the SSM's current-spike detection requires an explicit game-piece injection call rather than
+   * firing on any wheel command. Without this gate every wheel spin auto-advanced INTAKING →
+   * STAGING in simulation.
    */
   private double simWheelCurrentAmps = 0.0;
+
+  /**
+   * Flag that gates simulated current synthesis. Set via {@link #simulateGamePieceAcquired()};
+   * cleared via {@link #simulateGamePieceConsumed()}. Package-private for DriverPracticeMode.
+   */
+  private boolean simGamePieceAcquired = false;
 
   public Intake() {
     SparkMaxConfig rConfig = new SparkMaxConfig();
@@ -98,9 +105,27 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    // Synthesize current proportional to wheel output. At full output (1.0), simulate ~30A draw
-    // which exceeds the SSM's kGamePieceCurrentThresholdAmps (15A) for game piece detection.
-    simWheelCurrentAmps = Math.abs(wheel.getAppliedOutput()) * 30.0;
+    // Only synthesize current spike when a game piece has been explicitly injected.
+    // Before this fix, any wheel command produced ~30A (> SSM threshold 15A), causing INTAKING
+    // to auto-advance to STAGING every time the wheel ran — even with no game piece present.
+    simWheelCurrentAmps = simGamePieceAcquired ? Math.abs(wheel.getAppliedOutput()) * 30.0 : 0.0;
+  }
+
+  /**
+   * Inject a simulated game piece into the intake. Call from {@link frc.robot.DriverPracticeMode}
+   * or test scaffolding to allow the superstructure state machine to advance INTAKING → STAGING in
+   * simulation.
+   */
+  public void simulateGamePieceAcquired() {
+    simGamePieceAcquired = true;
+  }
+
+  /**
+   * Remove the simulated game piece (e.g. after it has been staged or scored). Resets the current
+   * synthesis gate so the next intake cycle starts clean.
+   */
+  public void simulateGamePieceConsumed() {
+    simGamePieceAcquired = false;
   }
 
   /** Reset both arm encoders to zero. Call at the start of autonomous and teleop. */

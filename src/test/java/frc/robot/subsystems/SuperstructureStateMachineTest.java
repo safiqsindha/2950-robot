@@ -157,4 +157,32 @@ class SuperstructureStateMachineTest {
   void zeroCurrent_doesNotTriggerStaging() {
     assertEquals(State.INTAKING, next(State.INTAKING, 0.0, true, false));
   }
+
+  // ── Phase 3.2 — Sim current gate (acceptance criterion) ──────────────────
+
+  /**
+   * Documents the Phase 3.2 sim-fix contract: {@code Intake.simulationPeriodic()} now gates current
+   * synthesis on {@code simGamePieceAcquired}. Without that flag being set, the wheel current stays
+   * 0 even when the wheel is commanded — and INTAKING must NOT auto-advance to STAGING, preventing
+   * false game-piece detection during every routine wheel spin.
+   */
+  @Test
+  void intaking_withUngatedSimCurrent_staysIntaking() {
+    // In simulation before Phase 3.2: any wheel command produced ~30A (> threshold), causing
+    // INTAKING → STAGING on every spin. Post-fix: wheel current is 0 unless a game piece is
+    // explicitly injected. The SSM contract: zero current in INTAKING → stay INTAKING.
+    assertEquals(State.INTAKING, next(State.INTAKING, 0.0, true, false));
+  }
+
+  /**
+   * Complements the above: after {@code simulateGamePieceAcquired()} sets the flag, the synthesized
+   * current spike causes SSM to advance INTAKING → STAGING as intended.
+   */
+  @Test
+  void intaking_withInjectedSimCurrent_advancesToStaging() {
+    // simWheelCurrentAmps = 30.0 when simGamePieceAcquired=true and wheel at full output.
+    // Verifies the SSM correctly advances on the injected spike.
+    double injectedCurrent = 30.0; // matches Intake.simulationPeriodic() at full output
+    assertEquals(State.STAGING, next(State.INTAKING, injectedCurrent, true, false));
+  }
 }

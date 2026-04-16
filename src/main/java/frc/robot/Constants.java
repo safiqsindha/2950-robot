@@ -64,6 +64,12 @@ public final class Constants {
     public static final double kMinRpm = 2400;
     public static final double kMaxRpm = 4000;
     public static final double kReadyThreshold = 0.10; // 10% of target RPM
+
+    /**
+     * Ball exit speed from the flywheel (m/s). Used by MovingShotCompensation for heading offset
+     * and by Helper.rpmFromMeters(double, ChassisSpeeds) for effective-distance adjustment.
+     */
+    public static final double kBallExitVelocityMps = 12.0;
   }
 
   /** Intake subsystem CAN IDs and tuning constants. */
