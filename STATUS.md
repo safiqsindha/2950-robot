@@ -30,7 +30,9 @@ Format:
 
 [2026-04-16 19:35] [SONNET] [1.3] — AllianceFlip wired into AutonomousStrategy. HUB_POSE/CLIMB_POSE/fallback-collect-pose now pass through AllianceFlip.flip(pose, isRed) instead of being used raw. Alliance flag propagated via GameState.withRedAlliance(boolean) — added field+builder+getter to the immutable GameState record. FullAutonomousCommand.buildGameState() seeds it from AllianceFlip.isRedAlliance(). AllianceFlip.flip(T, boolean) overloads promoted from package-private to public so frc.robot.autos can call them. 2 new red-alliance tests (hub pose flipped, blue pose unchanged); 10/10 AutonomousStrategyTest green, SpotBugs clean. Weight: 1.0h ✓
 
-█ CURRENT: Phase 1.4 sysout cleanup starting   ░░░░░░░░░░   0%
-█ OVERALL: 0 + 1.1 + 1.2+1.5 + 1.3 done       █████░░░░░  ~11%  (4.5 / 40.0h)
-█ IN FLIGHT: 1.4 Sysout cleanup
-█ LAST DONE: 1.3 AllianceFlip HUB/CLIMB poses (red alliance test passes)
+[2026-04-16 19:45] [SONNET] [1.4] — Sysout cleanup + log-key bugs. Deleted Helper.printRpmDistance (5Hz console I/O was a CAN-latency risk per audit). Replaced 3 call sites (FlywheelAim/AutoFeed/Static) with Logger.recordOutput — no sampling gate needed since Logger is designed for per-cycle recording. Deleted Robot.logPhaseTransition System.out.printf (data already in 3 Logger.recordOutput calls). Fixed FullAuto/AvoidanceVelocity log: removed .toString() so AdvantageKit serializes Translation2d natively (enables field visualization in AdvantageScope). StallDetector now logs false when stall clears in update() and reset() — paired with the existing true to make stall state transitions visible in dashboard. grep System.out shows 0 matches in src/main/java. 8/8 StallDetector tests green (2 new tests for stall-clear and reset paths). SpotBugs clean. Weight: 1.0h ✓
+
+█ CURRENT: Phase 1.6 brownout scale starting   ░░░░░░░░░░   0%
+█ OVERALL: Phase 0 + Phase 1 (1.1–1.4) done    ██████░░░░  ~14%  (5.5 / 40.0h)
+█ IN FLIGHT: 1.6 Brownout scale
+█ LAST DONE: 1.4 Sysout cleanup (0 System.out in prod, stall-clear logs paired)

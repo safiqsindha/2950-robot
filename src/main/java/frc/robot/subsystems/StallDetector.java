@@ -76,7 +76,11 @@ public class StallDetector {
         Logger.recordOutput("StallDetector/" + name + "/Stalled", true);
       }
     } else {
-      // Current is below threshold -- clear tracking
+      // Current is below threshold -- clear tracking and record the clear event so AdvantageScope
+      // dashboards show the stall flag returning to false (pairing every true with a false).
+      if (aboveThreshold) {
+        Logger.recordOutput("StallDetector/" + name + "/Stalled", false);
+      }
       aboveThreshold = false;
       stallStartTime = 0;
     }
@@ -108,8 +112,11 @@ public class StallDetector {
     return clock.getAsDouble() - stallStartTime;
   }
 
-  /** Clears all stall tracking state. */
+  /** Clears all stall tracking state. Logs false so dashboards reflect the cleared condition. */
   public void reset() {
+    if (aboveThreshold) {
+      Logger.recordOutput("StallDetector/" + name + "/Stalled", false);
+    }
     aboveThreshold = false;
     stallStartTime = 0;
   }

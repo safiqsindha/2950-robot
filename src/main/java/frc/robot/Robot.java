@@ -103,7 +103,6 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Robot/Phase", currentPhase.name());
     Logger.recordOutput("Robot/PhaseElapsedSec", elapsed);
     Logger.recordOutput("Robot/PhaseTransitionTo", newPhase.name());
-    System.out.printf("[Robot] %s → %s (phase lasted %.2fs)%n", currentPhase, newPhase, elapsed);
     currentPhase = newPhase;
     phaseStartTimestamp = now;
   }

@@ -102,6 +102,54 @@ class StallDetectorTest {
     assertEquals(0.0, detector.getStallDurationSeconds());
   }
 
+  /**
+   * Exercises the stall-clear path added in Phase 1.4: when current drops below threshold after a
+   * confirmed stall, the detector should clear and {@code isStalled()} must return false. The
+   * Logger.recordOutput(false) call is a side-effect that is a no-op in the test JVM, but the
+   * transition logic that guards it (the {@code if (aboveThreshold)} check) is exercised here.
+   */
+  @Test
+  void stallClearPath_isNotStalledAfterCurrentDrops() {
+    StallDetector detector = createDetector(40.0, 0.5);
+
+    // Drive into a confirmed stall
+    currentAmps = 60.0;
+    timeSeconds = 0.0;
+    detector.update();
+    timeSeconds = 0.6;
+    detector.update();
+    assertTrue(detector.isStalled(), "Should be stalled after threshold + duration");
+
+    // Current recovers — stall should clear
+    currentAmps = 10.0;
+    timeSeconds = 1.0;
+    detector.update();
+
+    assertFalse(
+        detector.isStalled(), "isStalled should be false after current drops below threshold");
+    assertEquals(
+        0.0, detector.getStallDurationSeconds(), "Duration should reset to 0 when stall clears");
+  }
+
+  @Test
+  void resetClearPath_logsAndClearsState() {
+    StallDetector detector = createDetector(40.0, 0.5);
+
+    // Drive into a stall (but not yet confirmed — just above threshold)
+    currentAmps = 60.0;
+    timeSeconds = 0.0;
+    detector.update();
+
+    // Force-clear via reset before duration elapses
+    detector.reset();
+
+    assertFalse(detector.isStalled(), "isStalled should be false after reset");
+    assertEquals(0.0, detector.getStallDurationSeconds(), "Duration should be 0 after reset");
+
+    // Should not spontaneously re-stall without a new update
+    assertFalse(detector.isStalled());
+  }
+
   @Test
   void multipleStallClearCycles() {
     StallDetector detector = createDetector(40.0, 0.5);

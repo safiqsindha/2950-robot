@@ -136,7 +136,7 @@ public class FullAutonomousCommand extends Command {
       Translation2d corrected =
           avoidanceLayer.computeCorrectedVelocity(
               swerve.getPose(), currentTarget.targetPose().getTranslation(), opponents);
-      Logger.recordOutput("FullAuto/AvoidanceVelocity", corrected.toString());
+      Logger.recordOutput("FullAuto/AvoidanceVelocity", corrected);
     }
 
     // ── Check if current path finished ──

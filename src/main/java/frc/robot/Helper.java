@@ -22,8 +22,6 @@ public class Helper {
   private static final LinearFilter distFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
   private static final LinearFilter aimFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
-  private static int printCounter = 0;
-
   private Helper() {}
 
   /**
@@ -81,15 +79,5 @@ public class Helper {
     distFilter.reset();
     distFilter.calculate(0);
     aimFilter.calculate(0);
-  }
-
-  /** Debug print of RPM and distance at 10Hz (every 10 robot cycles). */
-  public static void printRpmDistance(double rpm, double distance) {
-    if (printCounter % 10 == 0) {
-      System.out.println(rpm);
-      System.out.println(distance);
-      System.out.println("*****************");
-    }
-    ++printCounter;
   }
 }
