@@ -47,7 +47,10 @@ Format:
 
 [2026-04-16 21:30] [SONNET] [3.3] — Moving-shot RPM overload added. rpmFromMeters(double, ChassisSpeeds) computes effectiveMeters = d*(1 + vx/kBallExitVelocityMps) then delegates to the base overload. kBallExitVelocityMps=12.0 extracted into Constants.Flywheel (was a magic literal in MovingShotCompensation). 6 new overload tests: stationary=base, movingAway>stationary, movingToward<stationary, lateralOnly=base, correction proportional to speed, bounds never violated at ±20 m/s. Weight: 1.5h ✓
 
-█ CURRENT: Phase 3 complete — Phase 4 ready    ████████████  ~42%  (17.5 / 40.0h)
-█ OVERALL: Phase 0 + Phase 1 + Phase 2 + Phase 3 done
+
+[2026-04-16 22:15] [SONNET] [4.1] — Flywheel IO layer refactored (2590 pattern). FlywheelIO interface + FlywheelIOInputs (@AutoLog → FlywheelIOInputsAutoLogged). FlywheelIOReal wraps SPARK Flex MAXMotion + SPARK MAX lower wheels; setPid() reconfigures leftVortex in-place. FlywheelIOSim wraps DCMotorSim (2× Vortex 1:1 4g·m²) + software P+FF; stop() avoids setInputVoltage() (would trigger wpiHaljni load) to stay HAL-safe. Flywheel becomes thin consumer: delegates every public method, reads velocity/current from inputs struct, AtSpeed telemetry derived from setpointRpm. FlywheelDynamic: leftVortex.set() → flywheel.setVortexOutput(). RobotContainer: wires IOSim/IOReal via isSimulation(). SpotBugs exclusion added for CN_IDIOM_NO_SUPER_CALL on *AutoLogged classes (AdvantageKit codegen). 10 HAL-free tests. Weight: 7.0h ✓
+
+█ CURRENT: Phase 4.1 complete — Phase 4.2 ready    ██████████████  ~60%  (24.5 / 40.0h)
+█ OVERALL: Phase 0-3 done + Phase 4.1 done
 █ IN FLIGHT: —
-█ LAST DONE: 3.3 Moving-shot RPM overload (kBallExitVelocityMps constant, 6 tests)
+█ LAST DONE: 4.1 Flywheel IO layer (FlywheelIO/Real/Sim, thin Flywheel consumer, 10 tests)
