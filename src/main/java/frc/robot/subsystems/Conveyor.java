@@ -1,54 +1,43 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Conveyor subsystem. Controls a brushed conveyor belt motor and a brushless spindexer motor that
- * index fuel into the flywheel.
+ * Conveyor subsystem — thin consumer of {@link ConveyorIO} (2590 IO pattern).
+ *
+ * <p>Hardware details (SPARK MAX brushed belt motor and SPARK MAX brushless spindexer) are
+ * encapsulated in {@link ConveyorIOReal} and {@link ConveyorIOSim}.
+ *
+ * <p>Motor layout:
+ *
+ * <ul>
+ *   <li>Brushed conveyor belt motor — indexes fuel toward flywheel
+ *   <li>Brushless spindexer motor — agitates/rotates the fuel column before indexing
+ * </ul>
  */
 public class Conveyor extends SubsystemBase {
 
-  private final SparkMax conveyorMotor =
-      new SparkMax(Constants.Conveyor.kConveyorMotorId, MotorType.kBrushed);
+  private final ConveyorIO io;
+  private final ConveyorIOInputsAutoLogged inputs = new ConveyorIOInputsAutoLogged();
 
-  private final SparkMax spindexerMotor =
-      new SparkMax(Constants.Conveyor.kSpindexerMotorId, MotorType.kBrushless);
-
-  public Conveyor() {
-    SparkMaxConfig config = new SparkMaxConfig();
-    config.inverted(false).idleMode(IdleMode.kBrake).smartCurrentLimit(40);
-    conveyorMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    SparkMaxConfig spinConfig = new SparkMaxConfig();
-    spinConfig.apply(config).inverted(true);
-    spindexerMotor.configure(
-        spinConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  public Conveyor(ConveyorIO io) {
+    this.io = io;
   }
 
   @Override
   public void periodic() {
-    Logger.recordOutput("Conveyor/ConveyorOutput", conveyorMotor.getAppliedOutput());
-    Logger.recordOutput("Conveyor/SpindexerOutput", spindexerMotor.getAppliedOutput());
-    Logger.recordOutput("Conveyor/ConveyorCurrentAmps", conveyorMotor.getOutputCurrent());
-    Logger.recordOutput("Conveyor/SpindexerCurrentAmps", spindexerMotor.getOutputCurrent());
+    io.updateInputs(inputs);
+    Logger.processInputs("Conveyor", inputs);
   }
 
   /**
-   * Set conveyor belt and spindexer to the same percent output.
+   * Set both the conveyor belt and spindexer motors to the same percent output.
    *
    * @param percent output (-1 to 1)
    */
   public void setConveyor(double percent) {
-    conveyorMotor.set(percent);
-    spindexerMotor.set(percent);
+    io.setConveyor(percent);
   }
 
   /**
@@ -56,7 +45,7 @@ public class Conveyor extends SubsystemBase {
    * frc.robot.commands.SystemTestCommand} to verify motor connectivity.
    */
   public double getConveyorCurrentAmps() {
-    return conveyorMotor.getOutputCurrent();
+    return inputs.conveyorCurrentAmps;
   }
 
   /**
@@ -64,6 +53,6 @@ public class Conveyor extends SubsystemBase {
    * frc.robot.commands.SystemTestCommand} to verify motor connectivity.
    */
   public double getSpindexerCurrentAmps() {
-    return spindexerMotor.getOutputCurrent();
+    return inputs.spindexerCurrentAmps;
   }
 }

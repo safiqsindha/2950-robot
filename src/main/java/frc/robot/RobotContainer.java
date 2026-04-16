@@ -22,6 +22,8 @@ import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelDynamic;
 import frc.robot.commands.flywheel.FlywheelStatic;
 import frc.robot.subsystems.Conveyor;
+import frc.robot.subsystems.ConveyorIOReal;
+import frc.robot.subsystems.ConveyorIOSim;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.FlywheelIOReal;
 import frc.robot.subsystems.FlywheelIOSim;
@@ -49,7 +51,11 @@ public class RobotContainer {
   public final Intake intake =
       new Intake(
           edu.wpi.first.wpilibj.RobotBase.isSimulation() ? new IntakeIOSim() : new IntakeIOReal());
-  private final Conveyor conveyor = new Conveyor();
+  private final Conveyor conveyor =
+      new Conveyor(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation()
+              ? new ConveyorIOSim()
+              : new ConveyorIOReal());
   private final Flywheel flywheel =
       new Flywheel(
           edu.wpi.first.wpilibj.RobotBase.isSimulation()
