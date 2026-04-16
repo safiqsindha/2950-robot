@@ -26,7 +26,9 @@ Format:
 
 [2026-04-16 19:20] [OPUS-direct] [1.1] — Panic button wired. Driver back+start → cancel every scheduled command, force SSM to IDLE, raise ERROR_FLASH (red) at kPriorityAlert. `.ignoringDisable(true)` so it works disabled. Practice-reset relocated to start+povUp. PanicCommand uses the StallDetector injection pattern — package-visible `fire(Runnable, Runnable, Runnable)` is unit-testable; public `build(ssm, leds)` wires real WPILib calls. 3/3 tests green (order, exactly-once, short-circuit-on-throw), SpotBugs clean, build clean. Weight: 0.5h ✓
 
-█ CURRENT: Phase 1.2+1.5 SSM cleanup starting   ░░░░░░░░░░   0%
-█ OVERALL: Phase 0 + 1.1 complete                ███░░░░░░░  ~6%  (2.5 / 40.0h)
-█ IN FLIGHT: 1.2+1.5 SSM cleanup
-█ LAST DONE: 1.1 Panic button (back+start → cancel/idle/red-flash)
+[2026-04-16 19:27] [SONNET] [1.2+1.5] — SSM cleaned up. CLIMBING state deleted (no Climber exists): removed State.CLIMBING enum value, climbRequested field, requestClimb() method, and all CLIMBING branches. FullAutonomousCommand.notifySSM CLIMB case made a no-op. SCORING auto-exit added: 2.0s timeout (kScoringTimeoutSeconds in Constants.Superstructure) — prevents missed requestIdle() from permanently locking the superstructure. SSM uses DoubleSupplier injection for testable time source. computeNextState signature updated (climbReq removed, scoringDurationSeconds added). FaultInjectionTest updated for new signature. 18/18 SSM tests green, SpotBugs clean. Weight: 1.0h ✓
+
+█ CURRENT: Phase 1.3 AllianceFlip starting   ░░░░░░░░░░   0%
+█ OVERALL: 0 + 1.1 + 1.2+1.5 done           ████░░░░░░  ~9%  (3.5 / 40.0h)
+█ IN FLIGHT: 1.3 AllianceFlip
+█ LAST DONE: 1.2+1.5 SSM CLIMBING removal + SCORING timeout

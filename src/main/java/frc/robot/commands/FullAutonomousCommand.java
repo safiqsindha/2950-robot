@@ -297,7 +297,7 @@ public class FullAutonomousCommand extends Command {
     switch (target.actionType()) {
       case SCORE -> ssm.requestScore();
       case COLLECT -> ssm.requestIntake();
-      case CLIMB -> ssm.requestClimb();
+      case CLIMB -> {} // No climber installed on this robot; CLIMB targets are no-ops.
     }
   }
 

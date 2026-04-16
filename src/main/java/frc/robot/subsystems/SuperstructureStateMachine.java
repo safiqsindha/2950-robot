@@ -1,7 +1,9 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -15,13 +17,16 @@ import org.littletonrobotics.junction.Logger;
  *   <li>{@link State#IDLE} — No game piece, mechanisms at rest.
  *   <li>{@link State#INTAKING} — Intake deployed, wheels spinning; waiting for game piece.
  *   <li>{@link State#STAGING} — Game piece acquired; staging in conveyor for scoring.
- *   <li>{@link State#SCORING} — Flywheel spinning up, feeding, or ejecting.
- *   <li>{@link State#CLIMBING} — Climber extending/retracting; all other mechanisms idle.
+ *   <li>{@link State#SCORING} — Flywheel spinning up, feeding, or ejecting. Auto-exits to IDLE
+ *       after {@link Constants.Superstructure#kScoringTimeoutSeconds} if no {@link #requestIdle()}
+ *       is received, preventing a missed command from permanently locking the superstructure.
  * </ul>
  *
  * <p>Game piece detection uses a current-spike heuristic: when the intake wheel current exceeds
  * {@link Constants.Superstructure#kGamePieceCurrentThresholdAmps}, a game piece is assumed to have
  * been captured and the state advances from INTAKING → STAGING.
+ *
+ * <p>Note: the CLIMBING state was removed — no Climber subsystem is installed on this robot.
  */
 public class SuperstructureStateMachine extends SubsystemBase {
 
@@ -30,52 +35,66 @@ public class SuperstructureStateMachine extends SubsystemBase {
     IDLE,
     INTAKING,
     STAGING,
-    SCORING,
-    CLIMBING
+    SCORING
   }
 
   private final Intake intake;
+  private final DoubleSupplier timeSource;
 
   private State currentState = State.IDLE;
 
+  // Time at which the SCORING state was last entered; used to compute the auto-exit duration.
+  private double scoringEntryTimeSeconds = 0.0;
+
   // Whether scoring was requested externally (e.g. AutoScoreCommand or driver button)
   private boolean scoreRequested = false;
-  // Whether climbing was requested externally
-  private boolean climbRequested = false;
   // Whether intake was requested externally
   private boolean intakeRequested = false;
 
   /**
-   * Creates the superstructure state machine.
+   * Creates the superstructure state machine (production — uses WPILib {@link Timer}).
    *
    * @param intake intake subsystem, used to read wheel current for game piece detection
    */
   public SuperstructureStateMachine(Intake intake) {
+    this(intake, Timer::getFPGATimestamp);
+  }
+
+  /**
+   * Package-private constructor that accepts an injectable time source. Follows the StallDetector /
+   * LoggedTunableNumber convention: tests pass a mutable {@link DoubleSupplier} to control time
+   * without HAL or WPILib Timer.
+   */
+  SuperstructureStateMachine(Intake intake, DoubleSupplier timeSource) {
     this.intake = intake;
+    this.timeSource = timeSource;
   }
 
   @Override
   public void periodic() {
-    State nextState = computeNextState();
+    double scoringDuration =
+        (currentState == State.SCORING) ? timeSource.getAsDouble() - scoringEntryTimeSeconds : 0.0;
+
+    State nextState =
+        computeNextState(
+            currentState,
+            intake.getWheelCurrent(),
+            Constants.Superstructure.kGamePieceCurrentThresholdAmps,
+            intakeRequested,
+            scoreRequested,
+            scoringDuration);
+
     if (nextState != currentState) {
       Logger.recordOutput("Superstructure/StateTransition", currentState + " → " + nextState);
+      if (nextState == State.SCORING) {
+        scoringEntryTimeSeconds = timeSource.getAsDouble();
+      }
       currentState = nextState;
     }
     Logger.recordOutput("Superstructure/State", currentState.name());
     Logger.recordOutput("Superstructure/ScoreRequested", scoreRequested);
-    Logger.recordOutput("Superstructure/ClimbRequested", climbRequested);
     Logger.recordOutput("Superstructure/IntakeRequested", intakeRequested);
     Logger.recordOutput("Superstructure/IntakeWheelCurrentAmps", intake.getWheelCurrent());
-  }
-
-  private State computeNextState() {
-    return computeNextState(
-        currentState,
-        intake.getWheelCurrent(),
-        Constants.Superstructure.kGamePieceCurrentThresholdAmps,
-        intakeRequested,
-        scoreRequested,
-        climbRequested);
   }
 
   /**
@@ -86,7 +105,7 @@ public class SuperstructureStateMachine extends SubsystemBase {
    * @param currentThresholdAmps game piece detection threshold in amps
    * @param intakeReq whether intake is requested
    * @param scoreReq whether score is requested
-   * @param climbReq whether climb is requested
+   * @param scoringDurationSeconds how long the machine has been in SCORING (0 if not in SCORING)
    * @return the next state
    */
   static State computeNextState(
@@ -95,10 +114,9 @@ public class SuperstructureStateMachine extends SubsystemBase {
       double currentThresholdAmps,
       boolean intakeReq,
       boolean scoreReq,
-      boolean climbReq) {
+      double scoringDurationSeconds) {
     switch (state) {
       case IDLE:
-        if (climbReq) return State.CLIMBING;
         if (intakeReq) return State.INTAKING;
         return State.IDLE;
 
@@ -117,13 +135,12 @@ public class SuperstructureStateMachine extends SubsystemBase {
         return State.STAGING;
 
       case SCORING:
-        // SCORING exits back to IDLE when the scoring command explicitly calls requestIdle().
-        // Commands are responsible for calling requestIdle() after the shot completes.
+        // Auto-exit to IDLE if the scoring window has elapsed. This prevents a missed requestIdle()
+        // call from permanently locking the superstructure in the SCORING state.
+        if (scoringDurationSeconds >= Constants.Superstructure.kScoringTimeoutSeconds) {
+          return State.IDLE;
+        }
         return State.SCORING;
-
-      case CLIMBING:
-        if (!climbReq) return State.IDLE;
-        return State.CLIMBING;
 
       default:
         return State.IDLE;
@@ -139,7 +156,6 @@ public class SuperstructureStateMachine extends SubsystemBase {
   public void requestIntake() {
     intakeRequested = true;
     scoreRequested = false;
-    climbRequested = false;
   }
 
   /**
@@ -150,21 +166,13 @@ public class SuperstructureStateMachine extends SubsystemBase {
     scoreRequested = true;
   }
 
-  /** Request the superstructure to climb. Transitions any state → CLIMBING. */
-  public void requestClimb() {
-    climbRequested = true;
-    intakeRequested = false;
-    scoreRequested = false;
-  }
-
   /**
    * Return all requests to idle. Use this after a scoring sequence completes or when cancelling
-   * intake/climb.
+   * intake.
    */
   public void requestIdle() {
     intakeRequested = false;
     scoreRequested = false;
-    climbRequested = false;
     currentState = State.IDLE;
   }
 

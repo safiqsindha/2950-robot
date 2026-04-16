@@ -130,5 +130,8 @@ public final class Constants {
     public static final int kNeuralPipeline = 1;
     // AutoScoreCommand total timeout (seconds)
     public static final double kAutoScoreTimeoutSeconds = 5.0;
+    // SCORING state auto-exit timeout: if no requestIdle() arrives within this window, the SSM
+    // self-clears back to IDLE so a missed scoring command never locks the superstructure.
+    public static final double kScoringTimeoutSeconds = 2.0;
   }
 }
