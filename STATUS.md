@@ -35,7 +35,12 @@ Format:
 
 [2026-04-16 20:10] [SONNET] [1.6] — Brownout scale wired into AutoAlignCommand + DriveToGamePieceCommand. AutoAlignCommand.execute() translation and DriveToGamePieceCommand.execute() translation + rotation now multiply by Robot.getBrownoutScale(), matching the existing DriveCommand pattern (audit CRITICAL: both commands were missing the scale). Robot.java: extracted kBrownoutFloorVolts = 6.0 (private static final) — eliminates the duplicate 6.0 magic literal on lines 86 and 97 (audit CRITICAL: silent divergence risk if only one site was tuned). New BrownoutConsumptionTest (15 tests): verifies AutoAlign and DriveToGamePiece translation/rotation are halved at 50% brownout; verifies formula clamps at 0.5 at floor voltage, reaches 1.0 at threshold, and ramps correctly at 7.5V. 285/285 tests green, SpotBugs clean. Weight: 1.0h ✓
 
-█ CURRENT: Phase 1 complete — Phase 2 ready    ██████░░░░  ~16%  (6.5 / 40.0h)
-█ OVERALL: Phase 0 + Phase 1 (all 5 tasks) done
+
+[2026-04-16 20:45] [SONNET] [2.1] — Tunable PID gains wired. Flywheel.periodic() and Intake.periodic() check hasChanged(hashCode()) each cycle and reconfigure SPARK Flex/MAX in-place when any gain changes — zero overhead when NT is not connected (competition). Flywheel exposes kP/kI/kD at "/LoggedTunableNumbers/Flywheel/kP" etc.; Intake exposes kP/kD at "/LoggedTunableNumbers/Intake/". RobotBase.isSimulation() guard prevents unnecessary CAN transactions in sim. Also added getMotorCurrentAmps() to Flywheel. Weight: 2.0h ✓
+
+[2026-04-16 20:45] [SONNET] [2.2] — SystemTestCommand ported (Team 862 pattern). 3-phase sequence (~1.1s total): Flywheel (500 RPM) → IntakeWheel (15%) → Conveyor (15%). Each phase samples current/RPM, emits per-subsystem pass/fail to Logger and SmartDashboard. TestResult record (public) holds name/amps/pass. allPass gated on !interrupted AND all 3 results AND non-empty list. Added getConveyorCurrentAmps()/getSpindexerCurrentAmps() to Conveyor. RobotContainer.configureTestMode() registers SmartDashboard "Run System Test" button. 13 SystemTestCommandTest tests, HAL-free. Weight: 2.5h ✓
+
+█ CURRENT: Phase 2 complete — Phase 3 ready    ████████░░  ~29%  (11.0 / 40.0h)
+█ OVERALL: Phase 0 + Phase 1 + Phase 2 done
 █ IN FLIGHT: —
-█ LAST DONE: 1.6 Brownout scale (AutoAlign + DriveToGamePiece scaled; kBrownoutFloorVolts extracted)
+█ LAST DONE: 2.2 SystemTestCommand (3-phase motor test, SmartDashboard button, 13 tests)

@@ -16,9 +16,9 @@
   - [x] 1.3 AllianceFlip on HUB_POSE / CLIMB_POSE (1.0h) ✓
   - [x] 1.4 Sysout cleanup + 2 log-key bugs (Helper, Robot.logPhaseTransition, FullAuto/AvoidanceVelocity, StallDetector) (1.0h) ✓
   - [x] 1.6 Brownout scale — wire into AutoAlignCommand + DriveToGamePieceCommand + de-dup 6.0 magic (1.0h) ✓
-- [ ] Phase 2 — Near-free borrows (2 tasks, ~4.5h)
-  - [ ] 2.1 Wrap Flywheel + Intake PID gains with LoggedTunableNumber (2.0h)
-  - [ ] 2.2 Port Team 862 SystemTestCommand (2.5h)
+- [x] Phase 2 — Near-free borrows (2 tasks, ~4.5h) ✓
+  - [x] 2.1 Wrap Flywheel + Intake PID gains with LoggedTunableNumber (2.0h) ✓
+  - [x] 2.2 Port Team 862 SystemTestCommand (2.5h) ✓
 - [ ] Phase 3 — Flywheel scoring physics (3 tasks, ~6.5h)
   - [ ] 3.1 Replace Helper.rpmFromMeters with projectile model or PolynomialRegression (3.0h)
   - [ ] 3.2 Fix Intake sim wheel-current model (2.0h)
