@@ -64,7 +64,7 @@ class PathfindToGoalCommandTest {
     // Typical scoring positions should be within field
     Pose2d scorePose = new Pose2d(2.0, 4.0, Rotation2d.fromDegrees(0));
     assertTrue(scorePose.getX() >= 0 && scorePose.getX() <= FIELD_LENGTH_METERS);
-    assertTrue(scorePose.getY() >= 0 && scorePose.getY() <= 8.21);
+    assertTrue(scorePose.getY() >= 0 && scorePose.getY() <= 8.069); // 2026 REBUILT WELDED width
   }
 
   @Test
@@ -92,11 +92,11 @@ class PathfindToGoalCommandTest {
 
   @Test
   void navGridDimensionsMatchFieldSize() {
-    // 164 columns at 0.10m = 16.4m field length (close to 16.54)
+    // 164 columns at 0.10m = 16.4m field length (close to 2026 WELDED 16.541)
     double gridLength = NAV_GRID_COLUMNS * NAV_GRID_CELL_SIZE_METERS;
     assertEquals(16.4, gridLength, 0.5, "Grid should approximate field length");
 
-    // 82 rows at 0.10m = 8.2m field width (close to 8.21)
+    // 82 rows at 0.10m = 8.2m field width (close to 2026 WELDED 8.069)
     double gridWidth = NAV_GRID_ROWS * NAV_GRID_CELL_SIZE_METERS;
     assertEquals(8.2, gridWidth, 0.5, "Grid should approximate field width");
   }

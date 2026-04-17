@@ -7,9 +7,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /**
- * Utility for flipping coordinates between red and blue alliance origins. The FRC field is 16.54m
- * long (X axis) and 8.21m wide (Y axis). Blue alliance origin is at the left corner of the blue
- * driver station wall.
+ * Utility for flipping coordinates between red and blue alliance origins. The 2026 REBUILT
+ * WELDED field is 16.541 m long (X axis) and 8.069 m wide (Y axis). Blue alliance origin is at
+ * the left corner of the blue driver station wall.
  */
 public final class AllianceFlip {
 
