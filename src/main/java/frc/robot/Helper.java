@@ -140,8 +140,9 @@ public class Helper {
       Translation2d targetRelative, Translation2d velocityRelative) {
     final double ballExitSpeed = Constants.Flywheel.kBallExitVelocityMps;
     Translation2d virtualTarget = targetRelative;
-    // 3 iterations is sufficient — convergence is geometric with ratio ~ vRobot/vBall
-    // (~0.05 for 1 m/s robot, 20 m/s ball), so 3 iters drives error to ~1.25e-4 of initial.
+    // 3 iterations is enough: convergence ratio q = ||velocity|| / ballExitSpeed is typically
+    // 0.05–0.15 for FRC speeds, so 3 iters drive the residual to roughly q³ ≈ 10⁻³ of the
+    // initial distance — sub-centimetre at any realistic shot range.
     for (int i = 0; i < 3; i++) {
       double airTime = virtualTarget.getNorm() / ballExitSpeed;
       virtualTarget = targetRelative.minus(velocityRelative.times(airTime));
