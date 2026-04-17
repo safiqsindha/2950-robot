@@ -53,7 +53,6 @@ The health-monitoring trio. All use the `Supplier<Snapshot>` injection pattern s
 - **`JvmLogger`** — heap, non-heap, GC count + time. Visible under `JVM/*`.
 - **`CanBusLogger`** — bus utilisation + bus-off / tx-full / rx-err / tx-err counters. Visible under `CAN/*`.
 - **`PdhLogger`** — voltage, total current, temperature, 24-channel current array. Visible under `PDH/*`.
-- **`FaultMonitor`**, **`TimedFaultMonitor`** — 862 pattern for latching + persistence-gated fault detection.
 - **`CommandLifecycleLogger`** — scheduler onInit/onInterrupt/onFinish hooks; logs command activity per frame.
 
 ### `frc.lib.pathfinding`

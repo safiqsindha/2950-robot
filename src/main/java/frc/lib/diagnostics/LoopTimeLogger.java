@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.Logger;
  *
  * <ul>
  *   <li>Single-tick latency (last {@link #periodic()} call → this one)
- *   <li>Rolling max over the last {@code kSamplesWindow} ticks, so a 30-ms spike doesn't get
+ *   <li>Rolling max over the last {@link #ROLLING_MAX_WINDOW} ticks, so a 30-ms spike doesn't get
  *       smoothed away by normal 20-ms ticks
  *   <li>Overrun count — ticks that exceeded the configured threshold (default 25 ms, 5 ms
  *       above nominal)
