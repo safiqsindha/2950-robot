@@ -87,10 +87,12 @@ public final class TrajectoryFollower {
   }
 
   /**
-   * Exposed for tests — lets a test assert the feedforward+feedback math directly without
-   * constructing a full {@link HolonomicTrajectory}.
+   * Compute the chassis speeds for a known sample + pose without the {@link HolonomicTrajectory}
+   * indirection. Useful when the caller already has a sample in hand (e.g. the Choreo auto
+   * factory unwraps {@code SwerveSample} → {@link HolonomicTrajectorySample} inline) and also
+   * valuable for unit tests that exercise the feedforward + feedback math directly.
    */
-  ChassisSpeeds computeSpeeds(HolonomicTrajectorySample sample, Pose2d currentPose) {
+  public ChassisSpeeds computeSpeeds(HolonomicTrajectorySample sample, Pose2d currentPose) {
     Pose2d target = sample.pose();
     ChassisSpeeds ff = sample.fieldRelativeSpeeds();
 
