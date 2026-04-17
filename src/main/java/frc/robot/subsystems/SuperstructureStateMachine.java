@@ -78,6 +78,13 @@ public class SuperstructureStateMachine extends SubsystemBase {
     this.timeSource = timeSource;
   }
 
+  /**
+   * Free-form sub-state label — commands that own the SSM during a state set this for telemetry
+   * so post-match replay shows <i>what</i> the robot was doing during SCORING (AIMING / SPINUP
+   * / FEEDING) without extending the {@link State} enum. Cleared on state transitions.
+   */
+  private String subState = "";
+
   @Override
   public void periodic() {
     double now = timeSource.getAsDouble();
@@ -101,12 +108,29 @@ public class SuperstructureStateMachine extends SubsystemBase {
       currentState = nextState;
       stateEntryTimeSeconds = now;
       timeInState = 0.0;
+      // Clear sub-state on transition — the old label belonged to the old state and would be
+      // misleading telemetry in the new one. Commands re-assert their label as needed.
+      subState = "";
     }
     Logger.recordOutput("Superstructure/State", currentState.name());
+    Logger.recordOutput("Superstructure/SubState", subState);
     Logger.recordOutput("Superstructure/TimeInStateSec", timeInState);
     Logger.recordOutput("Superstructure/ScoreRequested", scoreRequested);
     Logger.recordOutput("Superstructure/IntakeRequested", intakeRequested);
     Logger.recordOutput("Superstructure/IntakeWheelCurrentAmps", intake.getWheelCurrent());
+  }
+
+  /**
+   * Set a free-form sub-state label that a command owns during its execution. Cleared on the
+   * next state transition.
+   */
+  public void setSubState(String label) {
+    subState = (label == null) ? "" : label;
+  }
+
+  /** @return the current sub-state label, or empty string if none. */
+  public String getSubState() {
+    return subState;
   }
 
   /**
