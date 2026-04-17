@@ -265,9 +265,12 @@ class HelperTest {
 
   @Test
   void fixedPoint_staysWithinBoundsForAllScenarios() {
-    // Sweep: distances [0.5..4.0], bearings [-π..π], speeds vx,vy ∈ {-3,-1,0,1,3}
-    for (double d = 0.5; d <= 4.0; d += 0.5) {
-      for (double theta = -Math.PI; theta <= Math.PI; theta += Math.PI / 4) {
+    // Sweep: distances {0.5, 1.0, ..., 4.0}, bearings {-π, -3π/4, ..., π},
+    // speeds vx,vy ∈ {-3,-1,1,3}. Int loop counters (SpotBugs FL_FLOATS_AS_LOOP_COUNTERS).
+    for (int di = 1; di <= 8; di++) {
+      double d = di * 0.5;
+      for (int ti = -4; ti <= 4; ti++) {
+        double theta = ti * Math.PI / 4;
         for (int vx = -3; vx <= 3; vx += 2) {
           for (int vy = -3; vy <= 3; vy += 2) {
             double rpm = Helper.rpmFromMeters(d, theta, new ChassisSpeeds(vx, vy, 0));
