@@ -68,13 +68,22 @@ public class ControllerAdapter {
     try {
       name = xbox.getHID().getName();
     } catch (Exception e) {
-      // HID not ready yet
+      // HID not ready yet — common during the first few robotPeriodic() ticks before the DS
+      // connection stabilises. Log a rate-limited warning via AdvantageKit so a persistent
+      // failure (bad cable, DS unplugged, driver-station auto-connect disabled) actually
+      // surfaces; the key is boolean-valued so AdvantageScope shows the state transition
+      // clearly.
+      Logger.recordOutput("Controller/HidReadFailed", true);
+      Logger.recordOutput("Controller/HidReadError", e.getClass().getSimpleName());
     }
 
     if (name == null || name.isEmpty()) {
       // Don't cache — try again next cycle
       return;
     }
+
+    // Clear the failure flag on recovery so AdvantageScope shows the transition back to healthy.
+    Logger.recordOutput("Controller/HidReadFailed", false);
 
     String lower = name.toLowerCase();
     if (lower.contains("pro controller") || lower.contains("nintendo")) {

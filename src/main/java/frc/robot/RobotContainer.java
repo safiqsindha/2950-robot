@@ -220,11 +220,13 @@ public class RobotContainer {
 
     autoChooser.addOption(
         "2 Coral",
-        ChoreoAutoCommand.twoCoralRoutine(autoFactory, flywheel, conveyor, ssm, swerve).cmd());
+        ChoreoAutoCommand.twoCoralRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
+            .cmd());
 
     autoChooser.addOption(
         "3 Coral",
-        ChoreoAutoCommand.threeCoralRoutine(autoFactory, flywheel, conveyor, ssm, swerve).cmd());
+        ChoreoAutoCommand.threeCoralRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
+            .cmd());
 
     // ── Full Autonomous (Phase 3) ─────────────────────────────────────────────
     // Strategy-driven loop: evaluate targets → pathfind → execute → repeat.

@@ -14,6 +14,7 @@ import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelStatic;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Flywheel;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SuperstructureStateMachine;
 import frc.robot.subsystems.SwerveSubsystem;
 import org.littletonrobotics.junction.Logger;
@@ -198,6 +199,7 @@ public final class ChoreoAutoCommand {
       AutoFactory factory,
       Flywheel flywheel,
       Conveyor conveyor,
+      Intake intake,
       SuperstructureStateMachine ssm,
       SwerveSubsystem swerve) {
     AutoRoutine routine = factory.newRoutine("2 Coral");
@@ -260,6 +262,7 @@ public final class ChoreoAutoCommand {
       AutoFactory factory,
       Flywheel flywheel,
       Conveyor conveyor,
+      Intake intake,
       SuperstructureStateMachine ssm,
       SwerveSubsystem swerve) {
     AutoRoutine routine = factory.newRoutine("3 Coral");
@@ -280,6 +283,11 @@ public final class ChoreoAutoCommand {
                 new FlywheelAutoFeed(flywheel, conveyor, swerve)
                     .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation1.resetOdometry().andThen(toStation1.cmd())));
+
+    // Station 1 intake marker — run the intake during approach so hasGamePiece() can flip true.
+    toStation1
+        .atTime("intake")
+        .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
 
     toStation1.done().onTrue(stationToReef1.cmd());
 
@@ -310,6 +318,11 @@ public final class ChoreoAutoCommand {
                 toStation2.cmd()));
 
     // ── Cycle 2 ──────────────────────────────────────────────────────────────
+    // Station 2 intake marker — same pattern as cycle 1.
+    toStation2
+        .atTime("intake")
+        .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
+
     toStation2.done().onTrue(stationToReef2.cmd());
 
     // Spin up only if game piece acquired at station 2
