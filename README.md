@@ -106,9 +106,7 @@ Encoder offsets, gyro mount notes, and hardware-summary constants live in `CAN_I
 | **SuperstructureStateMachine** | IDLE → INTAKING → STAGING → SCORING pipeline, 2 s SCORING auto-exit (never locks up) |
 | **LEDs** | Priority-based animations — idle (0), driving (1), aligning (2), alert (3) |
 | **FuelDetectionConsumer** | Parses neural detection array — 3-frame persistence, 80% confidence gate |
-| **OdometryDivergenceDetector** | Monitors vision-vs-wheel gap, escalating alerts (0.75 m warn, 1.5 m critical) |
-| **StallDetector** | Reusable motor-current stall detection (pure-logic, fully tested) |
-| **RumbleManager** | Controller haptic feedback |
+| **StallDetector** | Reusable motor-current stall detection (pure-logic, fully tested; instantiate per motor to activate) |
 
 Each motor subsystem follows the **2590 IO-layer pattern** — `XxxIO` interface + `@AutoLog`
 `XxxIOInputs` + `XxxIOReal` + `XxxIOSim` + thin consumer. AdvantageKit replay works on every
