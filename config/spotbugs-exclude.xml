@@ -41,4 +41,14 @@
     <Bug pattern="CN_IDIOM_NO_SUPER_CALL" />
     <Class name="~.*AutoLogged" />
   </Match>
+  <!--
+    DMI_HARDCODED_ABSOLUTE_FILENAME on RobotName: /home/lvuser/ROBOT_NAME is intentionally
+    hardcoded — it's the roboRIO's fixed user-home directory. SSH'ing in as lvuser and writing
+    this file is the documented workflow for marking a physical bot. No portability concern
+    (this code only runs on a roboRIO).
+  -->
+  <Match>
+    <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+    <Class name="frc.lib.util.RobotName" />
+  </Match>
 </FindBugsFilter>
