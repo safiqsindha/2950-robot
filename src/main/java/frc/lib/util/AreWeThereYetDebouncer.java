@@ -1,20 +1,25 @@
 package frc.lib.util;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.Timer;
+import java.util.function.DoubleSupplier;
 
 /**
  * "At goal" debouncer that resets when the commanded target changes. Adapted from Team 1619
  * Up-A-Creek's {@code AreWeThereYetDebouncer}.
  *
- * <p>Wraps a {@link Debouncer} + commanded target + tolerance. {@link #isAtTarget(double)} only
- * returns {@code true} after the position has been within tolerance of the commanded target for
- * the debounce window — eliminating false-positive "at goal" transitions when passing through
- * the target on the way to elsewhere.
+ * <p>Tracks a commanded target + tolerance. {@link #isAtTarget(double)} only returns {@code
+ * true} after the position has been within tolerance of the commanded target for the debounce
+ * window — eliminating false-positive "at goal" transitions when passing through the target on
+ * the way to elsewhere.
  *
- * <p>Calling {@link #setTarget(double)} with a new goal resets the debounce, so the caller is
- * forced to re-earn the "at target" flag for the new destination.
+ * <p>Calling {@link #setTarget(double)} with a NEW goal resets the window, so the caller is
+ * forced to re-earn the "at target" flag for the new destination. Re-asserting the same target
+ * is a no-op.
+ *
+ * <p>Uses an injectable {@link DoubleSupplier} for time, so unit tests can avoid loading HAL
+ * (WPILib's {@code Debouncer} pulls in {@code MathSharedStore.getTimestamp()} transitively, which
+ * requires HAL init).
  *
  * <p>Example:
  *
@@ -33,9 +38,13 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
  */
 public final class AreWeThereYetDebouncer {
 
-  private final Debouncer debouncer;
   private final double tolerance;
+  private final double debounceSeconds;
+  private final DoubleSupplier timeSource;
+
   private double commandedTarget = Double.NaN;
+  /** Time at which the input first became within-tolerance for the current streak. NaN = not yet. */
+  private double withinToleranceSinceSeconds = Double.NaN;
 
   /**
    * @param tolerance absolute units — current must be within ±tolerance of target
@@ -43,6 +52,11 @@ public final class AreWeThereYetDebouncer {
    *     #isAtTarget} returns true
    */
   public AreWeThereYetDebouncer(double tolerance, double debounceSeconds) {
+    this(tolerance, debounceSeconds, Timer::getFPGATimestamp);
+  }
+
+  /** Package-private ctor with injectable time source — unit tests use this. */
+  AreWeThereYetDebouncer(double tolerance, double debounceSeconds, DoubleSupplier timeSource) {
     if (tolerance <= 0) {
       throw new IllegalArgumentException("tolerance must be > 0");
     }
@@ -50,18 +64,18 @@ public final class AreWeThereYetDebouncer {
       throw new IllegalArgumentException("debounceSeconds must be >= 0");
     }
     this.tolerance = tolerance;
-    this.debouncer = new Debouncer(debounceSeconds, DebounceType.kRising);
+    this.debounceSeconds = debounceSeconds;
+    this.timeSource = timeSource;
   }
 
   /**
-   * Set the commanded target. Resets the debounce — the caller must re-earn {@link #isAtTarget}
-   * for this new goal.
+   * Set the commanded target. If the target CHANGES, resets the debounce window — the caller
+   * must re-earn {@link #isAtTarget} for this new goal.
    */
   public void setTarget(double target) {
     if (target != commandedTarget) {
       commandedTarget = target;
-      // Force the debouncer back to false by feeding a long run of false.
-      debouncer.calculate(false);
+      withinToleranceSinceSeconds = Double.NaN;
     }
   }
 
@@ -75,7 +89,15 @@ public final class AreWeThereYetDebouncer {
       return false;
     }
     boolean withinTolerance = MathUtil.isNear(commandedTarget, currentPosition, tolerance);
-    return debouncer.calculate(withinTolerance);
+    if (!withinTolerance) {
+      withinToleranceSinceSeconds = Double.NaN;
+      return false;
+    }
+    double now = timeSource.getAsDouble();
+    if (Double.isNaN(withinToleranceSinceSeconds)) {
+      withinToleranceSinceSeconds = now;
+    }
+    return (now - withinToleranceSinceSeconds) >= debounceSeconds;
   }
 
   /** @return the currently commanded target (NaN if none set yet) */
