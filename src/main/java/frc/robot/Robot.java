@@ -152,6 +152,12 @@ public class Robot extends LoggedRobot {
     if (pdhLogger != null) {
       pdhLogger.periodic();
     }
+
+    // Tick the auto-selector telemetry (logs Auto/SelectedName each cycle). Null-guarded for
+    // the narrow window between LoggedRobot's own construction and our robotInit().
+    if (robotContainer != null) {
+      robotContainer.tickAutoLog();
+    }
   }
 
   /**
