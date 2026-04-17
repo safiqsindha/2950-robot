@@ -36,7 +36,6 @@ public final class LinearProfile {
   private final double defaultDtSeconds;
   private double maxAccel;
   private double lastValue;
-  private double lastTimeSeconds = Double.NaN;
 
   /**
    * @param maxAccel max rate of change of the output per second (same units as the setpoint)
@@ -87,7 +86,6 @@ public final class LinearProfile {
    */
   public void reset(double value) {
     lastValue = value;
-    lastTimeSeconds = Double.NaN;
   }
 
   /** @return the last ramped value (setpoint emitted to the consumer) */
