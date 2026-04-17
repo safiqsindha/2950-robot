@@ -1,10 +1,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.lib.diagnostics.CanBusLogger;
 import frc.lib.diagnostics.CommandLifecycleLogger;
 import frc.lib.diagnostics.JvmLogger;
+import frc.lib.diagnostics.PdhLogger;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -31,6 +34,23 @@ public class Robot extends LoggedRobot {
 
   /** JVM memory + GC telemetry publisher; ticked from {@link #robotPeriodic()}. */
   private final JvmLogger jvmLogger = new JvmLogger();
+
+  /**
+   * CAN-bus health publisher (utilisation + cumulative error counters). Safe to construct as a
+   * field — {@code RobotController::getCANStatus} is a method reference, so HAL is only hit when
+   * {@link CanBusLogger#periodic()} runs (after {@code robotInit()}).
+   */
+  private final CanBusLogger canBusLogger = new CanBusLogger();
+
+  /**
+   * Power-distribution telemetry publisher (voltage, total current, per-channel currents,
+   * internal temperature). Constructed in {@link #robotInit()} because {@link PowerDistribution}
+   * pings the CAN bus during construction.
+   */
+  private PdhLogger pdhLogger;
+
+  /** Owned here so HAL sees a single PDH handle; {@link PdhLogger} reads via it. */
+  private PowerDistribution pdh;
 
   /** Command lifecycle event logger; wired to CommandScheduler in {@link #robotInit()}. */
   private final CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
@@ -73,6 +93,12 @@ public class Robot extends LoggedRobot {
     scheduler.onCommandInterrupt(commandLogger::onInterrupt);
     scheduler.onCommandFinish(commandLogger::onFinish);
 
+    // PDH wiring — best-effort. On a bench without a PDH attached, the reads return zeros
+    // instead of throwing, so we keep the logger even then. A missing PDH just means the
+    // "PDH/*" keys report zeros, which is obvious in AdvantageScope.
+    pdh = new PowerDistribution(1, PowerDistribution.ModuleType.kRev);
+    pdhLogger = new PdhLogger(pdh);
+
     // Instantiate our RobotContainer. This will perform all button bindings,
     // set default commands, and configure the autonomous chooser.
     robotContainer = new RobotContainer();
@@ -90,6 +116,8 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Robot/BatteryVoltage", batteryVolts);
     Logger.recordOutput("Robot/MatchTimeRemaining", DriverStation.getMatchTime());
     Logger.recordOutput("Robot/BrownoutActive", batteryVolts < kBrownoutThresholdVolts);
+    // CAN utilisation lives under CAN/* via CanBusLogger.periodic() below; the old
+    // "Robot/CANBusUtilization" key is kept intentionally so existing dashboards still read.
     Logger.recordOutput(
         "Robot/CANBusUtilization", RobotController.getCANStatus().percentBusUtilization);
 
@@ -107,8 +135,14 @@ public class Robot extends LoggedRobot {
                     / (kBrownoutThresholdVolts - kBrownoutFloorVolts));
     Logger.recordOutput("Robot/BrownoutScale", brownoutScale);
 
-    // JVM memory + GC telemetry — makes GC pauses visible in AdvantageScope.
+    // ── Diagnostics trio — JVM + CAN + PDH ──
+    // Paired so a loop-overrun incident can be cross-referenced across all three in
+    // AdvantageScope. See frc.lib.diagnostics.* for each logger's schema.
     jvmLogger.periodic();
+    canBusLogger.periodic();
+    if (pdhLogger != null) {
+      pdhLogger.periodic();
+    }
   }
 
   /**
