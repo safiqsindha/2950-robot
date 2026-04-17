@@ -1,0 +1,204 @@
+{
+  "version": "4.2.0",
+  "tabs": [
+    {
+      "type": "line-graph",
+      "title": "Flywheel",
+      "controller": {
+        "range": [null, null],
+        "legend": "bottom",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Flywheel/GoalRpm",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Flywheel/SetpointRpm",
+            "color": "#abdda4",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/Flywheel/VelocityRpm",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Flywheel/AtSpeed",
+            "color": "#d7191c",
+            "show": true,
+            "type": "discrete"
+          }
+        ]
+      }
+    },
+    {
+      "type": "odometry",
+      "title": "Field",
+      "controller": {
+        "game": "2026Reefscape",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Drive/Pose",
+            "color": "#2b83ba",
+            "show": true,
+            "alliance": "blue"
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Auto/TargetPose",
+            "color": "#d7191c",
+            "show": true,
+            "alliance": "blue",
+            "ghost": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Vision/BotPose",
+            "color": "#fdae61",
+            "show": true,
+            "alliance": "blue",
+            "ghost": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "line-graph",
+      "title": "Diagnostics Quartet",
+      "controller": {
+        "range": [0, null],
+        "legend": "bottom",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/JVM/HeapUsedMB",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/CAN/UtilizationPct",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Loop/TickMs",
+            "color": "#d7191c",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/PDH/TotalCurrentA",
+            "color": "#abdda4",
+            "show": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "line-graph",
+      "title": "Intake + Conveyor",
+      "controller": {
+        "range": [null, null],
+        "legend": "bottom",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Intake/GoalArmPositionRot",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Intake/SetpointArmPositionRot",
+            "color": "#abdda4",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/Intake/LeftArmPositionRotations",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/Intake/WheelCurrentAmps",
+            "color": "#d7191c",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/Conveyor/ConveyorCurrentAmps",
+            "color": "#756bb1",
+            "show": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "discrete",
+      "title": "Superstructure state machine",
+      "controller": {
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Superstructure/State",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Superstructure/StateTransition",
+            "color": "#abdda4",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Superstructure/ScoreRequested",
+            "color": "#d7191c",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Superstructure/IntakeRequested",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Match/PhaseLabel",
+            "color": "#756bb1",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Auto/SelectedName",
+            "color": "#e78ac3",
+            "show": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "line-graph",
+      "title": "Vision",
+      "controller": {
+        "range": [null, null],
+        "legend": "bottom",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Vision/TagCount",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Vision/StdDevXY",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Vision/CorrectionMagM",
+            "color": "#d7191c",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/VisionLatency/P95Ms",
+            "color": "#abdda4",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Vision/HasTarget",
+            "color": "#756bb1",
+            "show": true,
+            "type": "discrete"
+          }
+        ]
+      }
+    }
+  ]
+}
