@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #78  hotfix(autos): lazy-init SendableChooser so LoggedAutoChooser is HAL-free
 - 2026-04-17  #76  feat: changelog workflow + sim tuning ref + fault tab (Batch P)
 Every merged PR appends one line here via `.github/workflows/changelog.yml`. Dependabot PRs are skipped — see `.github/dependabot.yml` for the dependency-update cadence.
 
