@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.simulation.IntakeSimulationAdapter;
-import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import swervelib.simulation.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 
 /**
  * Simulation implementation of {@link IntakeIO}.

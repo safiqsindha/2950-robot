@@ -3,9 +3,9 @@ package frc.robot.simulation;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import org.ironmaple.simulation.IntakeSimulation;
-import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
-import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import swervelib.simulation.ironmaple.simulation.IntakeSimulation;
+import swervelib.simulation.ironmaple.simulation.IntakeSimulation.IntakeSide;
+import swervelib.simulation.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.littletonrobotics.junction.Logger;
 
 /**
