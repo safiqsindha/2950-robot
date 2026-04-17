@@ -17,6 +17,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -65,6 +66,13 @@ public final class SwerveSubsystem extends SubsystemBase {
    * until the first periodic() tick in simulation.
    */
   private Pose2d simOverridePose;
+
+  /**
+   * FPGA timestamp (seconds) of the last pose-reset call ({@link #resetOdometry} / {@link
+   * #zeroGyro}). Vision consumers inhibit measurement acceptance for a short window after a reset
+   * to prevent the Kalman filter from snapping back to a stale vision pose (4481 pattern).
+   */
+  private double lastPoseResetTimeSeconds = 0.0;
 
   /** Creates the swerve subsystem by parsing YAGSL JSON configuration. */
   public SwerveSubsystem() {
@@ -256,6 +264,7 @@ public final class SwerveSubsystem extends SubsystemBase {
     if (edu.wpi.first.wpilibj.RobotBase.isSimulation()) {
       simOverridePose = pose;
     }
+    lastPoseResetTimeSeconds = Timer.getFPGATimestamp();
     swerveDrive.resetOdometry(pose);
   }
 
@@ -271,7 +280,16 @@ public final class SwerveSubsystem extends SubsystemBase {
 
   /** Zero the gyroscope heading. Call this when robot is facing away from driver. */
   public void zeroGyro() {
+    lastPoseResetTimeSeconds = Timer.getFPGATimestamp();
     swerveDrive.zeroGyro();
+  }
+
+  /**
+   * FPGA timestamp (seconds) of the last pose-reset call. Used by {@link VisionSubsystem} to
+   * inhibit measurement acceptance briefly after a reset.
+   */
+  public double getLastPoseResetTimeSeconds() {
+    return lastPoseResetTimeSeconds;
   }
 
   /** Lock the swerve modules in an X pattern to prevent pushing. */

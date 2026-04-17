@@ -4,10 +4,12 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -37,12 +39,35 @@ import org.littletonrobotics.junction.Logger;
  */
 public class VisionSubsystem extends SubsystemBase {
 
+  // ─── Acceptance gates ─────────────────────────────────────────────────────
   // Minimum tags visible before we trust the measurement
   private static final int kMinTagCount = 1;
   // Maximum total latency before we discard the measurement (ms)
   private static final double kMaxLatencyMs = 50.0;
   // Maximum average tag distance before we discount heavily (meters)
   private static final double kMaxTagDistM = 4.0;
+
+  // ─── Consensus rejection rules (971 / 1678 / 1619 / 4481) ────────────────
+  // Skip vision updates when the robot is moving faster than this — Limelight
+  // latency + motion blur make pose accuracy too noisy to fuse. 1619 pattern.
+  static final double kMaxLinearSpeedForVisionMps = 4.0;
+  // Inhibit vision measurements briefly after resetOdometry/zeroGyro —
+  // prevents the Kalman filter from re-snapping after a teleport. 4481 pattern
+  // (6 loops × 20 ms).
+  static final double kResetInhibitionSeconds = 0.12;
+  // Max allowed vision-vs-odometry drift before rejecting. Tighter in auto to
+  // protect trajectory following. 1678 pattern.
+  static final double kMaxCorrectionTeleopMeters = 1.0;
+  static final double kMaxCorrectionAutoMeters = 0.5;
+
+  // ─── Stddev weighting (971 d²/tagCount pattern) ──────────────────────────
+  // Base xy stddev at 1 m distance; multi-tag divides by √tagCount.
+  static final double kBaseXyStdDevMeters = 0.5;
+  // Theta stddev for multi-tag (MegaTag2 heading is accurate when seeing ≥2 tags).
+  static final double kMultiTagThetaStdDev = 0.1;
+  // Large stddev that effectively rejects vision yaw — trust gyro instead.
+  // Consensus across 971/1619/4481: never fuse vision heading for single-tag.
+  static final double kRejectThetaStdDev = 1000.0;
 
   private final SwerveSubsystem swerve;
 
@@ -84,6 +109,26 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput(
         "Vision/OpponentDetectionCount", fuelDetection.getDetectedOpponentPositions().size());
 
+    double now = Timer.getFPGATimestamp();
+
+    // Inhibit vision briefly after any pose reset to prevent re-snap (4481 pattern).
+    if (isInResetInhibitionWindow(now, swerve.getLastPoseResetTimeSeconds())) {
+      hasTarget = false;
+      Logger.recordOutput("Vision/HasTarget", false);
+      Logger.recordOutput("Vision/InhibitedAfterReset", true);
+      return;
+    }
+    Logger.recordOutput("Vision/InhibitedAfterReset", false);
+
+    // Skip vision when the robot is moving too fast — latency-corrupted pose (1619 pattern).
+    if (isRobotTooFastForVision(swerve.getRobotVelocity())) {
+      hasTarget = false;
+      Logger.recordOutput("Vision/HasTarget", false);
+      Logger.recordOutput("Vision/RejectedForSpeed", true);
+      return;
+    }
+    Logger.recordOutput("Vision/RejectedForSpeed", false);
+
     double[] botpose = botposeSub.get();
 
     if (!isValidBotpose(botpose, kMinTagCount, kMaxLatencyMs, kMaxTagDistM)) {
@@ -101,10 +146,12 @@ public class VisionSubsystem extends SubsystemBase {
 
     lastPose = new Pose2d(new Translation2d(x, y), Rotation2d.fromDegrees(yawDeg));
 
-    // Reject if vision pose is >1.0m from current odometry — likely a tag misidentification
+    // Reject if vision pose disagrees with odometry beyond the per-mode threshold —
+    // tighter in auto to protect trajectory following (1678 pattern).
     double distFromOdometry =
         lastPose.getTranslation().getDistance(swerve.getPose().getTranslation());
-    if (distFromOdometry > 1.0) {
+    double correctionThreshold = getCorrectionThresholdMeters(DriverStation.isAutonomous());
+    if (distFromOdometry > correctionThreshold) {
       hasTarget = false;
       Logger.recordOutput("Vision/HasTarget", false);
       Logger.recordOutput("Vision/RejectedDistM", distFromOdometry);
@@ -112,19 +159,17 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     // Timestamp: current time minus latency (convert ms → seconds)
-    double timestampSeconds = edu.wpi.first.wpilibj.Timer.getFPGATimestamp() - (latencyMs / 1000.0);
+    double timestampSeconds = now - (latencyMs / 1000.0);
 
-    // Distance-based standard deviations: trust close tags more, distant tags less.
-    // Base std dev 0.5m at 1m distance, scaling quadratically with distance.
-    // Multi-tag measurements get tighter std devs (divided by sqrt(tagCount)).
-    double xyStdDev = 0.5 * Math.pow(avgTagDistM, 2) / Math.sqrt(tagCount);
-    double thetaStdDev = tagCount >= 2 ? 0.1 : 0.5 * avgTagDistM;
+    // Distance-squared xy stddev (971 pattern); theta rejected for single-tag (consensus).
+    double xyStdDev = computeXyStdDev(avgTagDistM, tagCount);
+    double thetaStdDev = computeThetaStdDev(tagCount);
     swerve.addVisionMeasurement(
         lastPose, timestampSeconds, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
 
     // Start (or continue) the continuous-valid timer
     if (!hasTarget) {
-      targetValidSince = Timer.getFPGATimestamp();
+      targetValidSince = now;
     }
     hasTarget = true;
 
@@ -135,8 +180,8 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput("Vision/AvgTagDistM", avgTagDistM);
     Logger.recordOutput("Vision/StdDevXY", xyStdDev);
     Logger.recordOutput("Vision/StdDevTheta", thetaStdDev);
-    Logger.recordOutput(
-        "Vision/TargetValidDurationSec", Timer.getFPGATimestamp() - targetValidSince);
+    Logger.recordOutput("Vision/CorrectionThresholdM", correctionThreshold);
+    Logger.recordOutput("Vision/TargetValidDurationSec", now - targetValidSince);
   }
 
   /** Whether a valid MegaTag2 measurement was received this cycle. */
@@ -192,6 +237,51 @@ public class VisionSubsystem extends SubsystemBase {
    */
   public List<Translation2d> getOpponentPositions() {
     return fuelDetection.getDetectedOpponentPositions();
+  }
+
+  /**
+   * Whether vision measurements should be inhibited due to a recent pose reset. Drops frames for
+   * {@link #kResetInhibitionSeconds} after {@code resetOdometry}/{@code zeroGyro} so the Kalman
+   * filter doesn't immediately re-snap to a stale vision pose. Package-private for testing.
+   */
+  static boolean isInResetInhibitionWindow(
+      double currentFpgaTimeSeconds, double lastResetFpgaTimeSeconds) {
+    return currentFpgaTimeSeconds - lastResetFpgaTimeSeconds < kResetInhibitionSeconds;
+  }
+
+  /**
+   * Whether the robot is moving too fast for reliable vision fusion. Limelight latency combined
+   * with motion blur makes fast-moving pose data unreliable. Package-private for testing.
+   */
+  static boolean isRobotTooFastForVision(ChassisSpeeds velocity) {
+    double linearMps = Math.hypot(velocity.vxMetersPerSecond, velocity.vyMetersPerSecond);
+    return linearMps > kMaxLinearSpeedForVisionMps;
+  }
+
+  /**
+   * Allowed vision-vs-odometry correction threshold (meters). Tighter in auto to protect Choreo
+   * trajectory following; looser in teleop so driver correction is possible. Package-private for
+   * testing.
+   */
+  static double getCorrectionThresholdMeters(boolean isAutonomous) {
+    return isAutonomous ? kMaxCorrectionAutoMeters : kMaxCorrectionTeleopMeters;
+  }
+
+  /**
+   * XY stddev for the vision measurement — 971 pattern: {@code base · d² / √tagCount}. More tags +
+   * closer distance = tighter (smaller) stddev. Package-private for testing.
+   */
+  static double computeXyStdDev(double avgTagDistM, int tagCount) {
+    return kBaseXyStdDevMeters * avgTagDistM * avgTagDistM / Math.sqrt(tagCount);
+  }
+
+  /**
+   * Theta stddev for the vision measurement. Multi-tag (MegaTag2 orientation-robust) gets the
+   * tight value; single-tag gets the reject sentinel so the Kalman filter ignores vision yaw and
+   * the gyro drives heading. Package-private for testing.
+   */
+  static double computeThetaStdDev(int tagCount) {
+    return tagCount >= 2 ? kMultiTagThetaStdDev : kRejectThetaStdDev;
   }
 
   /**
