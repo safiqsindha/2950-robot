@@ -27,22 +27,70 @@
   - [x] 4.1 Flywheel → IO layer (2590 pattern) (7.0h) ✓
   - [x] 4.2 Intake → IO layer (7.0h) ✓
   - [x] 4.3 Conveyor → IO layer (6.0h) ✓
-- [ ] Phase 5 — Stretch (1 task, ~3h)
-  - [ ] 5.1 Investigate 604 QuixSwerveDriveSimulation for YAGSL+SPARK maple-sim bug (3.0h)
+- [x] Phase 5 — Stretch (1 task, ~3h) ✓
+  - [x] 5.1 Investigate 604 QuixSwerveDriveSimulation for YAGSL+SPARK maple-sim bug (3.0h) ✓
 
-**Total:** 40.0 agent-hours across 18 tasks (+ 0.5h scope creep from Phase 0.1 audit findings).
+**Phase 0–5 total:** 40.0 agent-hours across 18 tasks ✓
 
-## Audit-driven backlog (NOT scheduled — user review required)
+---
 
-Phase 0.1 audit surfaced 42 magic-number findings (see `AUDIT_2026-04-16.md` Section 2). Not folded into current phases — these are mostly tuning constants that belong in a dedicated "Constants extraction" pass. Candidates to defer to a future Phase 2.3 if user approves:
-- Duplicate `-0.1` lower-retract in three flywheel commands → `Constants.Flywheel.kLowerRetractPercent`
-- Duplicate `3.0` / `1.5` / `3000` timing literals in ChoreoAutoCommand
-- Duplicate `0.05` kP in AutoAlignCommand and FlywheelAim
-- Field pose literals `3.39, 4.11, 8.23` in AutonomousStrategy (partially addressed by 1.3 AllianceFlip)
-- `12.0` (ball exit velocity) in MovingShotCompensation → relevant to Phase 3.3
-- Vision std-dev constants (0.5, 0.1) → relevant to tuning workflow from Phase 2.1
+## Phase 6 — Post-scout refinement (merged 2026-04-17)
 
-Defer decision: whether to run a "magic number extraction" phase, or accept these as ongoing tech debt.
+Generated from the 5-team Einstein scout + audit follow-ups. Every item shipped as a
+separate PR so CI history documents each decision.
+
+- [x] 6.1 YAGSL self-audit cleanup (PR #2) ✓
+- [x] 6.2 Vision consensus rejection + stddev weighting (PR #3) ✓
+- [x] 6.3 CommandLifecycleLogger + JvmLogger (PR #4) ✓
+- [x] 6.4 SparkAlertLogger for 9 mechanism motors (PR #5) ✓
+- [x] 6.5 971 3-iter fixed-point shoot-on-the-fly (PR #6) ✓
+- [x] 6.6 ShotSimulation + IntakeSimulationAdapter stubs (PR #7) ✓
+- [x] 6.7 README comprehensive rewrite (PR #8) ✓
+- [x] 6.8 compDeploy Gradle task (PR #9) ✓
+- [x] 6.9 Maple-sim kinematic bypass flag (PR #10) ✓
+- [x] 6.10 Wire ShotSimulation into simulationPeriodic (PR #11) ✓
+- [x] 6.11 Wire IntakeSimulationAdapter into IntakeIOSim (PR #12) ✓
+- [x] 6.12 SparkAlertLogger covers YAGSL swerve (PR #13) ✓
+- [x] 6.13 HolonomicTrajectory + ChoreoTrajectoryAdapter (PR #14) ✓
+- [x] 6.14 AGENTS.md + PRACTICE_SESSION_PLAYBOOK (PR #15) ✓
+- [x] 6.15 4 utility borrows — Hysteresis, AreWeThereYetDebouncer, GeomUtil, RobotName (PR #16) ✓
+- [x] 6.16 LinearProfile (PR #17) ✓
+- [x] 6.17 Magic-number extraction batch 1 (PR #18) ✓
+- [x] 6.18 README delta refresh (PR #19) ✓
+
+**Phase 6 total:** 18 PRs, all CI-green, all merged.
+
+## Phase 7 — Deferred backlog (next session)
+
+Not yet started. Each item has a reason to wait.
+
+- [ ] 7.1 Drive-feel polish — 2056 jerk slew, 350 ms heading-hold gate, UpdateDepartPose
+- [ ] 7.2 FlywheelAutoFeed 2D upgrade — thread Limelight tx into rpmFromMeters(d,θ,speeds)
+- [ ] 7.3 HAL-init test harness — one canary class unlocks physics tests
+- [ ] 7.4 TrajectoryFollower port (4481)
+- [ ] 7.5 @AutoRoutine annotation + reflective AutoSelector (4481)
+- [ ] 7.6 Migrate existing Choreo autos onto HolonomicTrajectory + TrajectoryFollower
+- [ ] 7.7 971 CapU current limiting (dynamic battery-aware motor output ceiling)
+- [ ] 7.8 971 hybrid EKF with replay buffer
+- [ ] 7.9 Magic-number extraction batch 2 — ChoreoAutoCommand timing literals
+- [ ] 7.10 Wire VisionSubsystem's local constants to Constants.Vision
+- [ ] 7.11 Sim validation on a Java-ready laptop (Tier 1 of the session catalogue)
+
+## Audit-driven backlog — Phase 6 status
+
+Phase 0.1 audit surfaced 42 magic-number findings (see `AUDIT_2026-04-16.md` Section 2).
+Status as of PR #18:
+
+- [x] `-0.1` lower-retract — extracted to `Constants.Flywheel.kLowerRetractPercent` ✓
+- [x] `0.05` heading-PID kP — extracted to `Constants.Align.kHeadingKP` ✓
+- [x] `12.0` ball exit velocity — extracted as `Constants.Flywheel.kBallExitVelocityMps` ✓
+- [x] Vision std-dev constants — new `Constants.Vision` block; values documented but
+      VisionSubsystem still uses local static finals (deferred, 7.10)
+- [ ] `3.0` / `1.5` / `3000` ChoreoAutoCommand timing literals — deferred (7.9)
+- [ ] Field pose literals `3.39, 4.11, 8.23` — partially addressed by AllianceFlip;
+      remaining extraction deferred
+
+Remaining magic-number work is documented as Phase 7.9 / 7.10 above.
 
 ## Task specifications
 
