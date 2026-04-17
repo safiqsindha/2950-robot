@@ -1,0 +1,69 @@
+name: Release Notes
+
+# Fires when a tag matching v*.*.* (e.g. v2026.3.0) is pushed. Generates a GitHub Release
+# with notes extracted from the commit log since the previous tag.
+#
+# Intended workflow at an event:
+#   git tag v2026.3.0 -m "District week 1 deploy snapshot"
+#   git push --tags
+# … and the Release appears with a clear changelog for the pit to reference.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (with full history for git log)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build release notes
+        id: notes
+        run: |
+          previous_tag=$(git describe --tags --abbrev=0 "${GITHUB_REF#refs/tags/}^" 2>/dev/null || echo "")
+          if [ -z "$previous_tag" ]; then
+            range=""
+          else
+            range="${previous_tag}..${GITHUB_REF#refs/tags/}"
+          fi
+          {
+            echo "# $(basename "${GITHUB_REF}")"
+            echo
+            if [ -n "$previous_tag" ]; then
+              echo "Changes since \`${previous_tag}\`:"
+            else
+              echo "Initial tagged release."
+            fi
+            echo
+            echo "## Commits"
+            if [ -n "$range" ]; then
+              git log --pretty=format:'- %s (%h)' "$range"
+            else
+              git log --pretty=format:'- %s (%h)' --max-count=30
+            fi
+            echo
+            echo
+            echo "## Stack"
+            echo "- WPILib 2026 / GradleRIO 2026.2.1"
+            echo "- Java 17 Temurin"
+            echo "- YAGSL 2026.3.14 (in-tree)"
+            echo "- AdvantageKit (see vendordeps/AdvantageKit.json)"
+            echo "- Choreo 2026.0.2"
+          } > release-notes.md
+          echo "body_path=release-notes.md" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
