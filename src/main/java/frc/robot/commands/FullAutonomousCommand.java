@@ -206,6 +206,10 @@ public class FullAutonomousCommand extends Command {
 
       activePathCommand = null;
       currentTarget = null;
+      // Release any lingering intake/score request so the SSM falls back to IDLE on this tick
+      // rather than waiting out its per-state timeout. Without this, a completed action that
+      // exhausts the target list leaves the SSM in INTAKING/SCORING for up to 6-10 seconds.
+      ssm.requestIdle();
       return;
     }
     currentTarget = ranked.get(0);
