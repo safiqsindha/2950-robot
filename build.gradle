@@ -229,3 +229,52 @@ jar {
 tasks.withType(JavaCompile) {
     options.compilerArgs.add "-XDstringConcat=inline"
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMP DEPLOY — Event-week safety net (from Team 4481 Rembrandts)
+// ═══════════════════════════════════════════════════════════════════════════════
+// `./gradlew compDeploy` on a branch starting with "comp" (e.g. comp, comp-worlds,
+// comp-regional) auto-commits any working-directory changes before deploying. At an
+// event, when students are editing in the pit and hitting deploy, this prevents the
+// classic "I fixed it but it didn't save" confusion — every deploy is captured in git.
+//
+// On any other branch it's a normal deploy — no auto-commit, no surprises.
+//
+// SAFETY: only runs on branches prefixed `comp`. On main/develop/feature branches we
+// never auto-commit, so routine pit tests can't accidentally pollute main history.
+tasks.register("compDeploy") {
+    group = "frc deploy"
+    description = "Auto-commit pending changes (on comp* branches) then deploy to the robot."
+    dependsOn("deploy")
+
+    doFirst {
+        def branch = "git rev-parse --abbrev-ref HEAD".execute([], project.rootDir).text.trim()
+        if (!branch.startsWith("comp")) {
+            println "compDeploy: branch '${branch}' is not a comp* branch — skipping auto-commit."
+            return
+        }
+
+        def status = "git status --porcelain".execute([], project.rootDir).text.trim()
+        if (status.isEmpty()) {
+            println "compDeploy: working directory clean — nothing to commit."
+            return
+        }
+
+        println "compDeploy: branch '${branch}' has pending changes — auto-committing before deploy."
+        println status.readLines().collect { "  " + it }.join("\n")
+
+        def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
+        def message = "comp-auto: pit snapshot ${timestamp}"
+        def addResult = "git add -A".execute([], project.rootDir)
+        addResult.waitFor()
+        if (addResult.exitValue() != 0) {
+            throw new GradleException("compDeploy: git add failed:\n" + addResult.err.text)
+        }
+        def commitResult = ["git", "commit", "-m", message].execute([], project.rootDir)
+        commitResult.waitFor()
+        if (commitResult.exitValue() != 0) {
+            throw new GradleException("compDeploy: git commit failed:\n" + commitResult.err.text)
+        }
+        println "compDeploy: committed '${message}'"
+    }
+}
