@@ -300,6 +300,15 @@ public final class SwerveSubsystem extends SubsystemBase {
     return lastPoseResetTimeSeconds;
   }
 
+  /**
+   * Attaches an {@link IntakeIOSim} to this drive's maple-sim drivetrain, so the sim intake can
+   * pick up game pieces spawned in the arena. No-op if maple-sim isn't configured (e.g. on a real
+   * robot). Called from {@link frc.robot.RobotContainer} during sim setup.
+   */
+  public void attachIntakeSimulation(IntakeIOSim intakeSim) {
+    swerveDrive.getMapleSimDrive().ifPresent(intakeSim::attachArenaSimulation);
+  }
+
   /** Lock the swerve modules in an X pattern to prevent pushing. */
   public void lock() {
     swerveDrive.lockPose();
