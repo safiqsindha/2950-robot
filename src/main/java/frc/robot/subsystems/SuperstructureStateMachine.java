@@ -214,10 +214,26 @@ public class SuperstructureStateMachine extends SubsystemBase {
   /**
    * Return all requests to idle. Use this after a scoring sequence completes or when cancelling
    * intake.
+   *
+   * <p>Emits a transition log line so post-match replay can see the explicit reset. Previously
+   * the direct-assign path skipped the transition hook entirely, making it impossible to tell
+   * from telemetry whether the SSM naturally idled out (via {@link #computeNextState}) or was
+   * forced by a caller.
    */
   public void requestIdle() {
     intakeRequested = false;
     scoreRequested = false;
+    if (currentState != State.IDLE) {
+      double now = timeSource.getAsDouble();
+      double timeInState = now - stateEntryTimeSeconds;
+      Logger.recordOutput(
+          "Superstructure/StateTransition",
+          currentState + " → " + State.IDLE + " (requestIdle, after " + timeInState + "s)");
+      Logger.recordOutput("Superstructure/StateTransitionTime", now);
+      Logger.recordOutput("Superstructure/StateTransitionTo", State.IDLE.name());
+      stateEntryTimeSeconds = now;
+      subState = "";
+    }
     currentState = State.IDLE;
   }
 
