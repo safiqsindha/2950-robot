@@ -7,6 +7,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
+import frc.robot.diagnostics.SparkAlertLogger;
 
 /**
  * Real SPARK MAX hardware implementation of {@link ConveyorIO}.
@@ -22,6 +23,7 @@ public class ConveyorIOReal implements ConveyorIO {
 
   private final SparkMax conveyorMotor;
   private final SparkMax spindexerMotor;
+  private final SparkAlertLogger sparkAlerts = new SparkAlertLogger();
 
   public ConveyorIOReal() {
     conveyorMotor = new SparkMax(Constants.Conveyor.kConveyorMotorId, MotorType.kBrushed);
@@ -35,6 +37,11 @@ public class ConveyorIOReal implements ConveyorIO {
     spinConfig.apply(config).inverted(true);
     spindexerMotor.configure(
         spinConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    // Register every Spark for fault/warning visibility on the driver dashboard.
+    sparkAlerts
+        .register(conveyorMotor, "Conveyor/conveyor")
+        .register(spindexerMotor, "Conveyor/spindexer");
   }
 
   @Override
@@ -44,6 +51,7 @@ public class ConveyorIOReal implements ConveyorIO {
     inputs.spindexerAppliedOutput = spindexerMotor.getAppliedOutput();
     inputs.conveyorCurrentAmps = conveyorMotor.getOutputCurrent();
     inputs.spindexerCurrentAmps = spindexerMotor.getOutputCurrent();
+    sparkAlerts.periodic();
   }
 
   @Override

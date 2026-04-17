@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
+import frc.robot.diagnostics.SparkAlertLogger;
 
 /**
  * Real SPARK Flex (Vortex) + SPARK MAX (NEO) implementation of {@link FlywheelIO}.
@@ -34,6 +35,7 @@ public class FlywheelIOReal implements FlywheelIO {
 
   private final SparkClosedLoopController closedLoopController;
   private final RelativeEncoder encoder;
+  private final SparkAlertLogger sparkAlerts = new SparkAlertLogger();
 
   public FlywheelIOReal() {
     leftVortex = new SparkFlex(Constants.Flywheel.kLeftVortexId, MotorType.kBrushless);
@@ -83,6 +85,13 @@ public class FlywheelIOReal implements FlywheelIO {
     backWheel.set(0);
     leftVortex.set(0);
     rightVortex.set(0);
+
+    // Register every Spark for fault/warning visibility on the driver dashboard.
+    sparkAlerts
+        .register(leftVortex, "Flywheel/leftVortex")
+        .register(rightVortex, "Flywheel/rightVortex")
+        .register(frontWheel, "Flywheel/frontWheel")
+        .register(backWheel, "Flywheel/backWheel");
   }
 
   @Override
@@ -94,6 +103,7 @@ public class FlywheelIOReal implements FlywheelIO {
     inputs.appliedVoltage = leftVortex.getBusVoltage() * leftVortex.getAppliedOutput();
     inputs.supplyCurrentAmps = leftVortex.getOutputCurrent();
     inputs.tempCelsius = leftVortex.getMotorTemperature();
+    sparkAlerts.periodic();
   }
 
   @Override
