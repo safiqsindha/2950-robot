@@ -200,13 +200,14 @@ public class RobotContainer {
     autoChooser.addOption(
         "Leave Only (Raw)",
         Commands.sequence(
-            Commands.waitSeconds(3.0),
+            Commands.waitSeconds(Constants.Autonomous.kLeaveOnlyRawDriveWaitSeconds),
             Commands.run(
                     () ->
                         swerve.driveRobotRelative(
-                            new edu.wpi.first.math.kinematics.ChassisSpeeds(1.0, 0, 0)),
+                            new edu.wpi.first.math.kinematics.ChassisSpeeds(
+                                Constants.Autonomous.kLeaveOnlyRawDriveSpeedMps, 0, 0)),
                     swerve)
-                .withTimeout(2.0)));
+                .withTimeout(Constants.Autonomous.kLeaveOnlyRawDriveDurationSeconds)));
 
     autoChooser.addOption(
         "Score + Leave",
@@ -238,26 +239,28 @@ public class RobotContainer {
     autoChooser.addOption(
         "Safe Mode (No Vision)",
         Commands.sequence(
-            // Drive forward at 1.0 m/s for 2 seconds (~2m)
+            // Drive forward at kSafeModeDriveSpeedMps for kSafeModeDriveDurationSeconds (~2 m)
             Commands.run(
                     () ->
                         swerve.driveRobotRelative(
-                            new edu.wpi.first.math.kinematics.ChassisSpeeds(1.0, 0, 0)),
+                            new edu.wpi.first.math.kinematics.ChassisSpeeds(
+                                Constants.Autonomous.kSafeModeDriveSpeedMps, 0, 0)),
                     swerve)
-                .withTimeout(2.0),
+                .withTimeout(Constants.Autonomous.kSafeModeDriveDurationSeconds),
             // Stop
             Commands.runOnce(
                 () -> swerve.driveRobotRelative(new edu.wpi.first.math.kinematics.ChassisSpeeds()),
                 swerve),
             // Fire preloaded game piece (blind shot at preset RPM)
             Commands.parallel(
-                    new FlywheelStatic(flywheel, conveyor, 2800),
+                    new FlywheelStatic(
+                        flywheel, conveyor, Constants.Autonomous.kSafeModeStaticShotRpm),
                     Commands.run(
                         () ->
                             leds.setAnimation(
                                 AnimationType.ALIGNING_BLINK, Constants.LEDs.kPriorityAlert),
                         leds))
-                .withTimeout(3.0)));
+                .withTimeout(Constants.Autonomous.kSafeModeSpinupDurationSeconds)));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }

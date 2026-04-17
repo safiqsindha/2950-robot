@@ -239,5 +239,35 @@ public final class Constants {
 
     /** Duration to hold a static-shot spin-up during trajectory approach (seconds). */
     public static final double kStaticSpinupDurationSeconds = 2.5;
+
+    // ── AutoScoreCommand (vision-driven score) ─────────────────────────────
+    /** Cap on how long the feed-shot sub-command runs once the flywheel is at speed (s). */
+    public static final double kAutoScoreFeedShotTimeoutSeconds = 2.0;
+
+    /** Error-flash LED duration on AutoScore timeout (s). */
+    public static final double kAutoScoreErrorFlashSeconds = 1.5;
+
+    // ── "Leave Only (Raw)" sim-smoke fallback ──────────────────────────────
+    /** Pre-drive pause so sim has time to initialise before "Leave Only (Raw)" drives (s). */
+    public static final double kLeaveOnlyRawDriveWaitSeconds = 3.0;
+
+    /** Forward speed for the raw fallback leave (m/s). */
+    public static final double kLeaveOnlyRawDriveSpeedMps = 1.0;
+
+    /** Drive duration for the raw fallback leave (s). */
+    public static final double kLeaveOnlyRawDriveDurationSeconds = 2.0;
+
+    // ── Safe Mode (no vision, dead-reckoning) ──────────────────────────────
+    /** Forward speed during Safe Mode's dead-reckoning leave (m/s). */
+    public static final double kSafeModeDriveSpeedMps = 1.0;
+
+    /** Duration of Safe Mode's forward drive (s) — ~2 m at 1 m/s. */
+    public static final double kSafeModeDriveDurationSeconds = 2.0;
+
+    /** How long Safe Mode holds the flywheel on the blind preload shot (s). */
+    public static final double kSafeModeSpinupDurationSeconds = 3.0;
+
+    /** Blind-shot RPM used by Safe Mode when no vision target exists. */
+    public static final double kSafeModeStaticShotRpm = 2800;
   }
 }
