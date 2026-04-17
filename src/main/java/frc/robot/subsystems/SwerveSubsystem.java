@@ -19,10 +19,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import java.io.File;
 import org.littletonrobotics.junction.Logger;
 import swervelib.SwerveDrive;
+import swervelib.SwerveDriveTest;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -41,8 +43,12 @@ public final class SwerveSubsystem extends SubsystemBase {
 
   // Static init: configure telemetry before SwerveDrive is instantiated.
   // Avoids ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD SpotBugs warning.
+  // HIGH in sim for AdvantageScope debugging; POSE in match to keep NT traffic bounded.
   static {
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+    SwerveDriveTelemetry.verbosity =
+        edu.wpi.first.wpilibj.RobotBase.isSimulation()
+            ? TelemetryVerbosity.HIGH
+            : TelemetryVerbosity.POSE;
   }
 
   private final SwerveDrive swerveDrive;
@@ -73,13 +79,25 @@ public final class SwerveSubsystem extends SubsystemBase {
 
     // Hardware-verified settings from swerve-test branch:
     // Heading correction off — only useful with absolute angle control mode
+    // TODO: re-evaluate on practice bot with setHeadingCorrection(true, 0.05) —
+    //       YAGSL docs contradict the above comment; feature works with velocity control too.
     swerveDrive.setHeadingCorrection(false);
     // Cosine compensation off — causes discrepancies not seen in real life when enabled
+    // (this disagrees with YAGSL's default recommendation; kept because it was hardware-verified)
     swerveDrive.setCosineCompensator(false);
     // Correct for skew that worsens with angular velocity (coefficient tuned on hardware)
     swerveDrive.setAngularVelocityCompensation(true, true, 0.1);
-    // Encoder auto-sync disabled — encoder sync is done manually if needed
-    swerveDrive.setModuleEncoderAutoSynchronize(false, 1);
+    // Auto-sync absolute vs integrated encoder when module rests >500ms with delta >2°.
+    // Cheap insurance against encoder drift over a long match. Fires only on rest, so has
+    // no teleop latency impact.
+    swerveDrive.setModuleEncoderAutoSynchronize(true, 2.0);
+    // Reduce translational skew during rotation. Called out as a core YAGSL feature;
+    // explicit > implicit even if the library would enable it by default.
+    swerveDrive.setChassisDiscretization(true, 0.02);
+
+    // Wire SysId characterization routine (pit-only; not invoked unless a dashboard button
+    // triggers it). Enables kS/kV/kA measurement for drive motors via SwerveDriveTest helpers.
+    SwerveDriveTest.setDriveSysIdRoutine(new SysIdRoutine.Config(), this, swerveDrive, 12.0, true);
 
     // In simulation, stop YAGSL's 4ms Notifier and drive odometry manually from periodic().
     // The Notifier does not fire reliably in HALSim — calling updateOdometry() from the 20ms

@@ -44,7 +44,8 @@ class LoggedTunableNumberTest {
 
   @Test
   void differentCallersTrackIndependently() {
-    LoggedTunableNumber tunable = new LoggedTunableNumber("Test/multiCaller", 3.14, () -> 3.14);
+    LoggedTunableNumber tunable =
+        new LoggedTunableNumber("Test/multiCaller", Math.PI, () -> Math.PI);
 
     // Both callers see the value as changed on first call.
     assertTrue(tunable.hasChanged(1), "Caller 1 first call should be true");
