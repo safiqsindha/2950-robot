@@ -44,6 +44,22 @@ public final class Constants {
     public static final double kWheelDiameterInches = 4.0;
     public static final double kDriveGearRatio = 6.23; // Thrifty Swerve drive ratio
     public static final double kSteerGearRatio = 25.0; // Thrifty Swerve steer ratio
+
+    /**
+     * Kinematic-bypass toggle for maple-sim. When {@code true}, {@code SwerveSubsystem.periodic()}
+     * manually integrates pose from commanded ChassisSpeeds in simulation, overriding the
+     * physics-driven pose + velocity. This bypass exists because maple-sim 0.4.0-beta applies
+     * propelling forces in the wrong direction for REV SPARK MAX + NEO swerve modules — see
+     * {@code MAPLE_SIM_BUG_REPORT.md} for the full writeup.
+     *
+     * <p>When {@code false}, we trust maple-sim's physics pipeline — the robot will only move if
+     * the force bug is fixed upstream. Flip this to {@code false} on a practice-bot session when
+     * testing whether a new maple-sim release has addressed the REV sign convention.
+     *
+     * <p>As of 2026-04-17, maple-sim's release notes (through 0.4.0-beta) do not mention a REV
+     * motor-direction fix, so the default remains {@code true}.
+     */
+    public static final boolean kUseMapleSimKinematicBypass = true;
   }
 
   /** Flywheel subsystem CAN IDs and tuning constants. */

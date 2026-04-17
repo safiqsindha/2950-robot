@@ -181,25 +181,31 @@ public final class SwerveSubsystem extends SubsystemBase {
       // Step the physics engine (needed for encoder/gyro sim state updates).
       swerveDrive.updateOdometry();
 
-      // Full physics position bypass: the maple-sim motor force pipeline applies forces in the
-      // wrong direction, corrupting both velocity and position during the physics step. Instead of
-      // relying on physics for pose tracking, we integrate position manually from the last
-      // commanded ChassisSpeeds and override odometry each tick.
-      double dt = 0.02; // 20ms robot loop period
-      Pose2d current = simOverridePose != null ? simOverridePose : getPose();
-      double heading = current.getRotation().getRadians();
-      double vx = lastCommandedSpeeds.vxMetersPerSecond;
-      double vy = lastCommandedSpeeds.vyMetersPerSecond;
-      double omega = lastCommandedSpeeds.omegaRadiansPerSecond;
-      // Robot-relative to field-relative conversion
-      double dx = (vx * Math.cos(heading) - vy * Math.sin(heading)) * dt;
-      double dy = (vx * Math.sin(heading) + vy * Math.cos(heading)) * dt;
-      double dtheta = omega * dt;
-      simOverridePose =
-          new Pose2d(current.getX() + dx, current.getY() + dy, new Rotation2d(heading + dtheta));
-      // Override the physics-corrupted pose and velocity
-      swerveDrive.resetOdometry(simOverridePose);
-      swerveDrive.getMapleSimDrive().ifPresent(sim -> sim.setRobotSpeeds(lastCommandedSpeeds));
+      if (Constants.Swerve.kUseMapleSimKinematicBypass) {
+        // Full physics position bypass: the maple-sim motor force pipeline applies forces in the
+        // wrong direction for REV SPARK MAX / NEO modules, corrupting both velocity and position
+        // during the physics step. Instead of relying on physics for pose tracking, we integrate
+        // position manually from the last commanded ChassisSpeeds and override odometry each
+        // tick. See MAPLE_SIM_BUG_REPORT.md for the root-cause writeup.
+        double dt = 0.02; // 20ms robot loop period
+        Pose2d current = simOverridePose != null ? simOverridePose : getPose();
+        double heading = current.getRotation().getRadians();
+        double vx = lastCommandedSpeeds.vxMetersPerSecond;
+        double vy = lastCommandedSpeeds.vyMetersPerSecond;
+        double omega = lastCommandedSpeeds.omegaRadiansPerSecond;
+        // Robot-relative to field-relative conversion
+        double dx = (vx * Math.cos(heading) - vy * Math.sin(heading)) * dt;
+        double dy = (vx * Math.sin(heading) + vy * Math.cos(heading)) * dt;
+        double dtheta = omega * dt;
+        simOverridePose =
+            new Pose2d(current.getX() + dx, current.getY() + dy, new Rotation2d(heading + dtheta));
+        // Override the physics-corrupted pose and velocity
+        swerveDrive.resetOdometry(simOverridePose);
+        swerveDrive.getMapleSimDrive().ifPresent(sim -> sim.setRobotSpeeds(lastCommandedSpeeds));
+      }
+      // When the bypass is disabled, we trust maple-sim's physics. If the force-direction
+      // bug is still present upstream, the robot will appear to move backwards — that's the
+      // signal to re-enable the bypass until a newer maple-sim release ships a REV fix.
     }
     Pose2d logPose = getPose();
     Logger.recordOutput("Drive/Pose", logPose);
@@ -223,7 +229,8 @@ public final class SwerveSubsystem extends SubsystemBase {
    * @param fieldRelative whether the translation is field-relative
    */
   public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-    if (edu.wpi.first.wpilibj.RobotBase.isSimulation()) {
+    if (edu.wpi.first.wpilibj.RobotBase.isSimulation()
+        && Constants.Swerve.kUseMapleSimKinematicBypass) {
       // Mirror YAGSL's internal conversion so lastCommandedSpeeds is always robot-relative,
       // matching the format the periodic() bypass integrates.
       ChassisSpeeds speeds = new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
@@ -247,7 +254,8 @@ public final class SwerveSubsystem extends SubsystemBase {
    * @param chassisSpeeds robot-relative chassis speeds
    */
   public void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
-    if (edu.wpi.first.wpilibj.RobotBase.isSimulation()) {
+    if (edu.wpi.first.wpilibj.RobotBase.isSimulation()
+        && Constants.Swerve.kUseMapleSimKinematicBypass) {
       lastCommandedSpeeds = chassisSpeeds;
       swerveDrive.getMapleSimDrive().ifPresent(sim -> sim.setRobotSpeeds(chassisSpeeds));
     }
