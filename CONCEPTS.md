@@ -87,7 +87,7 @@ In formula form:
 output = kP × error  +  kD × (how fast error is changing)  +  kI × (sum of past errors)
 ```
 
-Look at `src/main/java/frc/robot/subsystems/Flywheel.java` lines 53–58 — the three `LoggedTunableNumber` entries for `kP`, `kI`, `kD`. These are editable live from AdvantageScope. The actual PID runs on the SPARK MAX hardware — the `io.setPid(...)` call at line 100 pushes updated gains to the controller.
+Look at `src/main/java/frc/robot/subsystems/Flywheel.java` lines 53–58 — the three `LoggedTunableNumber` entries for `kP`, `kI`, `kD`. These are editable live from AdvantageScope. The actual PID runs on the SPARK MAX hardware — the `io.setPid(...)` call at line 101 pushes updated gains to the controller.
 
 In practice: start with kP only. It gets you most of the way there. Add kD if you're overshooting and oscillating. Add kI only if the flywheel settles slightly below the target and won't close the last gap — that persistent small error is called steady-state error, and kI is the fix.
 
@@ -132,7 +132,7 @@ Two versions live in the codebase:
 - `src/main/java/frc/lib/control/LinearProfile.java` — symmetric. Ramps up and down at the same rate. Right for the flywheel.
 - `src/main/java/frc/lib/control/AsymmetricRateLimiter.java` — snaps to zero instantly, ramps up slowly. Right for intake/conveyor wheels where a slow ramp-down would leave the motor spinning during an emergency stop.
 
-The flywheel uses `LinearProfile`. Look at `src/main/java/frc/robot/subsystems/Flywheel.java` line 77:
+The flywheel uses `LinearProfile`. Look at `src/main/java/frc/robot/subsystems/Flywheel.java` line 81:
 
 ```java
 setpointRpm = profile.calculate(goalRpm);
