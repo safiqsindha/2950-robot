@@ -51,4 +51,14 @@
     <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
     <Class name="frc.lib.util.RobotName" />
   </Match>
+  <!--
+    UC_USELESS_VOID_METHOD on PanicCommand.fire: the method IS useful — it guarantees the
+    3-lambda sequential ordering + short-circuit-on-throw semantics, and is the HAL-free
+    testable core that PanicCommandTest targets. SpotBugs can't see value in a method whose
+    body is just .run() calls, but that's exactly the testable seam.
+  -->
+  <Match>
+    <Bug pattern="UC_USELESS_VOID_METHOD" />
+    <Class name="frc.robot.commands.PanicCommand" />
+  </Match>
 </FindBugsFilter>
