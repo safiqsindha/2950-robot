@@ -162,6 +162,18 @@ public final class Constants {
     // Arm position limits (in encoder rotations after gear reduction)
     public static final double kArmMinRotations = (15.0 / 360.0) * (32.0 / 12.0) * (45.0 / 1.0);
     public static final double kArmMaxRotations = (110.0 / 360.0) * (32.0 / 12.0) * (45.0 / 1.0);
+
+    /**
+     * Maximum rate of change of the intake arm position setpoint (rotations / s). Feeds a
+     * {@link frc.lib.control.LinearProfile} in {@code Intake.periodic()} so the onboard PID sees a
+     * smooth ramp when a command calls {@code updateTargetAngle}. 100 rot/s traverses the full
+     * ~32-rotation travel range in ~0.3 s — faster than the arm can mechanically accelerate, so
+     * the rate limit is effectively transparent but strips the step-discontinuity that would
+     * otherwise cause a peak current spike.
+     *
+     * <p>Live-tunable at runtime via {@code Intake/kMaxArmAccelRotPerSec} on NT.
+     */
+    public static final double kMaxArmAccelRotPerSec = 100.0;
   }
 
   /** Conveyor subsystem CAN IDs. */
