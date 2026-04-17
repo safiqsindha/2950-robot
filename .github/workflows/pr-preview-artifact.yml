@@ -1,0 +1,49 @@
+name: PR Preview Artifact
+
+# Builds the deployable JAR on every PR and uploads it as an artifact. Intended for mentor
+# spot-testing — a reviewer can grab a ready-to-deploy .jar for a specific PR without
+# cloning + building locally. Deploy manually with `gradlew deploy -Pbinary=<path>`.
+#
+# Doesn't replace the main build workflow — that still runs Spotless, SpotBugs, JaCoCo, tests.
+# This workflow just makes the output a first-class artifact.
+
+on:
+  pull_request:
+    branches: [main, develop]
+  # Also on push to main so mentors can grab the most recent "blessed" build without digging
+  # into PR-specific runs.
+  push:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-jar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - run: chmod +x gradlew
+      # Skip Spotless / SpotBugs / tests here — they run in the main workflow. We only want
+      # the shippable JAR. Faster, and if the main workflow fails we don't produce a misleading
+      # artifact.
+      - name: Build jar
+        run: ./gradlew jar -Pskip-inspector-wrapper --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: robot-jar-${{ github.event.pull_request.number || github.sha }}
+          path: build/libs/*.jar
+          retention-days: 14
+          if-no-files-found: error
