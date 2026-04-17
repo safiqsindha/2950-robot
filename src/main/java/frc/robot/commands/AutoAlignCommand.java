@@ -20,7 +20,9 @@ import org.littletonrobotics.junction.Logger;
  */
 public class AutoAlignCommand extends Command {
 
-  private static final double kP = 0.05;
+  /** Shared with FlywheelAim — extracted to Constants.Align during audit cleanup. */
+  private static final double kP = frc.robot.Constants.Align.kHeadingKP;
+
   private static final double kRotationSign = -1.0;
 
   private final SwerveSubsystem swerve;

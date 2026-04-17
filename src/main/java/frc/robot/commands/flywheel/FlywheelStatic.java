@@ -32,7 +32,7 @@ public class FlywheelStatic extends Command {
   @Override
   public void initialize() {
     flywheel.setTargetRpm(targetRpm);
-    flywheel.setLower(-0.1);
+    flywheel.setLower(frc.robot.Constants.Flywheel.kLowerRetractPercent);
     Helper.resetFilters();
     rpmReady = false;
   }
