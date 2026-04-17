@@ -68,6 +68,8 @@ Definitions for terms that come up in the codebase / docs. FRC lingo + project-s
 
 **HolonomicTrajectory** — frc.lib interface for any planner-generated trajectory (Choreo, PathPlanner, etc.). See `ChoreoTrajectoryAdapter` + `TrajectoryFollower`.
 
+**HUB** — the 2026 REBUILT scoring structure (eight AprilTags per HUB: Red = {2, 3, 4, 5, 8, 9, 10, 11}, Blue = {18, 19, 20, 21, 24, 25, 26, 27} — see `Helper.llSetup()`). Replaces the 2025 Reefscape "Reef" nomenclature; the 2026 source code, constants, and log keys use "HUB" throughout after PR #86.
+
 ---
 
 ## I
@@ -107,8 +109,6 @@ Definitions for terms that come up in the codebase / docs. FRC lingo + project-s
 ---
 
 ## R
-
-**Reef** — the 2026 REBUILT scoring structure. Our field-geometry constants use "Reef" nomenclature.
 
 **REV Hardware Client** — REV's desktop tool for flashing CAN IDs, updating firmware, tuning PIDs.
 
