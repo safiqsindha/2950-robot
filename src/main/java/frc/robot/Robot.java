@@ -194,4 +194,11 @@ public class Robot extends LoggedRobot {
     // Defaults to TELEOP_BLUE_CENTER; change via the SmartDashboard "Practice Scenario" chooser.
     robotContainer.getPracticeMode().apply();
   }
+
+  @Override
+  public void simulationPeriodic() {
+    // Sim-only tick — currently fires maple-sim projectiles when the flywheel hits its setpoint
+    // (ShotSimulation). Extend with other sim-side updates as they land.
+    robotContainer.simulationTick();
+  }
 }

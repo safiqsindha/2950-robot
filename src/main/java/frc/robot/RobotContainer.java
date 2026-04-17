@@ -1,6 +1,9 @@
 package frc.robot;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,6 +24,7 @@ import frc.robot.commands.flywheel.FlywheelAim;
 import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelDynamic;
 import frc.robot.commands.flywheel.FlywheelStatic;
+import frc.robot.simulation.ShotSimulation;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.ConveyorIOReal;
 import frc.robot.subsystems.ConveyorIOSim;
@@ -77,6 +81,9 @@ public class RobotContainer {
 
   // ─── Driver Practice (simulation only) ───
   private final DriverPracticeMode practiceMode = new DriverPracticeMode(swerve);
+
+  // ─── Simulation shot firing (PR #11 wiring — no-op on real robot) ───
+  private final ShotSimulation shotSimulation = new ShotSimulation();
 
   public RobotContainer() {
     configureDefaultCommands();
@@ -255,5 +262,26 @@ public class RobotContainer {
 
   public DriverPracticeMode getPracticeMode() {
     return practiceMode;
+  }
+
+  /**
+   * Simulation-only tick hook — spawns a projectile via {@link ShotSimulation} whenever the
+   * flywheel reaches its commanded setpoint. Called from {@link Robot#simulationPeriodic()}.
+   * Converts the robot-relative chassis velocity from YAGSL to field-relative so the projectile
+   * correctly inherits robot motion in the arena frame.
+   *
+   * <p>No-op on a real robot ({@link ShotSimulation#tryFireRateLimited} checks {@link
+   * RobotBase#isSimulation()} itself).
+   */
+  public void simulationTick() {
+    ChassisSpeeds fieldRel =
+        ChassisSpeeds.fromRobotRelativeSpeeds(swerve.getRobotVelocity(), swerve.getHeading());
+    shotSimulation.tryFireRateLimited(
+        swerve.getPose(),
+        fieldRel,
+        flywheel.getCurrentRpm(),
+        flywheel.isAtSpeed(),
+        Timer.getFPGATimestamp());
+    shotSimulation.periodic();
   }
 }

@@ -63,9 +63,13 @@ public final class ShotSimulation {
   /** Shooter horizontal offset from robot center (+x = forward in robot frame). */
   private static final Translation2d SHOOTER_OFFSET_ON_ROBOT = new Translation2d(0.2, 0.0);
 
+  /** Minimum time between rate-limited shots (seconds). 2 shots/second is realistic for a feed. */
+  static final double kShotIntervalSeconds = 0.5;
+
   private int shotsFired = 0;
   private int shotsScored = 0;
   private boolean lastHitFlag = false;
+  private double lastFireTimeSec = Double.NEGATIVE_INFINITY;
 
   /**
    * Fires a projectile using the robot's current pose + velocity and a commanded flywheel RPM.
@@ -119,6 +123,47 @@ public final class ShotSimulation {
     }
     Logger.recordOutput("Sim/Shots/LastHitFlag", lastHitFlag);
     lastHitFlag = false;
+  }
+
+  /**
+   * Rate-limited firing hook for periodic wiring. Call each robot loop with the current robot
+   * pose, field-relative chassis velocity, commanded flywheel RPM, and whether the flywheel is at
+   * speed. Spawns one projectile per {@link #kShotIntervalSeconds} while at-speed; otherwise
+   * no-ops.
+   *
+   * <p>On a real robot (non-simulation) this method returns immediately. Safe to call
+   * unconditionally from {@code Robot.simulationPeriodic}.
+   *
+   * @return {@code true} if a projectile was spawned this tick
+   */
+  public boolean tryFireRateLimited(
+      Pose2d robotPose,
+      ChassisSpeeds fieldRelativeSpeeds,
+      double launchRpm,
+      boolean atSpeed,
+      double currentTimeSec) {
+    if (!RobotBase.isSimulation()) {
+      return false;
+    }
+    if (!shouldFireNow(atSpeed, currentTimeSec, lastFireTimeSec)) {
+      return false;
+    }
+    lastFireTimeSec = currentTimeSec;
+    fire(robotPose, fieldRelativeSpeeds, launchRpm);
+    return true;
+  }
+
+  /**
+   * Pure rate-limit predicate — extracted from {@link #tryFireRateLimited} for unit testability.
+   * Package-private. Returns {@code true} iff the flywheel is at speed AND at least {@link
+   * #kShotIntervalSeconds} has passed since the last fire.
+   */
+  static boolean shouldFireNow(
+      boolean atSpeed, double currentTimeSec, double lastFireTimeSec) {
+    if (!atSpeed) {
+      return false;
+    }
+    return currentTimeSec - lastFireTimeSec >= kShotIntervalSeconds;
   }
 
   /** Cumulative projectiles fired this session. */
