@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.List;
 import limelight.Limelight;
@@ -89,6 +90,63 @@ public class Helper {
     double effectiveMeters =
         meters * (1.0 + robotSpeeds.vxMetersPerSecond / Constants.Flywheel.kBallExitVelocityMps);
     return rpmFromMeters(Math.max(0.0, effectiveMeters));
+  }
+
+  /**
+   * Calculate flywheel RPM for a moving-shot with full 2D velocity compensation (Team 971
+   * Spartan's 3-iteration fixed-point shoot-on-the-fly algorithm).
+   *
+   * <p>Given the robot-relative target offset (from Limelight {@code tx} + distance), chassis
+   * velocity (robot-relative), and ball exit speed, this iteratively solves for a "virtual target"
+   * — the position the target would need to be for a stationary launch to still intersect it after
+   * the ball's flight time. Converges in 3 iterations because {@code ball_speed ≫ robot_speed}.
+   *
+   * <p>Unlike the {@link #rpmFromMeters(double, ChassisSpeeds)} overload (which only handles
+   * forward motion via {@code vx}), this method properly accounts for strafing (lateral velocity)
+   * by doing the full 2D geometry.
+   *
+   * <p>Sign convention: standard {@link ChassisSpeeds} — {@code vx} positive = robot moving
+   * forward in its own frame; {@code vy} positive = robot moving left. Target is positioned at
+   * polar {@code (meters, bearingRadians)} in robot frame.
+   *
+   * @param meters distance to the target from Limelight (meters)
+   * @param bearingRadians direction to target in robot frame (Limelight {@code tx} converted to
+   *     radians; 0 = straight ahead, positive = left)
+   * @param robotSpeeds current chassis speeds (robot-relative)
+   * @return target RPM clamped to [{@link Constants.Flywheel#kMinRpm}, {@link
+   *     Constants.Flywheel#kMaxRpm}]
+   */
+  public static double rpmFromMeters(
+      double meters, double bearingRadians, ChassisSpeeds robotSpeeds) {
+    Translation2d target =
+        new Translation2d(meters * Math.cos(bearingRadians), meters * Math.sin(bearingRadians));
+    Translation2d velocity =
+        new Translation2d(robotSpeeds.vxMetersPerSecond, robotSpeeds.vyMetersPerSecond);
+    double effectiveMeters = effectiveShotDistanceMeters(target, velocity);
+    return rpmFromMeters(Math.max(0.0, effectiveMeters));
+  }
+
+  /**
+   * Computes the effective shot distance via Team 971's 3-iteration fixed-point shoot-on-the-fly.
+   *
+   * <p>At convergence, returns {@code ||virtualTarget||}, where {@code virtualTarget} is the shifted
+   * aim point that accounts for robot motion during ball flight. Package-private for unit testing.
+   *
+   * @param targetRelative target position in robot frame (meters)
+   * @param velocityRelative chassis velocity in robot frame (m/s)
+   * @return effective shot distance in meters
+   */
+  static double effectiveShotDistanceMeters(
+      Translation2d targetRelative, Translation2d velocityRelative) {
+    final double ballExitSpeed = Constants.Flywheel.kBallExitVelocityMps;
+    Translation2d virtualTarget = targetRelative;
+    // 3 iterations is sufficient — convergence is geometric with ratio ~ vRobot/vBall
+    // (~0.05 for 1 m/s robot, 20 m/s ball), so 3 iters drives error to ~1.25e-4 of initial.
+    for (int i = 0; i < 3; i++) {
+      double airTime = virtualTarget.getNorm() / ballExitSpeed;
+      virtualTarget = targetRelative.minus(velocityRelative.times(airTime));
+    }
+    return virtualTarget.getNorm();
   }
 
   /** Configure Limelight to filter for the relevant AprilTag IDs for 2026 REBUILT hub targets. */
