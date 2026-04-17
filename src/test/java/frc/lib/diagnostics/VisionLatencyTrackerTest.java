@@ -36,6 +36,8 @@ class VisionLatencyTrackerTest {
 
   @Test
   void defaultConstructor_ok() {
-    assertDoesNotThrow(VisionLatencyTracker::new);
+    // Use an explicit lambda rather than ::new — the two-constructor class makes the
+    // method-reference form ambiguous to Java's overload resolution for assertDoesNotThrow.
+    assertDoesNotThrow(() -> new VisionLatencyTracker());
   }
 }
