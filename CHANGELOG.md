@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #83  docs(followups): expand 2025→2026 — deep migration, not rename
 - 2026-04-17  #82  docs(followups): add 2025→2026 terminology sweep
 - 2026-04-17  #81  docs: add FOLLOWUPS.md for next-session todo queue
 - 2026-04-17  #80  fix: judge's 3 event-critical findings — intake bindings, vision latency, HID swallow
