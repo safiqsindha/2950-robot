@@ -83,10 +83,10 @@ Shipped ~60 additional PRs across 14 thematic batches (A–Q) + 1 hotfix.
 **Categories closed:**
 - Cat 1 (Phase 7 continuations) — 10/11 ✓; 7.8 deferred
 - Cat 2 (subsystem expansions) — Intake wheel + Climber/SideClaw scaffolds ✓; rest were hardware-dependent
-- Cat 3 (HAL-free tests) — new tests for LoopTime, VisionLatency, MatchPhase, DriverInput, RollingWindow, BatteryAwareCurrent, Trajectory integration, Helper RPM boundaries ✓
+- Cat 3 (HAL-free tests) — new tests for LoopTime, VisionLatency, MatchPhase, RollingWindow, BatteryAwareCurrent, Trajectory integration, Helper RPM boundaries ✓
 - Cat 4 (calibration tooling) — `can_id_validator.py`, `rpm_curve_fit.py`, `deploy_health_check.py`, `encoder_offset_finder.py`, `choreo_validator.py`, `log_analyzer.py`, `sim_smoke_test.py` ✓
 - Cat 5 (autonomous enrichments) — `LoggedAutoChooser`, `@AutoRoutine` / `AutoRoutineRegistrar`, `RandomAutoRotator`, auto-frame fix, Auto telemetry logging ✓
-- Cat 6 (telemetry) — `JvmLogger`, `CanBusLogger`, `PdhLogger`, `LoopTimeLogger`, `VisionLatencyTracker`, `MatchPhaseOverlay`, `DriverInputRecorder`, SparkAlertLogger cumulative counters ✓
+- Cat 6 (telemetry) — `JvmLogger`, `CanBusLogger`, `PdhLogger`, `LoopTimeLogger`, `VisionLatencyTracker`, `MatchPhaseOverlay`, SparkAlertLogger cumulative counters ✓
 - Cat 7 (CI infrastructure) — headless sim smoke, PR size guard, CODEOWNERS, Dependabot, README badges, release-notes-on-tag workflow, PR-preview artifact workflow, pre-commit hook installer, changelog bot ✓
 - Cat 8 (documentation) — `CODE_TOUR.md`, `TELEMETRY_REFERENCE.md`, `DEVELOPER_TESTING_GUIDE.md`, `MENTOR_GUIDE.md`, `FAQ.md`, `GLOSSARY.md`, `SIM_QUICKSTART.md`, `docs/sim-tuning-reference.md`, `docs/advantagescope-setup.md`, 10 ADRs, `CHANGELOG.md` ✓
 - Cat 9 (dashboards) — Elastic layout (`src/main/deploy/elastic-layout.json`), AdvantageScope layout (`advantagescope-layout.json`) with 7 tabs ✓

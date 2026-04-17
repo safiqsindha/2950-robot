@@ -50,8 +50,6 @@ Definitions for terms that come up in the codebase / docs. FRC lingo + project-s
 
 ## F
 
-**FaultMonitor** — 862 pattern for surface-a-predicate-as-WPILib-Alert. See `frc.lib.diagnostics.FaultMonitor`.
-
 **Feedforward** — open-loop term in a control loop (`kS + kV·v + kA·a`). Usually tuned via SysId.
 
 **FPGA timestamp** — WPILib clock source backed by the roboRIO FPGA. Accessible via `Timer.getFPGATimestamp()`. In tests, inject a `DoubleSupplier` instead.
