@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.diagnostics.CanBusLogger;
 import frc.lib.diagnostics.CommandLifecycleLogger;
 import frc.lib.diagnostics.JvmLogger;
+import frc.lib.diagnostics.LoopTimeLogger;
 import frc.lib.diagnostics.PdhLogger;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -54,6 +55,13 @@ public class Robot extends LoggedRobot {
 
   /** Command lifecycle event logger; wired to CommandScheduler in {@link #robotInit()}. */
   private final CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
+
+  /**
+   * Loop-iteration timing publisher — completes the JVM/CAN/PDH diagnostics trio. Safe to
+   * construct as a field; the clock supplier (Timer::getFPGATimestamp) is a method reference so
+   * HAL is only hit when {@link LoopTimeLogger#periodic()} runs.
+   */
+  private final LoopTimeLogger loopTimeLogger = new LoopTimeLogger();
 
   // ── Match phase tracking ──
   private enum MatchPhase {
@@ -135,11 +143,12 @@ public class Robot extends LoggedRobot {
                     / (kBrownoutThresholdVolts - kBrownoutFloorVolts));
     Logger.recordOutput("Robot/BrownoutScale", brownoutScale);
 
-    // ── Diagnostics trio — JVM + CAN + PDH ──
-    // Paired so a loop-overrun incident can be cross-referenced across all three in
+    // ── Diagnostics trio — JVM + CAN + PDH + Loop ──
+    // Paired so a loop-overrun incident can be cross-referenced across all four in
     // AdvantageScope. See frc.lib.diagnostics.* for each logger's schema.
     jvmLogger.periodic();
     canBusLogger.periodic();
+    loopTimeLogger.periodic();
     if (pdhLogger != null) {
       pdhLogger.periodic();
     }
