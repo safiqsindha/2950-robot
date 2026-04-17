@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #90  audit(commands): delete 2 unwired utility classes + 2 dead methods
 - 2026-04-17  #89  audit(subsystems): delete 2 never-instantiated classes + README truth-up
 - 2026-04-17  #88  audit(diagnostics): delete 3 never-instantiated classes + 1 doc fix
 - 2026-04-17  #87  chore: delete stale .cursorrules (superseded by AGENTS.md)
