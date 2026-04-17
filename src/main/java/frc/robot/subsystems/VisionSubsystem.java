@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.diagnostics.VisionLatencyTracker;
 import frc.robot.Constants;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -73,6 +74,14 @@ public class VisionSubsystem extends SubsystemBase {
 
   // Timestamp (FPGA seconds) when the vision target was first confirmed valid this streak
   private double targetValidSince = Double.MAX_VALUE;
+
+  /**
+   * Rolling-window stats on accepted-frame latency. Fed via {@link #periodic()} on every frame
+   * that passes the acceptance gates; ticked once per cycle to publish min/max/mean/p95 under
+   * {@code VisionLatency/*}. Owning it here (rather than on {@code Robot.java}) means the only
+   * signals published are for frames we actually trusted.
+   */
+  private final VisionLatencyTracker visionLatencyTracker = new VisionLatencyTracker();
 
   /** Creates the vision subsystem. */
   public VisionSubsystem(SwerveSubsystem swerve) {
@@ -162,6 +171,12 @@ public class VisionSubsystem extends SubsystemBase {
       targetValidSince = now;
     }
     hasTarget = true;
+
+    // Feed the accepted frame's latency into the rolling-window tracker. We only record here —
+    // inside the accept path — so a run of rejected frames doesn't dilute the stats with what
+    // the pose estimator never actually saw.
+    visionLatencyTracker.record(latencyMs);
+    visionLatencyTracker.periodic();
 
     Logger.recordOutput("Vision/HasTarget", true);
     Logger.recordOutput("Vision/BotPose", lastPose);
