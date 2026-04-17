@@ -29,7 +29,7 @@ public class FlywheelAutoFeed extends Command {
   @Override
   public void initialize() {
     rpmReady = false;
-    flywheel.setLower(-0.1);
+    flywheel.setLower(frc.robot.Constants.Flywheel.kLowerRetractPercent);
     conveyor.setConveyor(0);
     Helper.resetFilters();
   }

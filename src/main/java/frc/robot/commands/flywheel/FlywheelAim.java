@@ -15,7 +15,9 @@ public class FlywheelAim extends Command {
 
   private final SwerveSubsystem swerve;
 
-  private static final double kP = 0.05;
+  /** Shared with AutoAlignCommand — extracted to Constants.Align during audit cleanup. */
+  private static final double kP = frc.robot.Constants.Align.kHeadingKP;
+
   private static final double kSign = -1;
 
   public FlywheelAim(SwerveSubsystem swerve) {

@@ -31,7 +31,7 @@ public class FlywheelDynamic extends Command {
     // ~2 seconds on first access, which would expire a Choreo trajectory.
     if (!edu.wpi.first.wpilibj.RobotBase.isSimulation()) {
       Helper.resetFilters();
-      flywheel.setLower(-0.1);
+      flywheel.setLower(frc.robot.Constants.Flywheel.kLowerRetractPercent);
     }
   }
 

@@ -86,6 +86,54 @@ public final class Constants {
      * and by Helper.rpmFromMeters(double, ChassisSpeeds) for effective-distance adjustment.
      */
     public static final double kBallExitVelocityMps = 12.0;
+
+    /**
+     * Lower feed-wheel retract percent — used by Flywheel*Command classes while the flywheel is
+     * spinning up to keep the ball from feeding prematurely. Was duplicated in 3 commands as the
+     * literal {@code -0.1}; extracted during audit cleanup.
+     */
+    public static final double kLowerRetractPercent = -0.1;
+  }
+
+  /** Vision pose-estimator tuning constants — extracted from hardcoded values in VisionSubsystem. */
+  public static final class Vision {
+    /** Minimum tags visible before we trust the MegaTag2 measurement. */
+    public static final int kMinTagCount = 1;
+
+    /** Maximum total latency before we discard the measurement (ms). */
+    public static final double kMaxLatencyMs = 50.0;
+
+    /** Maximum average tag distance before we discount heavily (m). */
+    public static final double kMaxTagDistM = 4.0;
+
+    /** Skip vision when robot linear speed exceeds this — Limelight latency corrupts fast poses. */
+    public static final double kMaxLinearSpeedForVisionMps = 4.0;
+
+    /** Inhibit vision for this long after resetOdometry / zeroGyro (4481 pattern). */
+    public static final double kResetInhibitionSeconds = 0.12;
+
+    /** Max vision-vs-odometry drift — tighter in auto (protects Choreo). */
+    public static final double kMaxCorrectionTeleopMeters = 1.0;
+
+    public static final double kMaxCorrectionAutoMeters = 0.5;
+
+    /** Base xy stddev at 1 m; multi-tag divides by sqrt(tagCount). 971 d² pattern. */
+    public static final double kBaseXyStdDevMeters = 0.5;
+
+    /** Theta stddev for multi-tag (MegaTag2 heading is accurate when ≥ 2 tags). */
+    public static final double kMultiTagThetaStdDev = 0.1;
+
+    /** Sentinel that effectively rejects vision yaw — trust gyro instead. 971/1619/4481 consensus. */
+    public static final double kRejectThetaStdDev = 1000.0;
+  }
+
+  /** PID gains shared across heading-based alignment commands. */
+  public static final class Align {
+    /**
+     * Proportional gain on the heading / horizontal-offset PID used by both AutoAlignCommand and
+     * FlywheelAim. Was duplicated as {@code 0.05}; extracted during audit cleanup.
+     */
+    public static final double kHeadingKP = 0.05;
   }
 
   /** Intake subsystem CAN IDs and tuning constants. */
