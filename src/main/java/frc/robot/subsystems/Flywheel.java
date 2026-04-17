@@ -46,11 +46,7 @@ public class Flywheel extends SubsystemBase {
 
     // Derived telemetry (computed from inputs + setpoint — not part of the IO contract).
     Logger.recordOutput("Flywheel/SetpointRpm", setpointRpm);
-    Logger.recordOutput(
-        "Flywheel/AtSpeed",
-        setpointRpm > 0
-            && Math.abs(inputs.velocityRpm - setpointRpm) / setpointRpm
-                < Constants.Flywheel.kReadyThreshold);
+    Logger.recordOutput("Flywheel/AtSpeed", isAtSpeed());
 
     // Apply updated PID gains if any tunable changed since last check.
     // FlywheelIOSim.setPid() is a no-op — the isSimulation() guard is not needed here.
@@ -104,5 +100,16 @@ public class Flywheel extends SubsystemBase {
    */
   public double getMotorCurrentAmps() {
     return inputs.supplyCurrentAmps;
+  }
+
+  /**
+   * @return {@code true} when a non-zero setpoint has been commanded and the measured velocity is
+   *     within {@link Constants.Flywheel#kReadyThreshold} of it. Used by {@code AutoScoreCommand},
+   *     {@code FlywheelAutoFeed}, and simulation shot triggers.
+   */
+  public boolean isAtSpeed() {
+    return setpointRpm > 0
+        && Math.abs(inputs.velocityRpm - setpointRpm) / setpointRpm
+            < Constants.Flywheel.kReadyThreshold;
   }
 }

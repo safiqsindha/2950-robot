@@ -55,4 +55,35 @@ class ShotSimulationTest {
     assertEquals(2, sim.shotsScored());
     assertEquals(0, sim.shotsFired(), "shotsFired is NOT bumped by hit callback");
   }
+
+  // ─── Rate-limit predicate (shouldFireNow) ────────────────────────────
+
+  @Test
+  void shouldFireNow_notAtSpeed_returnsFalse() {
+    assertFalse(ShotSimulation.shouldFireNow(false, 10.0, 0.0));
+  }
+
+  @Test
+  void shouldFireNow_atSpeedFirstCall_returnsTrue() {
+    // lastFireTime = NEGATIVE_INFINITY means "never fired" — first call should fire.
+    assertTrue(ShotSimulation.shouldFireNow(true, 0.0, Double.NEGATIVE_INFINITY));
+  }
+
+  @Test
+  void shouldFireNow_atSpeedBeforeInterval_returnsFalse() {
+    // Last fired at t=5.0, interval is 0.5, so t=5.3 is too soon.
+    assertFalse(ShotSimulation.shouldFireNow(true, 5.3, 5.0));
+  }
+
+  @Test
+  void shouldFireNow_atSpeedExactlyAtInterval_returnsTrue() {
+    // t=5.5 is exactly one interval after last fire — boundary is inclusive (>=).
+    assertTrue(
+        ShotSimulation.shouldFireNow(true, 5.0 + ShotSimulation.kShotIntervalSeconds, 5.0));
+  }
+
+  @Test
+  void shouldFireNow_atSpeedLongAfter_returnsTrue() {
+    assertTrue(ShotSimulation.shouldFireNow(true, 100.0, 5.0));
+  }
 }
