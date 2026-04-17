@@ -3,16 +3,16 @@ package frc.robot.simulation;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import org.littletonrobotics.junction.Logger;
 import swervelib.simulation.ironmaple.simulation.IntakeSimulation;
 import swervelib.simulation.ironmaple.simulation.IntakeSimulation.IntakeSide;
 import swervelib.simulation.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Thin wrapper around maple-sim's {@link IntakeSimulation} that adds {@link RobotBase} gating,
  * idempotent lifecycle handling, and AdvantageKit telemetry. Lets an {@code IntakeIOSim} (or any
- * other caller) replace the hardcoded current-synthesis with real arena-driven pickup events —
- * when the robot's intake rectangle overlaps a spawned game piece, {@link #hasGamePiece()} flips.
+ * other caller) replace the hardcoded current-synthesis with real arena-driven pickup events — when
+ * the robot's intake rectangle overlaps a spawned game piece, {@link #hasGamePiece()} flips.
  *
  * <p>Typical wiring (to be added in a follow-up PR):
  *
@@ -84,14 +84,16 @@ public final class IntakeSimulationAdapter {
     Logger.recordOutput("Sim/Intake/Running", running);
   }
 
-  /** @return {@code true} when the sim has at least one fuel held in the intake. */
+  /**
+   * @return {@code true} when the sim has at least one fuel held in the intake.
+   */
   public boolean hasGamePiece() {
     return sim != null && sim.getGamePiecesAmount() > 0;
   }
 
   /**
-   * Removes a game piece from the intake. Returns {@code true} if one was present (typically
-   * called when the conveyor takes the fuel from the intake).
+   * Removes a game piece from the intake. Returns {@code true} if one was present (typically called
+   * when the conveyor takes the fuel from the intake).
    */
   public boolean consumeGamePiece() {
     if (sim == null) {
@@ -113,7 +115,9 @@ public final class IntakeSimulationAdapter {
     return sim.addGamePieceToIntake();
   }
 
-  /** @return {@code true} iff the adapter is bound to a real {@link IntakeSimulation}. */
+  /**
+   * @return {@code true} iff the adapter is bound to a real {@link IntakeSimulation}.
+   */
   public boolean isAttached() {
     return sim != null;
   }

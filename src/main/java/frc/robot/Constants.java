@@ -16,20 +16,20 @@ public final class Constants {
   public static final double kRobotMassKg = (148 - 20.3) * 0.453592;
 
   /**
-   * FRC field length in meters — 2026 REBUILT WELDED variant, per WPILib
-   * {@code 2026-rebuilt-welded.json} ({@code AprilTagFields.k2026RebuiltWelded}).
-   * AndyMark variant is 16.518 m; teams running the AndyMark field layout should override.
+   * FRC field length in meters — 2026 REBUILT WELDED variant, per WPILib {@code
+   * 2026-rebuilt-welded.json} ({@code AprilTagFields.k2026RebuiltWelded}). AndyMark variant is
+   * 16.518 m; teams running the AndyMark field layout should override.
    */
   public static final double kFieldLengthMeters = 16.541;
 
   /**
-   * FRC field width in meters — 2026 REBUILT WELDED variant, per WPILib
-   * {@code 2026-rebuilt-welded.json}. AndyMark variant is 8.043 m.
+   * FRC field width in meters — 2026 REBUILT WELDED variant, per WPILib {@code
+   * 2026-rebuilt-welded.json}. AndyMark variant is 8.043 m.
    *
-   * <p>Historical note: prior value was 8.211 m (2024 Crescendo width) — incorrect for every
-   * season since. Migration PR #84 corrected to 2026 WELDED. Confirmed against the authoritative
-   * {@code apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json}
-   * in {@code wpilibsuite/allwpilib}.
+   * <p>Historical note: prior value was 8.211 m (2024 Crescendo width) — incorrect for every season
+   * since. Migration PR #84 corrected to 2026 WELDED. Confirmed against the authoritative {@code
+   * apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json} in {@code
+   * wpilibsuite/allwpilib}.
    */
   public static final double kFieldWidthMeters = 8.069;
 
@@ -61,8 +61,8 @@ public final class Constants {
      * Kinematic-bypass toggle for maple-sim. When {@code true}, {@code SwerveSubsystem.periodic()}
      * manually integrates pose from commanded ChassisSpeeds in simulation, overriding the
      * physics-driven pose + velocity. This bypass exists because maple-sim 0.4.0-beta applies
-     * propelling forces in the wrong direction for REV SPARK MAX + NEO swerve modules — see
-     * {@code MAPLE_SIM_BUG_REPORT.md} for the full writeup.
+     * propelling forces in the wrong direction for REV SPARK MAX + NEO swerve modules — see {@code
+     * MAPLE_SIM_BUG_REPORT.md} for the full writeup.
      *
      * <p>When {@code false}, we trust maple-sim's physics pipeline — the robot will only move if
      * the force bug is fixed upstream. Flip this to {@code false} on a practice-bot session when
@@ -94,8 +94,8 @@ public final class Constants {
     public static final double kReadyThreshold = 0.10; // 10% of target RPM
 
     /**
-     * Ball exit speed from the flywheel (m/s). Used by {@link frc.robot.Helper#rpmFromMeters}
-     * for effective-distance adjustment in the 971 3-iter fixed-point shoot-on-the-fly.
+     * Ball exit speed from the flywheel (m/s). Used by {@link frc.robot.Helper#rpmFromMeters} for
+     * effective-distance adjustment in the 971 3-iter fixed-point shoot-on-the-fly.
      */
     public static final double kBallExitVelocityMps = 12.0;
 
@@ -120,7 +120,9 @@ public final class Constants {
     public static final double kMaxAccelRpmPerSec = 8000.0;
   }
 
-  /** Vision pose-estimator tuning constants — extracted from hardcoded values in VisionSubsystem. */
+  /**
+   * Vision pose-estimator tuning constants — extracted from hardcoded values in VisionSubsystem.
+   */
   public static final class Vision {
     /** Minimum tags visible before we trust the MegaTag2 measurement. */
     public static final int kMinTagCount = 1;
@@ -148,7 +150,9 @@ public final class Constants {
     /** Theta stddev for multi-tag (MegaTag2 heading is accurate when ≥ 2 tags). */
     public static final double kMultiTagThetaStdDev = 0.1;
 
-    /** Sentinel that effectively rejects vision yaw — trust gyro instead. 971/1619/4481 consensus. */
+    /**
+     * Sentinel that effectively rejects vision yaw — trust gyro instead. 971/1619/4481 consensus.
+     */
     public static final double kRejectThetaStdDev = 1000.0;
   }
 
@@ -176,24 +180,23 @@ public final class Constants {
     public static final double kArmMaxRotations = (110.0 / 360.0) * (32.0 / 12.0) * (45.0 / 1.0);
 
     /**
-     * Maximum rate of change of the intake arm position setpoint (rotations / s). Feeds a
-     * {@link frc.lib.control.LinearProfile} in {@code Intake.periodic()} so the onboard PID sees a
-     * smooth ramp when a command calls {@code updateTargetAngle}. 100 rot/s traverses the full
-     * ~32-rotation travel range in ~0.3 s — faster than the arm can mechanically accelerate, so
-     * the rate limit is effectively transparent but strips the step-discontinuity that would
-     * otherwise cause a peak current spike.
+     * Maximum rate of change of the intake arm position setpoint (rotations / s). Feeds a {@link
+     * frc.lib.control.LinearProfile} in {@code Intake.periodic()} so the onboard PID sees a smooth
+     * ramp when a command calls {@code updateTargetAngle}. 100 rot/s traverses the full
+     * ~32-rotation travel range in ~0.3 s — faster than the arm can mechanically accelerate, so the
+     * rate limit is effectively transparent but strips the step-discontinuity that would otherwise
+     * cause a peak current spike.
      *
      * <p>Live-tunable at runtime via {@code Intake/kMaxArmAccelRotPerSec} on NT.
      */
     public static final double kMaxArmAccelRotPerSec = 100.0;
 
     /**
-     * Maximum rate of change of the intake wheel percent output (percent / s). Feeds an
-     * {@link frc.lib.control.AsymmetricRateLimiter} in {@code Intake.periodic()} — ramps UP at
-     * this rate but snaps to the commanded value when going to a smaller magnitude, so a panic
-     * interrupt's {@code setWheel(0)} is instant. 4.0 /s reaches full output in 0.25 s, slow
-     * enough to smooth the SPARK MAX's input spike but fast enough that no human-driven trigger
-     * pull feels laggy.
+     * Maximum rate of change of the intake wheel percent output (percent / s). Feeds an {@link
+     * frc.lib.control.AsymmetricRateLimiter} in {@code Intake.periodic()} — ramps UP at this rate
+     * but snaps to the commanded value when going to a smaller magnitude, so a panic interrupt's
+     * {@code setWheel(0)} is instant. 4.0 /s reaches full output in 0.25 s, slow enough to smooth
+     * the SPARK MAX's input spike but fast enough that no human-driven trigger pull feels laggy.
      *
      * <p>Live-tunable via {@code Intake/kMaxWheelAccelPerSec} on NT.
      */
@@ -258,26 +261,26 @@ public final class Constants {
     public static final double kScoringTimeoutSeconds = 2.0;
 
     /**
-     * INTAKING state auto-exit timeout — if no game piece is detected within this window, fall
-     * back to IDLE so a missed release of the intake button doesn't leave the state machine
-     * permanently fishing. 6 s matches the practice-session default "if it didn't catch by now,
-     * reset and try again."
+     * INTAKING state auto-exit timeout — if no game piece is detected within this window, fall back
+     * to IDLE so a missed release of the intake button doesn't leave the state machine permanently
+     * fishing. 6 s matches the practice-session default "if it didn't catch by now, reset and try
+     * again."
      */
     public static final double kIntakingTimeoutSeconds = 6.0;
 
     /**
      * STAGING state auto-exit timeout — if score wasn't requested within this window the piece
-     * stays staged but the SSM doesn't flag it as "actively waiting to score"; a stale STAGING
-     * can confuse downstream LED / dashboard indicators. 10 s is generous — a normal auto
-     * workflow acquires + scores in 2-3 s.
+     * stays staged but the SSM doesn't flag it as "actively waiting to score"; a stale STAGING can
+     * confuse downstream LED / dashboard indicators. 10 s is generous — a normal auto workflow
+     * acquires + scores in 2-3 s.
      */
     public static final double kStagingTimeoutSeconds = 10.0;
   }
 
   /**
    * Autonomous-routine timing constants. Previously lived as magic literals inside {@code
-   * ChoreoAutoCommand} (3.0, 1.5, 3000, 2.5) — extracted during audit follow-up so a future
-   * re-tune changes one place, not nine.
+   * ChoreoAutoCommand} (3.0, 1.5, 3000, 2.5) — extracted during audit follow-up so a future re-tune
+   * changes one place, not nine.
    */
   public static final class Autonomous {
     /** Shoot-cycle timeout per scoring attempt (seconds). */

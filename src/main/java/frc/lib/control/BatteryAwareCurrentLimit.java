@@ -3,8 +3,8 @@ package frc.lib.control;
 /**
  * Computes a per-motor output scale factor that respects both a per-motor current budget AND the
  * overall battery voltage. Adapted from Team 971's "CapU" concept: when the battery is at rest
- * voltage we're generous, when it's sagging we tighten each motor's ceiling so no one motor
- * pulls the whole robot into brownout.
+ * voltage we're generous, when it's sagging we tighten each motor's ceiling so no one motor pulls
+ * the whole robot into brownout.
  *
  * <p>Pure math — HAL-free, testable, no WPILib time dependency. Call {@link #compute} each tick
  * with the latest battery voltage and the motor's most recent current draw; apply the returned
@@ -20,8 +20,8 @@ package frc.lib.control;
  *
  * <p>At rest voltage (>= 12 V) with zero current, you get 1.0 — no derating. At 7 V with a motor
  * already at 80% of its current limit, you get {@code min(0.5, 0.2) = 0.2} — sharp clamp. The
- * min-of-two keeps whichever constraint is tighter; typically voltage wins during brownout,
- * current wins when a single motor is being over-driven.
+ * min-of-two keeps whichever constraint is tighter; typically voltage wins during brownout, current
+ * wins when a single motor is being over-driven.
  */
 public final class BatteryAwareCurrentLimit {
 

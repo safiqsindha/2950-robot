@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * HAL-free tests for {@link PdhLogger}. {@link PdhLogger.Snapshot} is a plain record, so we can
- * build one by hand and assert the logger's passthrough behaviour without instantiating a
- * {@link edu.wpi.first.wpilibj.PowerDistribution} (which loads {@code wpiHaljni}).
+ * build one by hand and assert the logger's passthrough behaviour without instantiating a {@link
+ * edu.wpi.first.wpilibj.PowerDistribution} (which loads {@code wpiHaljni}).
  */
 class PdhLoggerTest {
 
@@ -45,8 +45,7 @@ class PdhLoggerTest {
 
   @Test
   void periodic_doesNotThrowOnCleanSnapshot() {
-    PdhLogger logger =
-        new PdhLogger(() -> new PdhLogger.Snapshot(0.0, 0.0, 0.0, new double[] {}));
+    PdhLogger logger = new PdhLogger(() -> new PdhLogger.Snapshot(0.0, 0.0, 0.0, new double[] {}));
     assertDoesNotThrow(logger::periodic);
   }
 

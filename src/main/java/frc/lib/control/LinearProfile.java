@@ -13,8 +13,8 @@ package frc.lib.control;
  *                        lastSetpoint + maxAccel · dt)
  * </pre>
  *
- * where {@code dt} is the time since the last {@link #calculate} call (measured internally, so
- * the caller doesn't have to thread it through).
+ * where {@code dt} is the time since the last {@link #calculate} call (measured internally, so the
+ * caller doesn't have to thread it through).
  *
  * <p>Usage (flywheel):
  *
@@ -39,8 +39,8 @@ public final class LinearProfile {
 
   /**
    * @param maxAccel max rate of change of the output per second (same units as the setpoint)
-   * @param defaultDtSeconds the period assumed when {@link #calculate(double)} is called without
-   *     an explicit timestamp — usually 0.02 (robot loop period)
+   * @param defaultDtSeconds the period assumed when {@link #calculate(double)} is called without an
+   *     explicit timestamp — usually 0.02 (robot loop period)
    */
   public LinearProfile(double maxAccel, double defaultDtSeconds) {
     if (maxAccel < 0) {
@@ -62,8 +62,8 @@ public final class LinearProfile {
   }
 
   /**
-   * Advance the profile using an explicit dt. Returns the new ramped setpoint. Clamps the rate
-   * of change of the internal "last value" to ±(maxAccel · dt).
+   * Advance the profile using an explicit dt. Returns the new ramped setpoint. Clamps the rate of
+   * change of the internal "last value" to ±(maxAccel · dt).
    */
   public double calculateWithDt(double goal, double dt) {
     if (dt < 0) {
@@ -88,7 +88,9 @@ public final class LinearProfile {
     lastValue = value;
   }
 
-  /** @return the last ramped value (setpoint emitted to the consumer) */
+  /**
+   * @return the last ramped value (setpoint emitted to the consumer)
+   */
   public double getLastValue() {
     return lastValue;
   }
@@ -101,7 +103,9 @@ public final class LinearProfile {
     this.maxAccel = maxAccel;
   }
 
-  /** @return the current max-acceleration setting */
+  /**
+   * @return the current max-acceleration setting
+   */
   public double getMaxAccel() {
     return maxAccel;
   }

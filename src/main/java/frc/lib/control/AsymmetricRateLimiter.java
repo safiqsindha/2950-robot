@@ -1,15 +1,15 @@
 package frc.lib.control;
 
 /**
- * Rate limiter that rate-limits <i>only</i> toward higher magnitudes — asymmetric by design.
- * Going from 0 → 1.0 ramps at {@code maxAccel}; going from 1.0 → 0 snaps instantly.
+ * Rate limiter that rate-limits <i>only</i> toward higher magnitudes — asymmetric by design. Going
+ * from 0 → 1.0 ramps at {@code maxAccel}; going from 1.0 → 0 snaps instantly.
  *
  * <p>Why this exists: {@link LinearProfile} is the symmetric version and is correct for flywheel
  * velocity setpoints (where a smooth ramp-down is fine and actually desirable — the flywheel
  * physically can't snap to zero anyway). Open-loop mechanisms like the intake wheel and conveyor
- * are different: a smooth ramp from 0 → 1.0 cuts current spikes, but when a panic button or
- * command interruption fires {@code setPercent(0)} we want the motor to stop <i>immediately</i>.
- * A symmetric ramp-down here would leave the motor running during the emergency-stop window.
+ * are different: a smooth ramp from 0 → 1.0 cuts current spikes, but when a panic button or command
+ * interruption fires {@code setPercent(0)} we want the motor to stop <i>immediately</i>. A
+ * symmetric ramp-down here would leave the motor running during the emergency-stop window.
  *
  * <p>Contract:
  *
@@ -88,7 +88,9 @@ public final class AsymmetricRateLimiter {
     lastValue = value;
   }
 
-  /** @return the last emitted value */
+  /**
+   * @return the last emitted value
+   */
   public double getLastValue() {
     return lastValue;
   }

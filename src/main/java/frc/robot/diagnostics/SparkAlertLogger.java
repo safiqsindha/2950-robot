@@ -13,14 +13,14 @@ import org.littletonrobotics.junction.Logger;
  * sticky-active, the dashboard lights up with <code>&lt;motor name&gt;: &lt;bit name&gt;</code> —
  * huge QoL for event-day CAN diagnosis.
  *
- * <p>Adapted from Team 4481 Rembrandts' SparkAlertLogger pattern. Uses sticky bits so faults
- * remain visible after the underlying condition recovers (call {@code clearFaults()} on the Spark
- * to reset).
+ * <p>Adapted from Team 4481 Rembrandts' SparkAlertLogger pattern. Uses sticky bits so faults remain
+ * visible after the underlying condition recovers (call {@code clearFaults()} on the Spark to
+ * reset).
  *
- * <p>Also publishes a cumulative <b>transition count</b> per bit under
- * {@code Faults/&lt;motorName&gt;/&lt;bitName&gt;_Count}. Each false→true transition increments
- * the counter so post-match replay can see "this Spark tripped brownout 4 times" even after
- * {@code clearFaults()} resets the sticky state between increments.
+ * <p>Also publishes a cumulative <b>transition count</b> per bit under {@code
+ * Faults/&lt;motorName&gt;/&lt;bitName&gt;_Count}. Each false→true transition increments the
+ * counter so post-match replay can see "this Spark tripped brownout 4 times" even after {@code
+ * clearFaults()} resets the sticky state between increments.
  *
  * <p>Usage in an IOReal constructor:
  *
@@ -43,8 +43,8 @@ import org.littletonrobotics.junction.Logger;
  * }</pre>
  *
  * <p>This class is in {@code frc.robot.diagnostics} (not {@code frc.lib.diagnostics}) because it
- * has a hard dependency on REVLib and can't be unit-tested without HAL; {@code frc.lib} is
- * reserved for pure-math utilities held to an 80% line-coverage gate.
+ * has a hard dependency on REVLib and can't be unit-tested without HAL; {@code frc.lib} is reserved
+ * for pure-math utilities held to an 80% line-coverage gate.
  */
 public final class SparkAlertLogger {
 
@@ -82,10 +82,7 @@ public final class SparkAlertLogger {
         AlertType.kError,
         () -> spark.getStickyFaults().temperature);
     addMonitor(
-        motorName,
-        "Fault/GateDriver",
-        AlertType.kError,
-        () -> spark.getStickyFaults().gateDriver);
+        motorName, "Fault/GateDriver", AlertType.kError, () -> spark.getStickyFaults().gateDriver);
     addMonitor(
         motorName, "Fault/EscEeprom", AlertType.kError, () -> spark.getStickyFaults().escEeprom);
     addMonitor(
@@ -93,34 +90,21 @@ public final class SparkAlertLogger {
 
     // ─── Warnings (recoverable) ──────────────────────────────────────────
     addMonitor(
-        motorName,
-        "Warn/Brownout",
-        AlertType.kWarning,
-        () -> spark.getStickyWarnings().brownout);
+        motorName, "Warn/Brownout", AlertType.kWarning, () -> spark.getStickyWarnings().brownout);
     addMonitor(
         motorName,
         "Warn/Overcurrent",
         AlertType.kWarning,
         () -> spark.getStickyWarnings().overcurrent);
     addMonitor(
-        motorName,
-        "Warn/EscEeprom",
-        AlertType.kWarning,
-        () -> spark.getStickyWarnings().escEeprom);
+        motorName, "Warn/EscEeprom", AlertType.kWarning, () -> spark.getStickyWarnings().escEeprom);
     addMonitor(
-        motorName,
-        "Warn/ExtEeprom",
-        AlertType.kWarning,
-        () -> spark.getStickyWarnings().extEeprom);
+        motorName, "Warn/ExtEeprom", AlertType.kWarning, () -> spark.getStickyWarnings().extEeprom);
     addMonitor(
         motorName, "Warn/Sensor", AlertType.kWarning, () -> spark.getStickyWarnings().sensor);
+    addMonitor(motorName, "Warn/Stall", AlertType.kWarning, () -> spark.getStickyWarnings().stall);
     addMonitor(
-        motorName, "Warn/Stall", AlertType.kWarning, () -> spark.getStickyWarnings().stall);
-    addMonitor(
-        motorName,
-        "Warn/HasReset",
-        AlertType.kWarning,
-        () -> spark.getStickyWarnings().hasReset);
+        motorName, "Warn/HasReset", AlertType.kWarning, () -> spark.getStickyWarnings().hasReset);
     addMonitor(motorName, "Warn/Other", AlertType.kWarning, () -> spark.getStickyWarnings().other);
     return this;
   }
@@ -135,11 +119,11 @@ public final class SparkAlertLogger {
    * Polls every registered bit, updates its Alert's active state, and increments a cumulative
    * transition counter on every false→true edge. Call once per robot cycle.
    *
-   * <p>Defensive: an individual bit read that throws (e.g. REVLib returns null from
-   * {@code getStickyFaults()} during a transient CAN disconnect, or a lambda is invoked against
-   * a closed Spark) is caught per-bit and counted as "not active" for that tick. Without this
-   * guard, one misbehaving Spark could take down the whole robot loop via an NPE propagating
-   * into CommandScheduler.
+   * <p>Defensive: an individual bit read that throws (e.g. REVLib returns null from {@code
+   * getStickyFaults()} during a transient CAN disconnect, or a lambda is invoked against a closed
+   * Spark) is caught per-bit and counted as "not active" for that tick. Without this guard, one
+   * misbehaving Spark could take down the whole robot loop via an NPE propagating into
+   * CommandScheduler.
    */
   public void periodic() {
     for (BitMonitor m : monitors) {
@@ -156,14 +140,13 @@ public final class SparkAlertLogger {
       }
       m.lastState = current;
       m.alert.set(current);
-      Logger.recordOutput(
-          "Faults/" + m.motorName + "/" + m.bitName + "_Count", m.transitions);
+      Logger.recordOutput("Faults/" + m.motorName + "/" + m.bitName + "_Count", m.transitions);
     }
   }
 
   /**
-   * Total transition count across every registered bit. Package-private; main exposure is via
-   * the per-bit {@code Faults/.../*_Count} keys.
+   * Total transition count across every registered bit. Package-private; main exposure is via the
+   * per-bit {@code Faults/.../*_Count} keys.
    */
   long totalTransitions() {
     long total = 0;

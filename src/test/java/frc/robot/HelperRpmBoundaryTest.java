@@ -6,15 +6,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import org.junit.jupiter.api.Test;
 
 /**
- * Boundary tests for {@link Helper#rpmFromMeters}. Complements {@code HelperTest} with
- * focused coverage of the clamp edges, extrapolation tail, and the interaction between the
- * 971 shoot-on-the-fly math and the RPM clamp.
+ * Boundary tests for {@link Helper#rpmFromMeters}. Complements {@code HelperTest} with focused
+ * coverage of the clamp edges, extrapolation tail, and the interaction between the 971
+ * shoot-on-the-fly math and the RPM clamp.
  *
  * <p>These catch two classes of regression:
  *
  * <ul>
- *   <li>Forgetting to clamp after the Lagrange calculation — a meters value outside the
- *       calibration range can push RPM below kMinRpm / above kMaxRpm without this guard.
+ *   <li>Forgetting to clamp after the Lagrange calculation — a meters value outside the calibration
+ *       range can push RPM below kMinRpm / above kMaxRpm without this guard.
  *   <li>Sign confusion in the 2-D overload — the bearing + velocity should cancel for a robot
  *       moving directly at the target regardless of tx.
  * </ul>

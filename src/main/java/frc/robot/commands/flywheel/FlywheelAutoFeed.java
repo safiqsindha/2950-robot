@@ -11,8 +11,8 @@ import org.littletonrobotics.junction.Logger;
 /**
  * Spins up the flywheel to the distance-predicted RPM and auto-feeds once within 10% of target.
  * Uses Limelight AprilTag distance <i>and</i> horizontal offset ({@code tx}) together with the
- * robot's chassis velocity to compute an RPM that accounts for both radial and lateral motion —
- * the Team 971 3-iteration fixed-point shoot-on-the-fly (Phase 7.2).
+ * robot's chassis velocity to compute an RPM that accounts for both radial and lateral motion — the
+ * Team 971 3-iteration fixed-point shoot-on-the-fly (Phase 7.2).
  *
  * <p>If {@code SwerveSubsystem} is not supplied (1-arg constructor for backward compat with
  * static-test wiring), the command falls back to the 1-D distance-only math.

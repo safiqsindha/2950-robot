@@ -11,19 +11,19 @@ import swervelib.simulation.ironmaple.simulation.drivesims.AbstractDriveTrainSim
  * <ol>
  *   <li><b>Arena-driven (preferred)</b> — when {@link #attachArenaSimulation} has been called with
  *       a live maple-sim drivetrain, the inner {@link IntakeSimulationAdapter} runs a real
- *       collision-based intake rectangle. {@code hasGamePiece()} flips when the robot drives over
- *       a spawned fuel.
- *   <li><b>Flag-driven (fallback)</b> — if the adapter isn't attached (e.g. unit tests), the
- *       {@code simGamePieceAcquired} flag — set by {@link #simulateGamePieceAcquired} — drives
- *       current synthesis. Keeps existing SSM tests green.
+ *       collision-based intake rectangle. {@code hasGamePiece()} flips when the robot drives over a
+ *       spawned fuel.
+ *   <li><b>Flag-driven (fallback)</b> — if the adapter isn't attached (e.g. unit tests), the {@code
+ *       simGamePieceAcquired} flag — set by {@link #simulateGamePieceAcquired} — drives current
+ *       synthesis. Keeps existing SSM tests green.
  * </ol>
  *
  * <p>Wheel current is synthesised when either path reports a held game piece, proportional to the
  * commanded wheel output.
  *
  * <p>Arm position tracking: both arm positions report the last commanded {@code targetAngle} (a
- * simplified model — no PID lag). This is sufficient for telemetry and any future test that
- * checks arm state.
+ * simplified model — no PID lag). This is sufficient for telemetry and any future test that checks
+ * arm state.
  *
  * <p>The {@link #updateInputs} body is HAL-free whenever the adapter is unattached (pure Java
  * arithmetic), so existing unit tests that don't wire the adapter continue to run headless.
@@ -49,7 +49,9 @@ public class IntakeIOSim implements IntakeIO {
    */
   private boolean simGamePieceAcquired = false;
 
-  /** Non-null; returns unattached-path behaviour (all-false) until {@link #attachArenaSimulation}. */
+  /**
+   * Non-null; returns unattached-path behaviour (all-false) until {@link #attachArenaSimulation}.
+   */
   private final IntakeSimulationAdapter arenaIntake = new IntakeSimulationAdapter();
 
   /**

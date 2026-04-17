@@ -13,8 +13,8 @@ import java.util.List;
  *   <li><b>Attractive force</b> — points from the robot toward the next waypoint, magnitude
  *       proportional to {@code attractiveGain × maxRobotSpeedMps}.
  *   <li><b>Repulsive force</b> — for each opponent within {@code opponentInfluenceRadiusMeters}, a
- *       force pointing away from the opponent, linearly scaled from zero at the boundary to max
- *       at dist→0.
+ *       force pointing away from the opponent, linearly scaled from zero at the boundary to max at
+ *       dist→0.
  * </ul>
  *
  * <p>The resulting vector is capped at {@code maxRobotSpeedMps} so the output can be passed
@@ -23,9 +23,8 @@ import java.util.List;
  *
  * <p>This class lives in {@code frc.lib.pathfinding} and has no robot-specific dependencies — the
  * tuning constants flow through the constructor so the class stays reusable across seasons. The
- * {@code DEFAULT_*} constants below match the 2026 HUB tuning (see {@code
- * Constants.Pathfinding}) so existing tests and the no-arg convenience constructor keep the same
- * behavior.
+ * {@code DEFAULT_*} constants below match the 2026 HUB tuning (see {@code Constants.Pathfinding})
+ * so existing tests and the no-arg convenience constructor keep the same behavior.
  */
 public final class DynamicAvoidanceLayer {
 

@@ -50,18 +50,18 @@ public final class ChoreoAutoCommand {
   /**
    * Drive from HUB scoring position to nearest FUEL intake.
    *
-   * <p>Constant name retains legacy {@code REEF_TO_STATION} (and the value
-   * {@code "reefToStation"}) because it must match the on-disk Choreo {@code .traj}
-   * filename. The .traj files will be renamed when the 2026 paths are re-authored in
-   * Choreo desktop (migration step 5); this constant will be renamed in lock-step.
+   * <p>Constant name retains legacy {@code REEF_TO_STATION} (and the value {@code "reefToStation"})
+   * because it must match the on-disk Choreo {@code .traj} filename. The .traj files will be
+   * renamed when the 2026 paths are re-authored in Choreo desktop (migration step 5); this constant
+   * will be renamed in lock-step.
    */
   public static final String TRAJ_REEF_TO_STATION = "reefToStation";
 
   /**
    * Drive from FUEL intake back to HUB scoring position.
    *
-   * <p>Constant name retains legacy {@code STATION_TO_REEF} — see note on
-   * {@link #TRAJ_REEF_TO_STATION}.
+   * <p>Constant name retains legacy {@code STATION_TO_REEF} — see note on {@link
+   * #TRAJ_REEF_TO_STATION}.
    */
   public static final String TRAJ_STATION_TO_REEF = "stationToReef";
 
@@ -74,8 +74,8 @@ public final class ChoreoAutoCommand {
   /**
    * Create a configured {@link AutoFactory} bound to the given swerve subsystem. Uses a shared
    * {@link TrajectoryFollower} so the feedforward coming out of Choreo is augmented by PID
-   * correction on pose error — without this, a trajectory whose sampled speeds don't quite
-   * match reality (e.g., after a bump or a pose reset) would drift for the whole run.
+   * correction on pose error — without this, a trajectory whose sampled speeds don't quite match
+   * reality (e.g., after a bump or a pose reset) would drift for the whole run.
    *
    * <p>The controller lambda:
    *
@@ -118,10 +118,8 @@ public final class ChoreoAutoCommand {
           Logger.recordOutput("Auto/ActualPose", swerve.getPose());
           Logger.recordOutput("Auto/TrajectoryTime", sample.getTimestamp());
           Logger.recordOutput("Auto/SampleVxFieldRel", sample.getChassisSpeeds().vxMetersPerSecond);
-          Logger.recordOutput(
-              "Auto/CorrectedVxFieldRel", correctedFieldRel.vxMetersPerSecond);
-          Logger.recordOutput(
-              "Auto/CorrectedVyFieldRel", correctedFieldRel.vyMetersPerSecond);
+          Logger.recordOutput("Auto/CorrectedVxFieldRel", correctedFieldRel.vxMetersPerSecond);
+          Logger.recordOutput("Auto/CorrectedVyFieldRel", correctedFieldRel.vyMetersPerSecond);
           Logger.recordOutput(
               "Auto/CorrectedOmegaRadPerSec", correctedFieldRel.omegaRadiansPerSecond);
         },
@@ -176,8 +174,8 @@ public final class ChoreoAutoCommand {
    * before attempting the second shot. If the pickup failed, the robot skips scoring and returns to
    * idle — preventing a wasted spin-up cycle.
    *
-   * <p>Requires: {@value #TRAJ_REEF_TO_STATION}.traj, {@value #TRAJ_STATION_TO_REEF}.traj
-   * (legacy filenames pending step-5 Choreo re-author).
+   * <p>Requires: {@value #TRAJ_REEF_TO_STATION}.traj, {@value #TRAJ_STATION_TO_REEF}.traj (legacy
+   * filenames pending step-5 Choreo re-author).
    *
    * <p>Event markers expected in trajectories:
    *
@@ -220,7 +218,8 @@ public final class ChoreoAutoCommand {
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                new FlywheelStatic(
+                        flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
                     .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));
@@ -242,8 +241,8 @@ public final class ChoreoAutoCommand {
   }
 
   /**
-   * <b>3 Fuel</b> — two full FUEL-intake cycles: shoot preloaded, collect two more FUEL pieces
-   * from the intake, and score all three.
+   * <b>3 Fuel</b> — two full FUEL-intake cycles: shoot preloaded, collect two more FUEL pieces from
+   * the intake, and score all three.
    *
    * <p>Both scoring attempts after intake pickups are gated by {@link ConditionalCommand} checking
    * {@code ssm.hasGamePiece()}. A missed pickup causes the robot to skip the shot and move on to
@@ -282,9 +281,7 @@ public final class ChoreoAutoCommand {
                 toStation1.resetOdometry().andThen(toStation1.cmd())));
 
     // FUEL intake marker, cycle 1 — run the intake during approach so hasGamePiece() can flip true.
-    toStation1
-        .atTime("intake")
-        .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
+    toStation1.atTime("intake").onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
 
     toStation1.done().onTrue(stationToReef1.cmd());
 
@@ -293,7 +290,8 @@ public final class ChoreoAutoCommand {
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                new FlywheelStatic(
+                        flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
                     .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));
@@ -316,9 +314,7 @@ public final class ChoreoAutoCommand {
 
     // ── Cycle 2 ──────────────────────────────────────────────────────────────
     // FUEL intake marker, cycle 2 — same pattern as cycle 1.
-    toStation2
-        .atTime("intake")
-        .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
+    toStation2.atTime("intake").onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
 
     toStation2.done().onTrue(stationToReef2.cmd());
 
@@ -327,7 +323,8 @@ public final class ChoreoAutoCommand {
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                new FlywheelStatic(
+                        flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
                     .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));

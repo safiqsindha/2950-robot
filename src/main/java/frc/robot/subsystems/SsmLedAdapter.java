@@ -23,9 +23,9 @@ import frc.robot.subsystems.SuperstructureStateMachine.State;
  * interrupt the per-state pattern.
  *
  * <p>Pattern: call {@link #tick(State)} once per robot cycle from wherever owns the SSM + LED
- * handles (typically inside a composed command or a top-level wiring hook). Only fires an
- * animation when the observed state changes from the previous call — avoids spamming the LED
- * controller's priority comparator 50 Hz.
+ * handles (typically inside a composed command or a top-level wiring hook). Only fires an animation
+ * when the observed state changes from the previous call — avoids spamming the LED controller's
+ * priority comparator 50 Hz.
  */
 public final class SsmLedAdapter {
 
@@ -57,8 +57,8 @@ public final class SsmLedAdapter {
   }
 
   /**
-   * Force-clear the remembered state so the next {@link #tick(State)} re-applies the animation.
-   * Use when a higher-priority command (panic, manual LED mode) has temporarily overridden the
+   * Force-clear the remembered state so the next {@link #tick(State)} re-applies the animation. Use
+   * when a higher-priority command (panic, manual LED mode) has temporarily overridden the
    * SSM-driven animation and we want to resume it.
    */
   public void reset() {

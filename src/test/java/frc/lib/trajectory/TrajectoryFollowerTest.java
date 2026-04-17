@@ -9,16 +9,16 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 /**
- * HAL-free verification of the feedforward+feedback composition. A fake {@link
- * HolonomicTrajectory} lets us drive the follower with hand-picked samples and verify that:
+ * HAL-free verification of the feedforward+feedback composition. A fake {@link HolonomicTrajectory}
+ * lets us drive the follower with hand-picked samples and verify that:
  *
  * <ul>
  *   <li>When the robot is exactly on the setpoint pose, correction is zero → output equals the
  *       sample's feedforward speeds.
  *   <li>When the robot lags behind in +x, the follower produces a positive x correction.
  *   <li>When the robot has a heading error, the correction wraps the shortest way around.
- *   <li>{@link TrajectoryFollower#follow} returns {@link Optional#empty()} when the trajectory
- *       has no sample at the given time.
+ *   <li>{@link TrajectoryFollower#follow} returns {@link Optional#empty()} when the trajectory has
+ *       no sample at the given time.
  * </ul>
  */
 class TrajectoryFollowerTest {
@@ -57,9 +57,7 @@ class TrajectoryFollowerTest {
     // through the wrap), not nearly 2π the long way around.
     HolonomicTrajectorySample sample =
         new HolonomicTrajectorySample(
-            0.0,
-            new Pose2d(0.0, 0.0, Rotation2d.fromRadians(Math.PI - 0.1)),
-            new ChassisSpeeds());
+            0.0, new Pose2d(0.0, 0.0, Rotation2d.fromRadians(Math.PI - 0.1)), new ChassisSpeeds());
     ChassisSpeeds out =
         follower.computeSpeeds(
             sample, new Pose2d(0.0, 0.0, Rotation2d.fromRadians(-Math.PI + 0.1)));

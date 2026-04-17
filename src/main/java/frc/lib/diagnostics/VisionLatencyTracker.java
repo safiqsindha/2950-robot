@@ -9,8 +9,8 @@ import org.littletonrobotics.junction.Logger;
  *
  * <p>{@link VisionSubsystem} (or any caller that publishes a pose) calls {@link #record(double)}
  * with the frame's latency in milliseconds after a successful sample. The tracker maintains a
- * rolling 200-sample window (≈ 4 s at 50 Hz Limelight update) and publishes min / max / mean /
- * p95 every {@link #periodic}.
+ * rolling 200-sample window (≈ 4 s at 50 Hz Limelight update) and publishes min / max / mean / p95
+ * every {@link #periodic}.
  *
  * <p>Log keys (all under {@code VisionLatency/}):
  *
@@ -57,7 +57,9 @@ public final class VisionLatencyTracker {
     lastMs = 0.0;
   }
 
-  /** @return the rolling stats bundle. Package-private for tests. */
+  /**
+   * @return the rolling stats bundle. Package-private for tests.
+   */
   RollingWindowStats stats() {
     return stats;
   }
