@@ -41,7 +41,13 @@ public class FlywheelAim extends Command {
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    // Zero the rotation on exit. An empty end() leaves the drivetrain carrying the last commanded
+    // angular-velocity until some other command overwrites it — on a panic-button interrupt, that
+    // can be seconds of uncontrolled rotation. Safe because FlywheelAim claims the swerve
+    // requirement so no other drive command is running concurrently.
+    swerve.drive(new Translation2d(), 0.0, false);
+  }
 
   @Override
   public boolean isFinished() {

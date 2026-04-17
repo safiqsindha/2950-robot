@@ -47,7 +47,9 @@ public class FlywheelStatic extends Command {
     if (rpmReady) {
       flywheel.setLower(kFeederPercent);
       conveyor.setConveyor(kConveyorPercent);
-    } else {
+    } else if (targetRpm > 0) {
+      // Divide-by-zero guard: the ctor accepts `staticSetpointRpm` with no validation so a caller
+      // could pass 0 or negative. Without this branch the NaN rpmReady latches false forever.
       rpmReady =
           Math.abs((flywheel.getCurrentRpm() - targetRpm) / targetRpm)
               < Constants.Flywheel.kReadyThreshold;
@@ -58,6 +60,10 @@ public class FlywheelStatic extends Command {
   public void end(boolean interrupted) {
     flywheel.setTargetRpm(0);
     flywheel.setLower(0);
+    // Stop the conveyor too — otherwise a panic-button interrupt while the feed loop was
+    // running would leave the conveyor belt spinning at 100% until the next conveyor command
+    // overrides it. See FlywheelAutoFeed.end() for the same pattern.
+    conveyor.setConveyor(0);
   }
 
   @Override

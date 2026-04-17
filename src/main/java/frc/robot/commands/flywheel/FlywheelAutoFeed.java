@@ -73,7 +73,10 @@ public class FlywheelAutoFeed extends Command {
     if (rpmReady) {
       flywheel.setLower(kFeederPercent);
       conveyor.setConveyor(kConveyorPercent);
-    } else {
+    } else if (predictedRpm > 0) {
+      // Guard divide-by-zero: predictedRpm can be 0 if Limelight returns a stale zero distance
+      // that clamps past Helper.rpmFromMeters' floor, or if a test-time injection passes 0.
+      // Without this guard, rpmReady would latch false on NaN and the feeder would never fire.
       rpmReady =
           Math.abs((flywheel.getCurrentRpm() - predictedRpm) / predictedRpm)
               < frc.robot.Constants.Flywheel.kReadyThreshold;
