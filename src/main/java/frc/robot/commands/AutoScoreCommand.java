@@ -64,7 +64,9 @@ public class AutoScoreCommand extends Command {
             Commands.waitUntil(
                 () -> vision.isTargetValidFor(Constants.Superstructure.kVisionConfirmSeconds)));
 
-    Command feedShot = new FlywheelAutoFeed(flywheel, conveyor, swerve).withTimeout(2.0);
+    Command feedShot =
+        new FlywheelAutoFeed(flywheel, conveyor, swerve)
+            .withTimeout(Constants.Autonomous.kAutoScoreFeedShotTimeoutSeconds);
 
     Command retract =
         Commands.runOnce(
@@ -85,7 +87,7 @@ public class AutoScoreCommand extends Command {
                             leds.setAnimation(
                                 AnimationType.ERROR_FLASH, Constants.LEDs.kPriorityAlert),
                         leds)
-                    .withTimeout(1.5));
+                    .withTimeout(Constants.Autonomous.kAutoScoreErrorFlashSeconds));
 
     Command sequence =
         Commands.sequence(
