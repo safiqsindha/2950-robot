@@ -80,6 +80,12 @@ public final class LoggedAutoChooser {
    * <p>This is the only method that touches HAL. Tests must not call it.
    */
   public void publish() {
+    // Idempotent: second + later calls are no-ops. A double-call would otherwise orphan the
+    // first SendableChooser (registered in SmartDashboard's internal map but unreachable via
+    // our field), which AdvantageScope / the live NT widget would handle but is still a leak.
+    if (published) {
+      return;
+    }
     chooser = new SendableChooser<>();
     for (Map.Entry<String, Command> entry : options.entrySet()) {
       if (entry.getKey().equals(defaultName)) {
