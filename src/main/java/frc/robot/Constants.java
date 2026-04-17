@@ -93,6 +93,19 @@ public final class Constants {
      * literal {@code -0.1}; extracted during audit cleanup.
      */
     public static final double kLowerRetractPercent = -0.1;
+
+    /**
+     * Maximum rate of change of the flywheel RPM setpoint (RPM / s). Feeds a {@link
+     * frc.lib.control.LinearProfile} inside {@code Flywheel.periodic()} so the closed-loop velocity
+     * reference doesn't step change when commands call {@code setTargetRpm}. 8000 RPM/s is
+     * effectively transparent for the real Vortex pair (which physically accelerates ~7000 RPM/s
+     * from rest) but strips the discontinuity the PID+FF layer sees, which lowers peak current and
+     * helps the brownout budget.
+     *
+     * <p>Live-tunable at runtime via the {@code Flywheel/kMaxAccelRpmPerSec} AdvantageScope /
+     * NetworkTables entry.
+     */
+    public static final double kMaxAccelRpmPerSec = 8000.0;
   }
 
   /** Vision pose-estimator tuning constants — extracted from hardcoded values in VisionSubsystem. */
