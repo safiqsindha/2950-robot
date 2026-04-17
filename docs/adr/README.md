@@ -12,6 +12,9 @@ Format: short, informal, skimmable. Not a requirements doc — more like "here's
 - [0004](./0004-archunit-package-rules.md) — Enforce package-dependency rules via ArchUnit rather than convention
 - [0005](./0005-maple-sim-kinematic-bypass.md) — Work around the REV NEO force-direction bug via a kinematic bypass flag
 - [0006](./0006-frc-lib-no-robot-deps.md) — `frc.lib` stays HAL-free and has no `frc.robot` dependencies — the "next-season lift" invariant
+- [0007](./0007-supplier-injection-for-hal-free-tests.md) — Supplier injection as the default HAL-free testability pattern
+- [0008](./0008-asymmetric-rate-limiting-for-open-loop.md) — Asymmetric rate limiting for open-loop mechanisms
+- [0009](./0009-dependabot-scope.md) — Dependabot scope: bots do minor/patch, humans do major
 
 ## Writing a new one
 
