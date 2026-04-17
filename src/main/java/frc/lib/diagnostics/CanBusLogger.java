@@ -10,13 +10,13 @@ import org.littletonrobotics.junction.Logger;
  * give you a single-pane view of "where is the roboRIO struggling?" (JVM heap vs CAN saturation vs
  * individual Spark faults via {@code SparkAlertLogger}).
  *
- * <p>The roboRIO surfaces CAN bus utilisation as a percentage (0-100) plus cumulative
- * off-bus-error / tx-full / rx-error counters. High utilisation correlates with motor-controller
- * missed frames; each counter spikes have their own meaning:
+ * <p>The roboRIO surfaces CAN bus utilisation as a percentage (0-100) plus cumulative off-bus-error
+ * / tx-full / rx-error counters. High utilisation correlates with motor-controller missed frames;
+ * each counter spikes have their own meaning:
  *
  * <ul>
- *   <li><b>offCount</b> — controller went bus-off; a physical wiring issue (short, terminator,
- *       bad CAN cable).
+ *   <li><b>offCount</b> — controller went bus-off; a physical wiring issue (short, terminator, bad
+ *       CAN cable).
  *   <li><b>txFullCount</b> — transmit queue saturated; usually we're firing too many signals.
  *   <li><b>receiveErrorCount</b> — malformed frames on the bus, most often a bad termination.
  * </ul>
@@ -54,9 +54,9 @@ public final class CanBusLogger {
   }
 
   /**
-   * Injection constructor for tests — caller supplies a deterministic status snapshot. The
-   * supplier is invoked once per {@link #periodic()} call; lambdas that return a new {@link
-   * CANStatus} each call let a test simulate cumulative counter bumps.
+   * Injection constructor for tests — caller supplies a deterministic status snapshot. The supplier
+   * is invoked once per {@link #periodic()} call; lambdas that return a new {@link CANStatus} each
+   * call let a test simulate cumulative counter bumps.
    */
   public CanBusLogger(Supplier<CANStatus> statusSupplier) {
     this.statusSupplier = statusSupplier;
@@ -73,8 +73,8 @@ public final class CanBusLogger {
   }
 
   /**
-   * Package-private for tests — returns the current snapshot without touching the Logger. Lets
-   * a JUnit test assert the conversion from the raw {@link CANStatus} fields into typed output.
+   * Package-private for tests — returns the current snapshot without touching the Logger. Lets a
+   * JUnit test assert the conversion from the raw {@link CANStatus} fields into typed output.
    */
   Snapshot collect() {
     CANStatus raw = statusSupplier.get();

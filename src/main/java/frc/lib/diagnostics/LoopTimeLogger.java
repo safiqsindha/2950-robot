@@ -5,9 +5,9 @@ import org.littletonrobotics.junction.Logger;
 
 /**
  * Publishes loop-iteration timing to AdvantageKit. Pairs with {@link JvmLogger}, {@link
- * CanBusLogger}, and {@link PdhLogger} to answer "where did that 40 ms spike come from?" —
- * usually you can correlate a loop overrun with a GC pause, a CAN saturation burst, or a
- * sudden PDH current spike.
+ * CanBusLogger}, and {@link PdhLogger} to answer "where did that 40 ms spike come from?" — usually
+ * you can correlate a loop overrun with a GC pause, a CAN saturation burst, or a sudden PDH current
+ * spike.
  *
  * <p>Tracks:
  *
@@ -15,12 +15,12 @@ import org.littletonrobotics.junction.Logger;
  *   <li>Single-tick latency (last {@link #periodic()} call → this one)
  *   <li>Rolling max over the last {@link #ROLLING_MAX_WINDOW} ticks, so a 30-ms spike doesn't get
  *       smoothed away by normal 20-ms ticks
- *   <li>Overrun count — ticks that exceeded the configured threshold (default 25 ms, 5 ms
- *       above nominal)
+ *   <li>Overrun count — ticks that exceeded the configured threshold (default 25 ms, 5 ms above
+ *       nominal)
  * </ul>
  *
- * <p>Design mirrors the other diagnostics — {@link DoubleSupplier} injection so tests never
- * touch HAL. Pure {@code java.lang.management}-style.
+ * <p>Design mirrors the other diagnostics — {@link DoubleSupplier} injection so tests never touch
+ * HAL. Pure {@code java.lang.management}-style.
  *
  * <p>Log keys (all under {@code Loop/}):
  *
@@ -48,14 +48,16 @@ public final class LoopTimeLogger {
   private int rollingIndex = 0;
   private int rollingSize = 0;
 
-  /** Production ctor — uses WPILib's {@code Timer.getFPGATimestamp()} with the default threshold. */
+  /**
+   * Production ctor — uses WPILib's {@code Timer.getFPGATimestamp()} with the default threshold.
+   */
   public LoopTimeLogger() {
     this(edu.wpi.first.wpilibj.Timer::getFPGATimestamp, DEFAULT_OVERRUN_THRESHOLD_MS);
   }
 
   /**
-   * Test ctor — inject a clock supplier + threshold. Cheap enough that production code can use
-   * this form too (e.g. for a "strict" 22 ms threshold during competition).
+   * Test ctor — inject a clock supplier + threshold. Cheap enough that production code can use this
+   * form too (e.g. for a "strict" 22 ms threshold during competition).
    *
    * @param nowSecondsSupplier clock — typically {@code Timer::getFPGATimestamp}
    * @param overrunThresholdMs ticks longer than this log an overrun
@@ -68,7 +70,9 @@ public final class LoopTimeLogger {
     this.overrunThresholdMs = overrunThresholdMs;
   }
 
-  /** Sample one tick. Intended to be called once per {@code robotPeriodic()} at a stable cadence. */
+  /**
+   * Sample one tick. Intended to be called once per {@code robotPeriodic()} at a stable cadence.
+   */
   public void periodic() {
     Snapshot s = collect();
     Logger.recordOutput("Loop/TickMs", s.tickMs());
@@ -78,8 +82,8 @@ public final class LoopTimeLogger {
   }
 
   /**
-   * Package-private — returns the current snapshot. Useful for unit tests that want to assert
-   * the threshold / rolling-max arithmetic without a Logger sink.
+   * Package-private — returns the current snapshot. Useful for unit tests that want to assert the
+   * threshold / rolling-max arithmetic without a Logger sink.
    */
   Snapshot collect() {
     double now = nowSecondsSupplier.getAsDouble();

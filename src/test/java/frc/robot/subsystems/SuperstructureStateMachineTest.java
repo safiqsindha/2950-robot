@@ -221,8 +221,7 @@ class SuperstructureStateMachineTest {
     // If score lands exactly at the timeout, we still advance to SCORING (score takes priority).
     double timeout = Constants.Superstructure.kStagingTimeoutSeconds;
     assertEquals(
-        State.SCORING,
-        nextWithDuration(State.STAGING, 0.0, true, /* score */ true, timeout + 5.0));
+        State.SCORING, nextWithDuration(State.STAGING, 0.0, true, /* score */ true, timeout + 5.0));
   }
 
   @Test

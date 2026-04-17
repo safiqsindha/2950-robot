@@ -38,10 +38,7 @@ class ChoreoTrajectoryAdapterTest {
 
   private static Trajectory<SwerveSample> buildTrajectory() {
     return new Trajectory<>(
-        "test",
-        List.of(sampleAt(0.0), sampleAt(0.5), sampleAt(1.0)),
-        List.of(),
-        List.of());
+        "test", List.of(sampleAt(0.0), sampleAt(0.5), sampleAt(1.0)), List.of(), List.of());
   }
 
   @Test

@@ -25,8 +25,8 @@ import org.littletonrobotics.junction.Logger;
  *   <li>{@code PDH/VoltageV} — input bus voltage
  *   <li>{@code PDH/TotalCurrentA} — summed output current
  *   <li>{@code PDH/TemperatureC} — internal PDH temperature
- *   <li>{@code PDH/ChannelCurrentsA} — full 24-element array (REV) / 16-element (CTRE),
- *       matches {@link PowerDistribution#getAllCurrents()}
+ *   <li>{@code PDH/ChannelCurrentsA} — full 24-element array (REV) / 16-element (CTRE), matches
+ *       {@link PowerDistribution#getAllCurrents()}
  * </ul>
  */
 public final class PdhLogger {

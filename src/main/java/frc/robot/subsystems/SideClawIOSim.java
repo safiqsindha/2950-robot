@@ -3,9 +3,9 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 
 /**
- * Pure-Java sim for {@link SideClawIO}. Synthesizes current proportional to the commanded output
- * — matches what we'd see on hardware when the claw is running free. No "object grabbed"
- * simulation (that's a game-piece-physics concern, handled by maple-sim elsewhere).
+ * Pure-Java sim for {@link SideClawIO}. Synthesizes current proportional to the commanded output —
+ * matches what we'd see on hardware when the claw is running free. No "object grabbed" simulation
+ * (that's a game-piece-physics concern, handled by maple-sim elsewhere).
  */
 public class SideClawIOSim implements SideClawIO {
 

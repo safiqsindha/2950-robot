@@ -79,9 +79,9 @@ public class SuperstructureStateMachine extends SubsystemBase {
   }
 
   /**
-   * Free-form sub-state label — commands that own the SSM during a state set this for telemetry
-   * so post-match replay shows <i>what</i> the robot was doing during SCORING (AIMING / SPINUP
-   * / FEEDING) without extending the {@link State} enum. Cleared on state transitions.
+   * Free-form sub-state label — commands that own the SSM during a state set this for telemetry so
+   * post-match replay shows <i>what</i> the robot was doing during SCORING (AIMING / SPINUP /
+   * FEEDING) without extending the {@link State} enum. Cleared on state transitions.
    */
   private String subState = "";
 
@@ -121,14 +121,16 @@ public class SuperstructureStateMachine extends SubsystemBase {
   }
 
   /**
-   * Set a free-form sub-state label that a command owns during its execution. Cleared on the
-   * next state transition.
+   * Set a free-form sub-state label that a command owns during its execution. Cleared on the next
+   * state transition.
    */
   public void setSubState(String label) {
     subState = (label == null) ? "" : label;
   }
 
-  /** @return the current sub-state label, or empty string if none. */
+  /**
+   * @return the current sub-state label, or empty string if none.
+   */
   public String getSubState() {
     return subState;
   }
@@ -215,10 +217,10 @@ public class SuperstructureStateMachine extends SubsystemBase {
    * Return all requests to idle. Use this after a scoring sequence completes or when cancelling
    * intake.
    *
-   * <p>Emits a transition log line so post-match replay can see the explicit reset. Previously
-   * the direct-assign path skipped the transition hook entirely, making it impossible to tell
-   * from telemetry whether the SSM naturally idled out (via {@link #computeNextState}) or was
-   * forced by a caller.
+   * <p>Emits a transition log line so post-match replay can see the explicit reset. Previously the
+   * direct-assign path skipped the transition hook entirely, making it impossible to tell from
+   * telemetry whether the SSM naturally idled out (via {@link #computeNextState}) or was forced by
+   * a caller.
    */
   public void requestIdle() {
     intakeRequested = false;

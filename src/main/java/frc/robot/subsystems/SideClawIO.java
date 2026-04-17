@@ -5,9 +5,9 @@ import org.littletonrobotics.junction.AutoLog;
 /**
  * Hardware abstraction interface for the SideClaw subsystem — 2590 IO pattern.
  *
- * <p><b>Scaffold status:</b> physical SideClaw needs its SPARK MAX reflashed from CAN ID 18 to
- * CAN ID 20 before first use (conflict with Conveyor spindexer). See CAN_ID_REFERENCE.md for
- * the procedure. Until the reflash happens, wire {@code SideClawIOSim} into RobotContainer.
+ * <p><b>Scaffold status:</b> physical SideClaw needs its SPARK MAX reflashed from CAN ID 18 to CAN
+ * ID 20 before first use (conflict with Conveyor spindexer). See CAN_ID_REFERENCE.md for the
+ * procedure. Until the reflash happens, wire {@code SideClawIOSim} into RobotContainer.
  *
  * <p>Motor layout:
  *

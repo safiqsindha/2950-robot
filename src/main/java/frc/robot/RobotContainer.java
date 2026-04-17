@@ -56,11 +56,9 @@ public class RobotContainer {
 
   // Hold a direct reference to the sim IO (null on a real robot) so we can attach the maple-sim
   // drive after swerve construction for arena-driven game-piece pickup.
-  private final IntakeIOSim simIntakeIO =
-      RobotBase.isSimulation() ? new IntakeIOSim() : null;
+  private final IntakeIOSim simIntakeIO = RobotBase.isSimulation() ? new IntakeIOSim() : null;
 
-  public final Intake intake =
-      new Intake(simIntakeIO != null ? simIntakeIO : new IntakeIOReal());
+  public final Intake intake = new Intake(simIntakeIO != null ? simIntakeIO : new IntakeIOReal());
   private final Conveyor conveyor =
       new Conveyor(
           edu.wpi.first.wpilibj.RobotBase.isSimulation()
@@ -82,12 +80,14 @@ public class RobotContainer {
 
   // ─── Autonomous ───
   private final AutoFactory autoFactory = ChoreoAutoCommand.factory(swerve);
+
   /**
-   * Logged auto-routine chooser. Replaces the plain {@code SendableChooser} so the selected
-   * option name flows into AdvantageKit every cycle; also exposes a deterministic
-   * {@code selectRandom} for practice sessions.
+   * Logged auto-routine chooser. Replaces the plain {@code SendableChooser} so the selected option
+   * name flows into AdvantageKit every cycle; also exposes a deterministic {@code selectRandom} for
+   * practice sessions.
    */
   private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
+
   private final AutonomousStrategy autonomousStrategy = new AutonomousStrategy();
 
   // ─── Driver Practice (simulation only) ───
@@ -192,8 +192,7 @@ public class RobotContainer {
     // ── Default: leave-only (drive off the line) ─────────────────────────────
     autoChooser.addOption(
         "Shoot Only",
-        Commands.parallel(
-                new FlywheelAutoFeed(flywheel, conveyor, swerve), new FlywheelAim(swerve))
+        Commands.parallel(new FlywheelAutoFeed(flywheel, conveyor, swerve), new FlywheelAim(swerve))
             .withTimeout(19));
 
     // ── Choreo mobility autos ────────────────────────────────────────────────
@@ -293,22 +292,18 @@ public class RobotContainer {
     SmartDashboard.putData(
         "SysId/Drive Full Sweep (Quasi F/R + Dynamic F/R)", swerve.driveSysIdFullRoutine());
     SmartDashboard.putData(
-        "SysId/Drive Quasi Forward",
-        swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "SysId/Drive Quasi Forward", swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
     SmartDashboard.putData(
-        "SysId/Drive Quasi Reverse",
-        swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "SysId/Drive Quasi Reverse", swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData(
         "SysId/Drive Dynamic Forward", swerve.driveSysIdDynamic(SysIdRoutine.Direction.kForward));
     SmartDashboard.putData(
         "SysId/Drive Dynamic Reverse", swerve.driveSysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("SysId/Steer Full Sweep", swerve.steerSysIdFullRoutine());
     SmartDashboard.putData(
-        "SysId/Steer Quasi Forward",
-        swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "SysId/Steer Quasi Forward", swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
     SmartDashboard.putData(
-        "SysId/Steer Quasi Reverse",
-        swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "SysId/Steer Quasi Reverse", swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData(
         "SysId/Steer Dynamic Forward", swerve.steerSysIdDynamic(SysIdRoutine.Direction.kForward));
     SmartDashboard.putData(

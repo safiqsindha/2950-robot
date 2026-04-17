@@ -6,9 +6,9 @@ import frc.robot.Constants;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link ShotSimulation}. Only the pure-logic helpers are exercised —
- * {@code fire()} and {@code periodic()} both call into {@code SimulatedArena.getInstance()} and
- * {@code Logger.recordOutput}, neither of which are safe in JUnit without HAL + a running arena.
+ * Unit tests for {@link ShotSimulation}. Only the pure-logic helpers are exercised — {@code fire()}
+ * and {@code periodic()} both call into {@code SimulatedArena.getInstance()} and {@code
+ * Logger.recordOutput}, neither of which are safe in JUnit without HAL + a running arena.
  */
 class ShotSimulationTest {
 
@@ -78,8 +78,7 @@ class ShotSimulationTest {
   @Test
   void shouldFireNow_atSpeedExactlyAtInterval_returnsTrue() {
     // t=5.5 is exactly one interval after last fire — boundary is inclusive (>=).
-    assertTrue(
-        ShotSimulation.shouldFireNow(true, 5.0 + ShotSimulation.kShotIntervalSeconds, 5.0));
+    assertTrue(ShotSimulation.shouldFireNow(true, 5.0 + ShotSimulation.kShotIntervalSeconds, 5.0));
   }
 
   @Test

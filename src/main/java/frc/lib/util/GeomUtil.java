@@ -47,12 +47,12 @@ public final class GeomUtil {
   }
 
   /**
-   * Extrapolates the robot's pose forward by {@code dt} using field-relative chassis velocity,
-   * then returns the closest candidate to that <em>future</em> pose. Matches 4481's behaviour.
+   * Extrapolates the robot's pose forward by {@code dt} using field-relative chassis velocity, then
+   * returns the closest candidate to that <em>future</em> pose. Matches 4481's behaviour.
    *
    * <p>Why: if target selection happens based on {@code current}, but by the time the robot
-   * finishes aligning it's already 0.5 m away, the wrong target gets picked. Extrapolating
-   * by the time we expect to reach the target removes the race.
+   * finishes aligning it's already 0.5 m away, the wrong target gets picked. Extrapolating by the
+   * time we expect to reach the target removes the race.
    *
    * @param current current pose (field-relative)
    * @param fieldRelativeSpeeds current chassis velocity (field-relative)
@@ -85,7 +85,8 @@ public final class GeomUtil {
     double cos = Math.cos(heading);
     double sin = Math.sin(heading);
     double bodyVx = fieldRelSpeeds.vxMetersPerSecond * cos + fieldRelSpeeds.vyMetersPerSecond * sin;
-    double bodyVy = -fieldRelSpeeds.vxMetersPerSecond * sin + fieldRelSpeeds.vyMetersPerSecond * cos;
+    double bodyVy =
+        -fieldRelSpeeds.vxMetersPerSecond * sin + fieldRelSpeeds.vyMetersPerSecond * cos;
     Twist2d twist =
         new Twist2d(bodyVx * dt, bodyVy * dt, fieldRelSpeeds.omegaRadiansPerSecond * dt);
     return pose.exp(twist);

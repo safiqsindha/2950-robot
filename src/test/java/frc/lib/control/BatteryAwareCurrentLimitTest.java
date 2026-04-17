@@ -14,8 +14,7 @@ class BatteryAwareCurrentLimitTest {
 
   @Test
   void constructor_rejectsZeroCurrentLimit() {
-    assertThrows(
-        IllegalArgumentException.class, () -> new BatteryAwareCurrentLimit(6.0, 8.0, 0.0));
+    assertThrows(IllegalArgumentException.class, () -> new BatteryAwareCurrentLimit(6.0, 8.0, 0.0));
   }
 
   @Test

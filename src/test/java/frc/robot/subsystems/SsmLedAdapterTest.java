@@ -2,22 +2,21 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import frc.robot.subsystems.LEDs.AnimationType;
 import frc.robot.subsystems.LEDs.PriorityController;
 import frc.robot.subsystems.SuperstructureStateMachine.State;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link SsmLedAdapter}. We can't instantiate the real {@link LEDs} class (HAL-coupled
- * {@link edu.wpi.first.wpilibj.AddressableLED}), but we can verify the adapter's state-change
- * logic by spying on a minimal {@link PriorityController}. To do that we use a tiny stub
- * {@code LEDs} lookalike that records every {@code setAnimation} call.
+ * {@link edu.wpi.first.wpilibj.AddressableLED}), but we can verify the adapter's state-change logic
+ * by spying on a minimal {@link PriorityController}. To do that we use a tiny stub {@code LEDs}
+ * lookalike that records every {@code setAnimation} call.
  *
- * <p>Since {@link LEDs} is final-ish (can't extend via normal inheritance due to
- * {@code SubsystemBase}), we build a parallel spy that the adapter's contract is written
- * against the {@link LEDs#setAnimation} public method. Rather than reflect, we accept that the
- * direct unit tests live on {@link PriorityController} already (see {@link LEDsTest}) and here
- * we verify the transition-trigger logic via the call recorder pattern.
+ * <p>Since {@link LEDs} is final-ish (can't extend via normal inheritance due to {@code
+ * SubsystemBase}), we build a parallel spy that the adapter's contract is written against the
+ * {@link LEDs#setAnimation} public method. Rather than reflect, we accept that the direct unit
+ * tests live on {@link PriorityController} already (see {@link LEDsTest}) and here we verify the
+ * transition-trigger logic via the call recorder pattern.
  */
 class SsmLedAdapterTest {
 

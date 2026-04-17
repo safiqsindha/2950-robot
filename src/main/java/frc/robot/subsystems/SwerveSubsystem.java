@@ -8,6 +8,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.LocalADStar;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.revrobotics.spark.SparkBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -20,7 +21,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.revrobotics.spark.SparkBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.diagnostics.SparkAlertLogger;
@@ -78,9 +78,9 @@ public final class SwerveSubsystem extends SubsystemBase {
   private double lastPoseResetTimeSeconds = 0.0;
 
   /**
-   * Fault / warning logger for every SPARK drive + steer motor inside YAGSL's modules. Populated
-   * in the constructor by reflecting over {@code swerveDrive.getModules()} and registering any
-   * motor whose underlying driver is a {@link SparkBase}. Ticked from {@link #periodic()}.
+   * Fault / warning logger for every SPARK drive + steer motor inside YAGSL's modules. Populated in
+   * the constructor by reflecting over {@code swerveDrive.getModules()} and registering any motor
+   * whose underlying driver is a {@link SparkBase}. Ticked from {@link #periodic()}.
    */
   private final SparkAlertLogger swerveSparkAlerts = new SparkAlertLogger();
 
@@ -136,10 +136,10 @@ public final class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Register every REV {@link SparkBase} in YAGSL's swerve modules (drive + angle) with the
-   * {@link SparkAlertLogger}. YAGSL's {@code SwerveMotor.getMotor()} returns {@code Object} —
-   * only {@link SparkBase} instances are registered; TalonFX / other hardware is silently
-   * skipped, so this is safe to call regardless of vendordep mix.
+   * Register every REV {@link SparkBase} in YAGSL's swerve modules (drive + angle) with the {@link
+   * SparkAlertLogger}. YAGSL's {@code SwerveMotor.getMotor()} returns {@code Object} — only {@link
+   * SparkBase} instances are registered; TalonFX / other hardware is silently skipped, so this is
+   * safe to call regardless of vendordep mix.
    */
   private void registerSwerveSparkAlerts() {
     for (SwerveModule module : swerveDrive.getModules()) {

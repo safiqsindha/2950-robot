@@ -10,8 +10,8 @@ package frc.lib.util;
  *   <li>{@link #createAsLowerLimit(double, double)} — returns {@code lessThan()=true} below the
  *       lower threshold ({@code limit - hysteresis}) and {@code lessThan()=false} above the upper
  *       threshold ({@code limit + hysteresis}). Stable in the band between.
- *   <li>{@link #createAsUpperLimit(double, double)} — returns {@code greaterThan()=true} above
- *       the upper threshold and {@code false} below the lower. Same stability guarantee.
+ *   <li>{@link #createAsUpperLimit(double, double)} — returns {@code greaterThan()=true} above the
+ *       upper threshold and {@code false} below the lower. Same stability guarantee.
  * </ul>
  *
  * <p>Intended use:
@@ -38,7 +38,11 @@ public final class Hysteresis {
   private Hysteresis(double lowerThreshold, double upperThreshold, boolean invert) {
     if (lowerThreshold >= upperThreshold) {
       throw new IllegalArgumentException(
-          "lowerThreshold (" + lowerThreshold + ") must be < upperThreshold (" + upperThreshold + ")");
+          "lowerThreshold ("
+              + lowerThreshold
+              + ") must be < upperThreshold ("
+              + upperThreshold
+              + ")");
     }
     this.lowerThreshold = lowerThreshold;
     this.upperThreshold = upperThreshold;
@@ -46,9 +50,9 @@ public final class Hysteresis {
   }
 
   /**
-   * Creates a hysteresis where {@link #lessThan()} becomes {@code true} when the value drops
-   * below {@code limit − hysteresis} and becomes {@code false} when the value rises above {@code
-   * limit + hysteresis}.
+   * Creates a hysteresis where {@link #lessThan()} becomes {@code true} when the value drops below
+   * {@code limit − hysteresis} and becomes {@code false} when the value rises above {@code limit +
+   * hysteresis}.
    *
    * @param limit centerline of the hysteresis band
    * @param hysteresis half-width of the band (must be &gt; 0)
@@ -89,12 +93,16 @@ public final class Hysteresis {
     }
   }
 
-  /** @return {@code true} if the tracked value has crossed below the lower threshold */
+  /**
+   * @return {@code true} if the tracked value has crossed below the lower threshold
+   */
   public boolean lessThan() {
     return !invert && state;
   }
 
-  /** @return {@code true} if the tracked value has crossed above the upper threshold */
+  /**
+   * @return {@code true} if the tracked value has crossed above the upper threshold
+   */
   public boolean greaterThan() {
     return invert && state;
   }

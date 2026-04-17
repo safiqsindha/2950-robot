@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 /**
- * HAL-free tests for {@link ClimberIOSim}. The climber subsystem itself is HAL-coupled
- * ({@code SubsystemBase} registers with CommandScheduler) and is verified in sim/hardware; these
- * tests exercise the IO-layer contract directly.
+ * HAL-free tests for {@link ClimberIOSim}. The climber subsystem itself is HAL-coupled ({@code
+ * SubsystemBase} registers with CommandScheduler) and is verified in sim/hardware; these tests
+ * exercise the IO-layer contract directly.
  */
 class ClimberTest {
 

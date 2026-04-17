@@ -17,8 +17,8 @@ import java.util.Optional;
  * </ol>
  *
  * <p>The follower itself is stateful only in the PID controllers — the current time + pose come
- * from the caller each tick. This keeps it trivially testable (no HAL, no clocks) and lets the
- * same follower instance be shared across a whole auto routine if desired.
+ * from the caller each tick. This keeps it trivially testable (no HAL, no clocks) and lets the same
+ * follower instance be shared across a whole auto routine if desired.
  *
  * <p>Typical wiring:
  *
@@ -35,9 +35,8 @@ import java.util.Optional;
  *         .ifPresent(swerve::driveFieldRelative);
  * }</pre>
  *
- * <p>The class lives in {@code frc.lib} and has no robot-specific dependencies — gains flow
- * through the constructor and defaults are exposed as static finals for callers who don't need
- * to tune.
+ * <p>The class lives in {@code frc.lib} and has no robot-specific dependencies — gains flow through
+ * the constructor and defaults are exposed as static finals for callers who don't need to tune.
  */
 public final class TrajectoryFollower {
 
@@ -76,8 +75,8 @@ public final class TrajectoryFollower {
    * @param trajectory the trajectory to follow
    * @param currentPose the robot's current field-relative pose
    * @param currentTimeSeconds seconds elapsed since the trajectory started
-   * @return field-relative chassis speeds combining feedforward + PID correction, or empty if
-   *     the trajectory has no sample at this time (before start / after end / empty trajectory)
+   * @return field-relative chassis speeds combining feedforward + PID correction, or empty if the
+   *     trajectory has no sample at this time (before start / after end / empty trajectory)
    */
   public Optional<ChassisSpeeds> follow(
       HolonomicTrajectory trajectory, Pose2d currentPose, double currentTimeSeconds) {
@@ -88,9 +87,9 @@ public final class TrajectoryFollower {
 
   /**
    * Compute the chassis speeds for a known sample + pose without the {@link HolonomicTrajectory}
-   * indirection. Useful when the caller already has a sample in hand (e.g. the Choreo auto
-   * factory unwraps {@code SwerveSample} → {@link HolonomicTrajectorySample} inline) and also
-   * valuable for unit tests that exercise the feedforward + feedback math directly.
+   * indirection. Useful when the caller already has a sample in hand (e.g. the Choreo auto factory
+   * unwraps {@code SwerveSample} → {@link HolonomicTrajectorySample} inline) and also valuable for
+   * unit tests that exercise the feedforward + feedback math directly.
    */
   public ChassisSpeeds computeSpeeds(HolonomicTrajectorySample sample, Pose2d currentPose) {
     Pose2d target = sample.pose();
@@ -109,8 +108,8 @@ public final class TrajectoryFollower {
   }
 
   /**
-   * Zero the internal PID integrators / derivative history. Call at the start of every
-   * trajectory so stale error from the previous run doesn't leak into the new one.
+   * Zero the internal PID integrators / derivative history. Call at the start of every trajectory
+   * so stale error from the previous run doesn't leak into the new one.
    */
   public void reset() {
     xController.reset();
