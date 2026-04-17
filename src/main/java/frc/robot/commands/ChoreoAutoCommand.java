@@ -5,7 +5,6 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import frc.lib.trajectory.HolonomicTrajectorySample;
@@ -128,26 +127,6 @@ public final class ChoreoAutoCommand {
         },
         true, // flip coordinates for red alliance
         swerve);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONVENIENCE — single-trajectory runner
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /**
-   * Create a command that follows a single named Choreo trajectory. Resets odometry to the
-   * trajectory start pose before driving.
-   *
-   * @param trajectoryName the {@code .traj} filename without extension
-   * @param swerve the swerve subsystem
-   * @return a {@link Command} that follows the trajectory and finishes when complete
-   */
-  public static Command trajectory(String trajectoryName, SwerveSubsystem swerve) {
-    AutoFactory f = factory(swerve);
-    AutoRoutine routine = f.newRoutine(trajectoryName);
-    AutoTrajectory traj = routine.trajectory(trajectoryName);
-    routine.active().onTrue(traj.resetOdometry().andThen(traj.cmd()));
-    return routine.cmd();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

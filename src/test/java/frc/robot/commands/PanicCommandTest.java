@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link PanicCommand}. Verifies the three panic side effects fire in the intended order
  * using injected {@link Runnable} mocks — no HAL, no CommandScheduler, no subsystem construction,
- * matching the 2950 convention from {@code SpeedModeManagerTest} and {@code StallDetectorTest}.
+ * matching the 2950 convention from {@code StallDetectorTest}.
  */
 class PanicCommandTest {
 
