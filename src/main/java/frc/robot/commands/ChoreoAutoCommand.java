@@ -48,10 +48,22 @@ public final class ChoreoAutoCommand {
   /** Drive straight off the starting line (~2 m forward). */
   public static final String TRAJ_LEAVE_START = "leaveStart";
 
-  /** Drive from reef scoring position to nearest coral station. */
+  /**
+   * Drive from HUB scoring position to nearest FUEL intake.
+   *
+   * <p>Constant name retains legacy {@code REEF_TO_STATION} (and the value
+   * {@code "reefToStation"}) because it must match the on-disk Choreo {@code .traj}
+   * filename. The .traj files will be renamed when the 2026 paths are re-authored in
+   * Choreo desktop (migration step 5); this constant will be renamed in lock-step.
+   */
   public static final String TRAJ_REEF_TO_STATION = "reefToStation";
 
-  /** Drive from coral station back to reef scoring position. */
+  /**
+   * Drive from FUEL intake back to HUB scoring position.
+   *
+   * <p>Constant name retains legacy {@code STATION_TO_REEF} — see note on
+   * {@link #TRAJ_REEF_TO_STATION}.
+   */
   public static final String TRAJ_STATION_TO_REEF = "stationToReef";
 
   private ChoreoAutoCommand() {}
@@ -155,7 +167,7 @@ public final class ChoreoAutoCommand {
   }
 
   /**
-   * <b>Score and Leave</b> — shoot the preloaded coral with the flywheel, then drive off the
+   * <b>Score and Leave</b> — shoot the preloaded FUEL with the flywheel, then drive off the
    * starting line.
    *
    * <p>Requires: {@value #TRAJ_LEAVE_START}.traj
@@ -169,7 +181,7 @@ public final class ChoreoAutoCommand {
         .active()
         .onTrue(
             Commands.sequence(
-                // Shoot preloaded coral (up to 3 s), then drive off line
+                // Shoot preloaded FUEL (up to 3 s), then drive off line
                 new FlywheelAutoFeed(flywheel, conveyor, swerve)
                     .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 leave.resetOdometry().andThen(leave.cmd())));
@@ -178,35 +190,36 @@ public final class ChoreoAutoCommand {
   }
 
   /**
-   * <b>2 Coral</b> — shoot preloaded coral, drive to the nearest coral station to collect a second
-   * coral, return to the reef, and shoot again.
+   * <b>2 Fuel</b> — shoot preloaded FUEL, drive to the nearest FUEL intake to collect a second
+   * piece, return to the HUB, and shoot again.
    *
-   * <p>After the station pickup, a {@link ConditionalCommand} checks {@code ssm.hasGamePiece()}
+   * <p>After the intake pickup, a {@link ConditionalCommand} checks {@code ssm.hasGamePiece()}
    * before attempting the second shot. If the pickup failed, the robot skips scoring and returns to
    * idle — preventing a wasted spin-up cycle.
    *
    * <p>Requires: {@value #TRAJ_REEF_TO_STATION}.traj, {@value #TRAJ_STATION_TO_REEF}.traj
+   * (legacy filenames pending step-5 Choreo re-author).
    *
    * <p>Event markers expected in trajectories:
    *
    * <ul>
    *   <li>{@code "intake"} in {@value #TRAJ_REEF_TO_STATION} — extend intake as robot approaches
-   *       station
-   *   <li>{@code "spinup"} in {@value #TRAJ_STATION_TO_REEF} — spin flywheel before reaching reef
+   *       the FUEL intake
+   *   <li>{@code "spinup"} in {@value #TRAJ_STATION_TO_REEF} — spin flywheel before reaching HUB
    * </ul>
    */
-  public static AutoRoutine twoCoralRoutine(
+  public static AutoRoutine twoFuelRoutine(
       AutoFactory factory,
       Flywheel flywheel,
       Conveyor conveyor,
       Intake intake,
       SuperstructureStateMachine ssm,
       SwerveSubsystem swerve) {
-    AutoRoutine routine = factory.newRoutine("2 Coral");
+    AutoRoutine routine = factory.newRoutine("2 Fuel");
     AutoTrajectory toStation = routine.trajectory(TRAJ_REEF_TO_STATION);
     AutoTrajectory stationToReef = routine.trajectory(TRAJ_STATION_TO_REEF);
 
-    // Step 1: shoot preloaded coral, then drive to station
+    // Step 1: shoot preloaded FUEL, then drive to the FUEL intake
     routine
         .active()
         .onTrue(
@@ -215,10 +228,15 @@ public final class ChoreoAutoCommand {
                     .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation.resetOdometry().andThen(toStation.cmd())));
 
-    // Step 2: when arriving at station, drive back toward reef
+    // Bind the Choreo "intake" event marker so the intake wheel actually runs during
+    // the approach to the FUEL intake. Without this, the routine's "intake" marker
+    // would fire into empty air. See AutoIntakeCommand for details.
+    toStation.atTime("intake").onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
+
+    // Step 2: when arriving at the FUEL intake, drive back toward the HUB
     toStation.done().onTrue(stationToReef.cmd());
 
-    // Step 3: spin up flywheel 1.5 s before reaching reef — only if game piece was acquired
+    // Step 3: spin up flywheel 1.5 s before reaching HUB — only if a game piece was acquired
     stationToReef
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
@@ -228,7 +246,7 @@ public final class ChoreoAutoCommand {
                 Commands.none(),
                 ssm::hasGamePiece));
 
-    // Step 4: when back at reef, shoot only if we successfully picked up a game piece
+    // Step 4: when back at HUB, shoot only if we successfully picked up a game piece
     stationToReef
         .done()
         .onTrue(
@@ -238,34 +256,34 @@ public final class ChoreoAutoCommand {
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(
-                            "Auto/SkippedShot", "2Coral-NoGamePiece")),
+                            "Auto/SkippedShot", "2Fuel-NoGamePiece")),
                 ssm::hasGamePiece));
 
     return routine;
   }
 
   /**
-   * <b>3 Coral</b> — two full station cycles: shoot preloaded, collect two more corals from the
-   * station, and score all three.
+   * <b>3 Fuel</b> — two full FUEL-intake cycles: shoot preloaded, collect two more FUEL pieces
+   * from the intake, and score all three.
    *
-   * <p>Both scoring attempts after station pickups are gated by {@link ConditionalCommand} checking
+   * <p>Both scoring attempts after intake pickups are gated by {@link ConditionalCommand} checking
    * {@code ssm.hasGamePiece()}. A missed pickup causes the robot to skip the shot and move on to
    * the next cycle rather than wasting time spinning up the flywheel.
    *
    * <p>Requires: {@value #TRAJ_REEF_TO_STATION}.traj, {@value #TRAJ_STATION_TO_REEF}.traj (both run
-   * twice).
+   * twice, legacy filenames pending step-5 Choreo re-author).
    *
    * <p>This routine reuses the same trajectory segments for both collection cycles. If the two
    * cycles require different paths, split them into separate {@code .traj} files.
    */
-  public static AutoRoutine threeCoralRoutine(
+  public static AutoRoutine threeFuelRoutine(
       AutoFactory factory,
       Flywheel flywheel,
       Conveyor conveyor,
       Intake intake,
       SuperstructureStateMachine ssm,
       SwerveSubsystem swerve) {
-    AutoRoutine routine = factory.newRoutine("3 Coral");
+    AutoRoutine routine = factory.newRoutine("3 Fuel");
 
     // First cycle uses split index 0 (or whole file if no splits defined)
     AutoTrajectory toStation1 = routine.trajectory(TRAJ_REEF_TO_STATION, 0);
@@ -284,14 +302,14 @@ public final class ChoreoAutoCommand {
                     .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation1.resetOdometry().andThen(toStation1.cmd())));
 
-    // Station 1 intake marker — run the intake during approach so hasGamePiece() can flip true.
+    // FUEL intake marker, cycle 1 — run the intake during approach so hasGamePiece() can flip true.
     toStation1
         .atTime("intake")
         .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
 
     toStation1.done().onTrue(stationToReef1.cmd());
 
-    // Spin up only if game piece acquired at station 1
+    // Spin up only if game piece acquired at FUEL intake cycle 1
     stationToReef1
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
@@ -312,20 +330,20 @@ public final class ChoreoAutoCommand {
                     Commands.runOnce(
                         () ->
                             org.littletonrobotics.junction.Logger.recordOutput(
-                                "Auto/SkippedShot", "3Coral-Cycle1-NoGamePiece")),
+                                "Auto/SkippedShot", "3Fuel-Cycle1-NoGamePiece")),
                     ssm::hasGamePiece),
                 // Always attempt cycle 2 regardless of cycle 1 outcome
                 toStation2.cmd()));
 
     // ── Cycle 2 ──────────────────────────────────────────────────────────────
-    // Station 2 intake marker — same pattern as cycle 1.
+    // FUEL intake marker, cycle 2 — same pattern as cycle 1.
     toStation2
         .atTime("intake")
         .onTrue(new AutoIntakeCommand(intake, ssm).withTimeout(3.0));
 
     toStation2.done().onTrue(stationToReef2.cmd());
 
-    // Spin up only if game piece acquired at station 2
+    // Spin up only if game piece acquired at FUEL intake cycle 2
     stationToReef2
         .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
@@ -345,7 +363,7 @@ public final class ChoreoAutoCommand {
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(
-                            "Auto/SkippedShot", "3Coral-Cycle2-NoGamePiece")),
+                            "Auto/SkippedShot", "3Fuel-Cycle2-NoGamePiece")),
                 ssm::hasGamePiece));
 
     return routine;

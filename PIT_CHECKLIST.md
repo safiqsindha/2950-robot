@@ -25,7 +25,7 @@ Companion docs:
 
 - [ ] Load `src/main/deploy/elastic-layout.json` into Elastic (or Shuffleboard layout file if Shuffleboard is in use)
 - [ ] Verify Elastic **Match** tab shows:
-    - Auto chooser populated with all routines (Leave, Leave Only (Raw), Score + Leave, 2 Coral, 3 Coral, Full Autonomous, Safe Mode)
+    - Auto chooser populated with all routines (Leave, Leave Only (Raw), Score + Leave, 2 Fuel, 3 Fuel, Full Autonomous, Safe Mode)
     - Battery voltage live
     - Field widget with robot pose
     - Gyro reads 0° with robot pointed downfield

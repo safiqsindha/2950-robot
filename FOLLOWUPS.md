@@ -43,12 +43,7 @@ Intent queue for work surfaced during a session but not done in that session. Ad
 
   8. **Vision pose gates** — `kMaxTagDistM = 4.0` likely still OK (HUB tag height 1.124 m is similar to Reef). `kMaxLinearSpeedForVisionMps`, `kMaxCorrectionAutoMeters` are velocity/drift gates, not distance-sensitive. Low priority.
 
-  9. **Terminology pass** — `twoCoralRoutine` → `twoFuelRoutine`, `threeCoralRoutine` → `threeFuelRoutine`, `reefToStation.traj` → `hubToIntake.traj` (etc.), `advantagescope-layout.json` game string, GLOSSARY Reef → HUB, test example poses, README/docs. Cosmetic but necessary to keep code self-documenting. Run:
-     ```
-     grep -rn "coral\|reef\|station\b" src/ *.md docs/ advantagescope-layout.json \
-       --include=*.java --include=*.md --include=*.json \
-       | grep -vE "swervelib|RebuiltFuel"
-     ```
+  9. **Terminology pass** — **MOSTLY DONE** this PR. Source-side renames shipped: `twoCoralRoutine` → `twoFuelRoutine`, `threeCoralRoutine` → `threeFuelRoutine`, display strings "2 Coral" → "2 Fuel" / "3 Coral" → "3 Fuel", log keys `*Coral-NoGamePiece` → `*Fuel-NoGamePiece`, docstrings across `ChoreoAutoCommand`/`TrajectoryFollower`/`HolonomicTrajectory`/`GeomUtil`/`DynamicAvoidanceLayer` (all "Reef" → "HUB", "coral" → "FUEL", "coral station" → "FUEL intake"). Docs updated in PIT_CHECKLIST/README/STUDENT_TESTING_GUIDE. Layout strings corrected: `elastic-layout.json` "Reefscape" → "Rebuilt", `advantagescope-layout.json` "2026Reefscape" → "2026Rebuilt". **Still pending (coupled with step 5):** `.traj` filename renames (`reefToStation.traj` → e.g. `hubToIntake.traj`), and the `TRAJ_REEF_TO_STATION`/`TRAJ_STATION_TO_REEF` constant names + local variable names (`stationToReef`, `toStation1` etc.) that mirror the .traj filenames — these rename when the 2026 paths are re-authored in Choreo desktop.
 
   **Cannot be done in a single PR.** Items 3, 4, 5 are hardware-/CAD-gated and each large. Item 9 is two sub-PRs (source renames vs trajectory-file renames). Expect ~6 more PRs after this one.
 

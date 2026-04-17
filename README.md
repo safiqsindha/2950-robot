@@ -169,8 +169,8 @@ Mode picker lives on the SmartDashboard `Auto Chooser`.
 | Leave Only (Raw) | Direct `driveRobotRelative` — sanity-test swerve without Choreo |
 | Shoot Only | Flywheel aim + auto-feed for 19 s |
 | Score + Leave | Shoot preloaded, then Choreo leave |
-| 2 Coral | Score preloaded → station → collect → return → score |
-| 3 Coral | Two full station cycles, three total scored |
+| 2 Fuel | Score preloaded → FUEL intake → collect → return → score |
+| 3 Fuel | Two full FUEL intake cycles, three total scored |
 | **Full Autonomous** | Strategy-driven loop with dynamic obstacle avoidance |
 | Safe Mode (No Vision) | Dead reckoning fallback — drive 2 m forward, blind shot at 2800 RPM |
 

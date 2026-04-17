@@ -546,8 +546,8 @@ Test at each distance to verify shots land consistently.
 | **Leave Only (Raw)** | Waits 3s then drives forward at 1 m/s for 2s | Backup if Choreo trajectories aren't working |
 | **Shoot Only** | Aims at AprilTag + fires flywheel for 19 seconds | When positioned at scoring distance |
 | **Score + Leave** | Shoots preloaded game piece, then drives out | Standard safe auto |
-| **2 Coral** | Scores preload, drives to station, cycles back to score again | Higher-risk, higher-reward |
-| **3 Coral** | Three-piece auto — preload + 2 pickups | Requires reliable vision and intake |
+| **2 Fuel** | Scores preload, drives to FUEL intake, cycles back to score again | Higher-risk, higher-reward |
+| **3 Fuel** | Three-piece auto — preload + 2 pickups | Requires reliable vision and intake |
 | **Full Autonomous** | AI strategy engine with A* pathfinding, dynamic avoidance | Competition-level, requires extensive testing |
 
 ### Testing Each Mode
@@ -558,7 +558,7 @@ Test at each distance to verify shots land consistently.
 2. **Leave Only** — tests Choreo trajectory following. If this fails but Raw works, the issue is trajectory files.
 3. **Shoot Only** — tests vision + flywheel integration. Requires AprilTag visible.
 4. **Score + Leave** — combines shooting and driving.
-5. **2 Coral / 3 Coral** — complex autos. Test only after simpler modes work.
+5. **2 Fuel / 3 Fuel** — complex autos. Test only after simpler modes work.
 6. **Full Autonomous** — competition mode. Test last.
 
 **For each test:**
