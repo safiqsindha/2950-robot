@@ -184,13 +184,17 @@ public final class Constants {
 
   /** Pathfinding and autonomous strategy constants. */
   public static final class Pathfinding {
-    // Dynamic avoidance
-    public static final double kOpponentInfluenceRadiusMeters = 2.0;
-    public static final double kMaxRobotSpeedMps = 4.5;
-    // Attractive gain (toward waypoint)
-    public static final double kAttractiveGain = 1.0;
-    // Repulsive gain (away from opponents)
-    public static final double kRepulsiveGain = 1.5;
+    // Dynamic avoidance — source the defaults from frc.lib.pathfinding so the library stays the
+    // single source of truth. Override here if the robot needs non-default tuning; otherwise edit
+    // `DynamicAvoidanceLayer.DEFAULT_*` and both the library callers and this block move together.
+    public static final double kOpponentInfluenceRadiusMeters =
+        frc.lib.pathfinding.DynamicAvoidanceLayer.DEFAULT_OPPONENT_INFLUENCE_RADIUS_M;
+    public static final double kMaxRobotSpeedMps =
+        frc.lib.pathfinding.DynamicAvoidanceLayer.DEFAULT_MAX_ROBOT_SPEED_MPS;
+    public static final double kAttractiveGain =
+        frc.lib.pathfinding.DynamicAvoidanceLayer.DEFAULT_ATTRACTIVE_GAIN;
+    public static final double kRepulsiveGain =
+        frc.lib.pathfinding.DynamicAvoidanceLayer.DEFAULT_REPULSIVE_GAIN;
 
     // Bot Aborter — abort if opponent arrives this many seconds before robot
     public static final double kAbortTimeThresholdSeconds = 0.75;

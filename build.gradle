@@ -94,6 +94,11 @@ dependencies {
     // JUnit 5 for testing
     testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    // ArchUnit — enforce package-dependency rules at test time.
+    // Used by frc/lib/ArchitectureTest to keep frc.lib reusable (it must not take
+    // inbound edges from frc.robot) and to catch bad imports before they land.
+    testImplementation "com.tngtech.archunit:archunit-junit5:1.3.0"
 }
 
 test {
