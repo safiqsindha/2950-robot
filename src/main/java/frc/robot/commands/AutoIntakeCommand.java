@@ -11,9 +11,9 @@ import frc.robot.subsystems.SuperstructureStateMachine;
  *
  * <p>Why this exists: the default {@code IntakeControl} command reads the operator trigger, which
  * is zero during autonomous. Without a dedicated auto command, the routine's "intake" marker
- * docstring was a lie — the intake motor never ran, the SSM never saw the current spike, and
- * every conditional scoring branch downstream was silently skipped. A post-shipment external
- * review surfaced this as a match-losing bug.
+ * docstring was a lie — the intake motor never ran, the SSM never saw the current spike, and every
+ * conditional scoring branch downstream was silently skipped. A post-shipment external review
+ * surfaced this as a match-losing bug.
  *
  * <p>Lifecycle:
  *

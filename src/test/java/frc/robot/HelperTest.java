@@ -92,7 +92,8 @@ class HelperTest {
     double slopeRight = (Helper.rpmFromMeters(X3 + h) - Helper.rpmFromMeters(X3)) / h;
     double jump = slopeRight - slopeLeft;
     // The jump is positive (linear tail is steeper) and should stay in a 30 % relative band.
-    assertTrue(jump > 100.0 && jump < 150.0,
+    assertTrue(
+        jump > 100.0 && jump < 150.0,
         "C1 slope jump at X3 must stay near 121 RPM/m; observed " + jump);
     double relative = jump / slopeLeft;
     assertTrue(
@@ -281,10 +282,10 @@ class HelperTest {
     // so RPM should be higher than stationary — opposite of bearing=0 case.
     double dist = 2.0;
     double stationary = Helper.rpmFromMeters(dist);
-    double forwardButTargetBehind = Helper.rpmFromMeters(dist, Math.PI, new ChassisSpeeds(1.0, 0, 0));
+    double forwardButTargetBehind =
+        Helper.rpmFromMeters(dist, Math.PI, new ChassisSpeeds(1.0, 0, 0));
     assertTrue(
-        forwardButTargetBehind > stationary,
-        "vx+ with target behind = moving away = more RPM");
+        forwardButTargetBehind > stationary, "vx+ with target behind = moving away = more RPM");
   }
 
   @Test

@@ -37,15 +37,19 @@ public class Flywheel extends SubsystemBase {
 
   /**
    * Actual RPM currently commanded to the PID (ramped toward {@link #goalRpm} via {@link
-   * #profile}). Logged for telemetry; consumers should check {@link #isAtSpeed()} against the
-   * goal, not this.
+   * #profile}). Logged for telemetry; consumers should check {@link #isAtSpeed()} against the goal,
+   * not this.
    */
   private double setpointRpm = 0.0;
 
-  /** True while open-loop percent output overrides the velocity controller (see FlywheelDynamic). */
+  /**
+   * True while open-loop percent output overrides the velocity controller (see FlywheelDynamic).
+   */
   private boolean openLoopMode = false;
 
-  /** Rate limiter that slews {@link #setpointRpm} toward {@link #goalRpm} in {@link #periodic()}. */
+  /**
+   * Rate limiter that slews {@link #setpointRpm} toward {@link #goalRpm} in {@link #periodic()}.
+   */
   private final LinearProfile profile =
       new LinearProfile(Constants.Flywheel.kMaxAccelRpmPerSec, 0.02);
 
@@ -103,8 +107,8 @@ public class Flywheel extends SubsystemBase {
    * toward it in {@link #periodic()} at up to {@link Constants.Flywheel#kMaxAccelRpmPerSec}.
    *
    * <p>If the caller was previously in open-loop mode (via {@link #setVortexOutput}), the internal
-   * profile is re-seeded to the currently measured RPM so the ramp starts from reality rather
-   * than a stale setpoint.
+   * profile is re-seeded to the currently measured RPM so the ramp starts from reality rather than
+   * a stale setpoint.
    *
    * @param rpm target speed in RPM
    */
@@ -167,8 +171,8 @@ public class Flywheel extends SubsystemBase {
   }
 
   /**
-   * @return the RPM currently commanded to the PID (ramped toward {@link #getGoalRpm()} at
-   *     {@link Constants.Flywheel#kMaxAccelRpmPerSec}).
+   * @return the RPM currently commanded to the PID (ramped toward {@link #getGoalRpm()} at {@link
+   *     Constants.Flywheel#kMaxAccelRpmPerSec}).
    */
   public double getSetpointRpm() {
     return setpointRpm;
@@ -178,14 +182,12 @@ public class Flywheel extends SubsystemBase {
    * @return {@code true} when a non-zero <i>goal</i> has been commanded and the measured velocity
    *     is within {@link Constants.Flywheel#kReadyThreshold} of the goal. Used by {@code
    *     AutoScoreCommand}, {@code FlywheelAutoFeed}, and simulation shot triggers.
-   *
-   *     <p>Important: this compares against the final goal, not the slewed intermediate setpoint
-   *     — otherwise a caller could think the wheel is ready when in reality the ramp is still
-   *     below the goal.
+   *     <p>Important: this compares against the final goal, not the slewed intermediate setpoint —
+   *     otherwise a caller could think the wheel is ready when in reality the ramp is still below
+   *     the goal.
    */
   public boolean isAtSpeed() {
     return goalRpm > 0
-        && Math.abs(inputs.velocityRpm - goalRpm) / goalRpm
-            < Constants.Flywheel.kReadyThreshold;
+        && Math.abs(inputs.velocityRpm - goalRpm) / goalRpm < Constants.Flywheel.kReadyThreshold;
   }
 }

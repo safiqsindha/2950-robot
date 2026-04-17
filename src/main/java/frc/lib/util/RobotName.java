@@ -12,8 +12,8 @@ import java.util.Optional;
  *
  * <p>Solution to the "practice bot vs. comp bot" constants-divergence problem. Each physical bot
  * writes its name to {@code /home/lvuser/ROBOT_NAME} once (via SSH or a one-time deploy). At
- * runtime, {@link #current()} reads the file and returns a typed enum so constants tables can
- * fork per-bot without env vars, Preferences, or branch management.
+ * runtime, {@link #current()} reads the file and returns a typed enum so constants tables can fork
+ * per-bot without env vars, Preferences, or branch management.
  *
  * <pre>{@code
  * public static final double kDriveGearRatio =
@@ -23,8 +23,8 @@ import java.util.Optional;
  *         RobotName.PRACTICE, 6.12);           // practice bot uses old modules
  * }</pre>
  *
- * <p>Default file path: {@code /home/lvuser/ROBOT_NAME}. Alternate path can be injected for
- * testing via {@link #setFilePath(Path)}.
+ * <p>Default file path: {@code /home/lvuser/ROBOT_NAME}. Alternate path can be injected for testing
+ * via {@link #setFilePath(Path)}.
  *
  * <p>All enum values here are placeholders — rename freely to match your fleet.
  */
@@ -42,8 +42,8 @@ public enum RobotName {
   private static RobotName cachedValue = null;
 
   /**
-   * Override the path from which {@link #current()} reads the identifier. Package-private for
-   * unit testing — production code uses the default {@code /home/lvuser/ROBOT_NAME}.
+   * Override the path from which {@link #current()} reads the identifier. Package-private for unit
+   * testing — production code uses the default {@code /home/lvuser/ROBOT_NAME}.
    */
   static void setFilePath(Path path) {
     filePath = path;

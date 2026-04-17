@@ -24,8 +24,8 @@ import org.littletonrobotics.junction.Logger;
  *
  * <p><b>Arm setpoint slewing.</b> {@link #updateTargetAngle} records the caller's <i>goal</i>
  * position; the setpoint actually pushed to the onboard PID is rate-limited by a {@link
- * LinearProfile} in {@link #periodic()}. Mirrors the Flywheel pattern — keeps the PID from
- * seeing a step change and lowers peak arm-motor current. The rate limit ({@link
+ * LinearProfile} in {@link #periodic()}. Mirrors the Flywheel pattern — keeps the PID from seeing a
+ * step change and lowers peak arm-motor current. The rate limit ({@link
  * Constants.Intake#kMaxArmAccelRotPerSec}) is tuned to be effectively transparent for normal
  * mechanical motion while still smoothing command-triggered transients.
  */
@@ -38,12 +38,14 @@ public class Intake extends SubsystemBase {
   private double goalArmPositionRotations = 0.0;
 
   /**
-   * Actual arm position commanded to the PID (ramped toward {@link #goalArmPositionRotations}
-   * via {@link #armProfile}). Logged for telemetry.
+   * Actual arm position commanded to the PID (ramped toward {@link #goalArmPositionRotations} via
+   * {@link #armProfile}). Logged for telemetry.
    */
   private double armSetpointRotations = 0.0;
 
-  /** Rate limiter that slews {@link #armSetpointRotations} toward the goal in {@link #periodic()}. */
+  /**
+   * Rate limiter that slews {@link #armSetpointRotations} toward the goal in {@link #periodic()}.
+   */
   private final LinearProfile armProfile =
       new LinearProfile(Constants.Intake.kMaxArmAccelRotPerSec, 0.02);
 
@@ -78,8 +80,7 @@ public class Intake extends SubsystemBase {
 
   /** Tunable wheel slew rate. */
   private final LoggedTunableNumber tunableMaxWheelAccel =
-      new LoggedTunableNumber(
-          "Intake/kMaxWheelAccelPerSec", Constants.Intake.kMaxWheelAccelPerSec);
+      new LoggedTunableNumber("Intake/kMaxWheelAccelPerSec", Constants.Intake.kMaxWheelAccelPerSec);
 
   public Intake(IntakeIO io) {
     this.io = io;
@@ -121,9 +122,9 @@ public class Intake extends SubsystemBase {
 
   /**
    * Set intake wheel percent output. Stored as a goal; {@link #periodic()} slews toward it via
-   * {@link AsymmetricRateLimiter} — ramping up at {@link Constants.Intake#kMaxWheelAccelPerSec}
-   * but snapping to the commanded value on ramp-down so a panic {@code setWheel(0)} stops the
-   * motor immediately.
+   * {@link AsymmetricRateLimiter} — ramping up at {@link Constants.Intake#kMaxWheelAccelPerSec} but
+   * snapping to the commanded value on ramp-down so a panic {@code setWheel(0)} stops the motor
+   * immediately.
    *
    * @param percent output (-1 to 1)
    */
@@ -166,12 +167,16 @@ public class Intake extends SubsystemBase {
     return inputs.wheelCurrentAmps;
   }
 
-  /** @return the goal arm position most recently set by {@link #updateTargetAngle}. */
+  /**
+   * @return the goal arm position most recently set by {@link #updateTargetAngle}.
+   */
   public double getGoalArmPositionRotations() {
     return goalArmPositionRotations;
   }
 
-  /** @return the ramped arm setpoint currently fed to the onboard PID. */
+  /**
+   * @return the ramped arm setpoint currently fed to the onboard PID.
+   */
   public double getArmSetpointRotations() {
     return armSetpointRotations;
   }

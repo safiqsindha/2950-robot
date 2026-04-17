@@ -6,8 +6,8 @@ import java.util.function.DoubleSupplier;
 import org.junit.jupiter.api.Test;
 
 /**
- * HAL-free tests for {@link LoopTimeLogger}. A mutable {@link DoubleSupplier} lets tests drive
- * the clock precisely so we can assert tick math, rolling max, and overrun counting.
+ * HAL-free tests for {@link LoopTimeLogger}. A mutable {@link DoubleSupplier} lets tests drive the
+ * clock precisely so we can assert tick math, rolling max, and overrun counting.
  */
 class LoopTimeLoggerTest {
 
@@ -30,7 +30,8 @@ class LoopTimeLoggerTest {
     FakeClock clock = new FakeClock();
     LoopTimeLogger logger = new LoopTimeLogger(clock, 25.0);
     LoopTimeLogger.Snapshot s = logger.collect();
-    assertEquals(0.0, s.tickMs(), 1e-9, "First tick has no baseline — report zero, not seconds-since-boot");
+    assertEquals(
+        0.0, s.tickMs(), 1e-9, "First tick has no baseline — report zero, not seconds-since-boot");
   }
 
   @Test
@@ -107,7 +108,8 @@ class LoopTimeLoggerTest {
       logger.collect();
     }
     double maxAfter = logger.collect().maxTickMs();
-    assertTrue(maxAfter < 100.0, "Spike should have rolled off after window fills; got " + maxAfter);
+    assertTrue(
+        maxAfter < 100.0, "Spike should have rolled off after window fills; got " + maxAfter);
   }
 
   @Test

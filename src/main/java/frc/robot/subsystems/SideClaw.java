@@ -11,9 +11,9 @@ import org.littletonrobotics.junction.Logger;
  * CAN ID 18 → 20 (see CAN_ID_REFERENCE.md) before {@code SideClawIOReal} can be added and this
  * class pointed at it.
  *
- * <p>The claw uses the same {@link AsymmetricRateLimiter} safety-stop pattern as the Intake
- * wheel: ramps up to avoid a current spike on startup, snaps to zero when the command ends to
- * avoid dragging an object after a panic interrupt.
+ * <p>The claw uses the same {@link AsymmetricRateLimiter} safety-stop pattern as the Intake wheel:
+ * ramps up to avoid a current spike on startup, snaps to zero when the command ends to avoid
+ * dragging an object after a panic interrupt.
  */
 public final class SideClaw extends SubsystemBase {
 
@@ -52,7 +52,9 @@ public final class SideClaw extends SubsystemBase {
     limiter.reset(0.0);
   }
 
-  /** @return current drawn by the claw motor (A). */
+  /**
+   * @return current drawn by the claw motor (A).
+   */
   public double getCurrentAmps() {
     return inputs.currentAmps;
   }

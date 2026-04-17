@@ -45,25 +45,24 @@ public final class AutonomousStrategy {
   //     y = 0.666 / 1.098 (pair 1) and 3.746 / 4.178 (pair 2)
 
   /**
-   * Blue HUB scoring pose. 2025-era placeholder — (3.39, 4.11) was the 2025 Blue Reef center.
-   * 2026 Blue HUB center is at (4.537, 4.035); appropriate approach pose depends on shot
-   * strategy (front-face vs flank, moving-shot vs static). See FOLLOWUPS.md step 6.
+   * Blue HUB scoring pose. 2025-era placeholder — (3.39, 4.11) was the 2025 Blue Reef center. 2026
+   * Blue HUB center is at (4.537, 4.035); appropriate approach pose depends on shot strategy
+   * (front-face vs flank, moving-shot vs static). See FOLLOWUPS.md step 6.
    */
   private static final Pose2d HUB_POSE = new Pose2d(3.39, 4.11, new Rotation2d());
 
   /**
-   * Blue climbing pose. 2025-era placeholder — (8.23, 4.11) is approximately field center,
-   * which is not where any 2026 REBUILT TOWER sits. Blue TOWERs are on the west wall
-   * (x=0.008); a reasonable approach pose is ~(1.0, 4.0) for the upper TOWER pair.
-   * See FOLLOWUPS.md step 6.
+   * Blue climbing pose. 2025-era placeholder — (8.23, 4.11) is approximately field center, which is
+   * not where any 2026 REBUILT TOWER sits. Blue TOWERs are on the west wall (x=0.008); a reasonable
+   * approach pose is ~(1.0, 4.0) for the upper TOWER pair. See FOLLOWUPS.md step 6.
    */
   private static final Pose2d CLIMB_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
 
   /**
-   * Default fallback collect pose when no FUEL is detected. Currently duplicate of
-   * CLIMB_POSE (both field-center placeholders). Intent was probably "go to a safe
-   * neutral spot"; with real 2026 poses this should diverge from CLIMB_POSE — e.g. a
-   * staging area near the FUEL intake. See FOLLOWUPS.md step 6.
+   * Default fallback collect pose when no FUEL is detected. Currently duplicate of CLIMB_POSE (both
+   * field-center placeholders). Intent was probably "go to a safe neutral spot"; with real 2026
+   * poses this should diverge from CLIMB_POSE — e.g. a staging area near the FUEL intake. See
+   * FOLLOWUPS.md step 6.
    */
   private static final Pose2d DEFAULT_COLLECT_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
 

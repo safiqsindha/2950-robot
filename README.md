@@ -450,6 +450,7 @@ See `PRACTICE_SESSION_PLAYBOOK.md` for how to use the existing tooling to de-ris
 ## Additional docs
 
 - **[`AGENTS.md`](AGENTS.md)** — authoritative command + convention contract for Claude / Cursor / agent sessions
+- **[`CONCEPTS.md`](CONCEPTS.md)** — the math + control ideas behind the code (for students pre-calculus)
 - **[`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md)** — stepwise guide (Phase A smoke → Phase B calibration → Phase C auto rehearsal)
 - **[`CAN_ID_REFERENCE.md`](CAN_ID_REFERENCE.md)** — complete CAN bus wiring
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — system design + subsystem interactions

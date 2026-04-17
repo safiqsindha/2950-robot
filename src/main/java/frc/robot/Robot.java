@@ -45,9 +45,9 @@ public class Robot extends LoggedRobot {
   private final CanBusLogger canBusLogger = new CanBusLogger();
 
   /**
-   * Power-distribution telemetry publisher (voltage, total current, per-channel currents,
-   * internal temperature). Constructed in {@link #robotInit()} because {@link PowerDistribution}
-   * pings the CAN bus during construction.
+   * Power-distribution telemetry publisher (voltage, total current, per-channel currents, internal
+   * temperature). Constructed in {@link #robotInit()} because {@link PowerDistribution} pings the
+   * CAN bus during construction.
    */
   private PdhLogger pdhLogger;
 
@@ -58,15 +58,15 @@ public class Robot extends LoggedRobot {
   private final CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
 
   /**
-   * Loop-iteration timing publisher — completes the JVM/CAN/PDH diagnostics trio. Safe to
-   * construct as a field; the clock supplier (Timer::getFPGATimestamp) is a method reference so
-   * HAL is only hit when {@link LoopTimeLogger#periodic()} runs.
+   * Loop-iteration timing publisher — completes the JVM/CAN/PDH diagnostics trio. Safe to construct
+   * as a field; the clock supplier (Timer::getFPGATimestamp) is a method reference so HAL is only
+   * hit when {@link LoopTimeLogger#periodic()} runs.
    */
   private final LoopTimeLogger loopTimeLogger = new LoopTimeLogger();
 
   /**
-   * Match-time + phase overlay — combines {@code getMatchTime()} with the auto/teleop/endgame
-   * label in one place. Ticks via {@link #robotPeriodic()}.
+   * Match-time + phase overlay — combines {@code getMatchTime()} with the auto/teleop/endgame label
+   * in one place. Ticks via {@link #robotPeriodic()}.
    */
   private final MatchPhaseOverlay matchPhaseOverlay =
       new MatchPhaseOverlay(

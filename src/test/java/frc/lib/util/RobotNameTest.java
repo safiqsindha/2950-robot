@@ -103,7 +103,8 @@ class RobotNameTest {
   @Test
   void select_oddNumberOfArgs_throws() {
     assertThrows(
-        IllegalArgumentException.class, () -> RobotName.select(0.0, RobotName.COMP, 1.0, RobotName.PRACTICE));
+        IllegalArgumentException.class,
+        () -> RobotName.select(0.0, RobotName.COMP, 1.0, RobotName.PRACTICE));
   }
 
   @Test

@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
  * <p>The rules codify the layering we've talked about informally:
  *
  * <ul>
- *   <li>{@code frc.lib.*} is the reusable utility layer. It must NOT depend on {@code
- *       frc.robot.*} — otherwise it can't be lifted into another repo next season.
+ *   <li>{@code frc.lib.*} is the reusable utility layer. It must NOT depend on {@code frc.robot.*}
+ *       — otherwise it can't be lifted into another repo next season.
  *   <li>{@code frc.lib.*} must not depend on the in-tree YAGSL copy ({@code swervelib.*}) so the
  *       utility layer stays drivetrain-agnostic.
- *   <li>Subsystems (under {@code frc.robot.subsystems.*}) must not reach up into commands.
- *       Commands drive subsystems, never the reverse.
+ *   <li>Subsystems (under {@code frc.robot.subsystems.*}) must not reach up into commands. Commands
+ *       drive subsystems, never the reverse.
  *   <li>{@code frc.lib.diagnostics.*} is consumer-only telemetry — any outbound edge into {@code
  *       frc.robot.*} would defeat its reuse story.
  * </ul>
@@ -102,11 +102,7 @@ class ArchitectureTest {
             .should()
             .onlyDependOnClassesThat()
             .resideInAnyPackage(
-                "frc.lib..",
-                "java..",
-                "javax..",
-                "edu.wpi.first..",
-                "org.littletonrobotics..")
+                "frc.lib..", "java..", "javax..", "edu.wpi.first..", "org.littletonrobotics..")
             .because(
                 "frc.lib.diagnostics is consumer-only — any outbound edge to frc.robot.* means"
                     + " the telemetry layer has grown knowledge of the specific robot, defeating"

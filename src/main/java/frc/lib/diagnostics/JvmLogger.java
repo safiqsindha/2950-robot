@@ -11,8 +11,8 @@ import org.littletonrobotics.junction.Logger;
  * AdvantageScope — if loop-overrun events correlate with GC spikes (common on the roboRIO), you
  * want this.
  *
- * <p>Adapted from Team 3005 RoboChargers' {@code LoggedJVM}. Zero hardware dependency; pure
- * {@code java.lang.management} API access.
+ * <p>Adapted from Team 3005 RoboChargers' {@code LoggedJVM}. Zero hardware dependency; pure {@code
+ * java.lang.management} API access.
  *
  * <p>Usage:
  *

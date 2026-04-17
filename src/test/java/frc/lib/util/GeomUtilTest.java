@@ -72,8 +72,7 @@ class GeomUtilTest {
     Pose2d a = pose(10, 0);
     Pose2d b = pose(0, 0.5);
     // At 0 lookahead, current pose is the query — b is closer to (0,0).
-    assertSame(
-        b, GeomUtil.getClosestFuturePose(pose(0, 0), speeds, 0.0, List.of(a, b)));
+    assertSame(b, GeomUtil.getClosestFuturePose(pose(0, 0), speeds, 0.0, List.of(a, b)));
   }
 
   @Test
@@ -89,9 +88,7 @@ class GeomUtilTest {
   void getClosestFuturePose_emptyCandidates_throws() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            GeomUtil.getClosestFuturePose(
-                pose(0, 0), new ChassisSpeeds(), 0.1, List.of()));
+        () -> GeomUtil.getClosestFuturePose(pose(0, 0), new ChassisSpeeds(), 0.1, List.of()));
   }
 
   // ─── extrapolate (package-private) ─────────────────────────────────────
@@ -118,7 +115,8 @@ class GeomUtilTest {
   @Test
   void squaredDistance_correctlyComputed() {
     // (3,4) → (0,0) distance = 5, squared = 25
-    assertEquals(25.0, GeomUtil.squaredDistance(new Translation2d(3, 4), new Translation2d()), 1e-9);
+    assertEquals(
+        25.0, GeomUtil.squaredDistance(new Translation2d(3, 4), new Translation2d()), 1e-9);
   }
 
   @Test

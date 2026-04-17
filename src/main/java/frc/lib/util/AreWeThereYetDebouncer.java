@@ -8,14 +8,13 @@ import java.util.function.DoubleSupplier;
  * "At goal" debouncer that resets when the commanded target changes. Adapted from Team 1619
  * Up-A-Creek's {@code AreWeThereYetDebouncer}.
  *
- * <p>Tracks a commanded target + tolerance. {@link #isAtTarget(double)} only returns {@code
- * true} after the position has been within tolerance of the commanded target for the debounce
- * window — eliminating false-positive "at goal" transitions when passing through the target on
- * the way to elsewhere.
+ * <p>Tracks a commanded target + tolerance. {@link #isAtTarget(double)} only returns {@code true}
+ * after the position has been within tolerance of the commanded target for the debounce window —
+ * eliminating false-positive "at goal" transitions when passing through the target on the way to
+ * elsewhere.
  *
- * <p>Calling {@link #setTarget(double)} with a NEW goal resets the window, so the caller is
- * forced to re-earn the "at target" flag for the new destination. Re-asserting the same target
- * is a no-op.
+ * <p>Calling {@link #setTarget(double)} with a NEW goal resets the window, so the caller is forced
+ * to re-earn the "at target" flag for the new destination. Re-asserting the same target is a no-op.
  *
  * <p>Uses an injectable {@link DoubleSupplier} for time, so unit tests can avoid loading HAL
  * (WPILib's {@code Debouncer} pulls in {@code MathSharedStore.getTimestamp()} transitively, which
@@ -43,13 +42,16 @@ public final class AreWeThereYetDebouncer {
   private final DoubleSupplier timeSource;
 
   private double commandedTarget = Double.NaN;
-  /** Time at which the input first became within-tolerance for the current streak. NaN = not yet. */
+
+  /**
+   * Time at which the input first became within-tolerance for the current streak. NaN = not yet.
+   */
   private double withinToleranceSinceSeconds = Double.NaN;
 
   /**
    * @param tolerance absolute units — current must be within ±tolerance of target
-   * @param debounceSeconds how long the |error| must stay &lt; tolerance before {@link
-   *     #isAtTarget} returns true
+   * @param debounceSeconds how long the |error| must stay &lt; tolerance before {@link #isAtTarget}
+   *     returns true
    */
   public AreWeThereYetDebouncer(double tolerance, double debounceSeconds) {
     this(tolerance, debounceSeconds, Timer::getFPGATimestamp);
@@ -69,8 +71,8 @@ public final class AreWeThereYetDebouncer {
   }
 
   /**
-   * Set the commanded target. If the target CHANGES, resets the debounce window — the caller
-   * must re-earn {@link #isAtTarget} for this new goal.
+   * Set the commanded target. If the target CHANGES, resets the debounce window — the caller must
+   * re-earn {@link #isAtTarget} for this new goal.
    */
   public void setTarget(double target) {
     if (target != commandedTarget) {
@@ -100,12 +102,16 @@ public final class AreWeThereYetDebouncer {
     return (now - withinToleranceSinceSeconds) >= debounceSeconds;
   }
 
-  /** @return the currently commanded target (NaN if none set yet) */
+  /**
+   * @return the currently commanded target (NaN if none set yet)
+   */
   public double getCommandedTarget() {
     return commandedTarget;
   }
 
-  /** @return true if a target has been set */
+  /**
+   * @return true if a target has been set
+   */
   public boolean hasTarget() {
     return !Double.isNaN(commandedTarget);
   }

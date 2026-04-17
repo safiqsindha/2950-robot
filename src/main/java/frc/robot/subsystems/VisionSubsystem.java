@@ -76,10 +76,10 @@ public class VisionSubsystem extends SubsystemBase {
   private double targetValidSince = Double.MAX_VALUE;
 
   /**
-   * Rolling-window stats on accepted-frame latency. Fed via {@link #periodic()} on every frame
-   * that passes the acceptance gates; ticked once per cycle to publish min/max/mean/p95 under
-   * {@code VisionLatency/*}. Owning it here (rather than on {@code Robot.java}) means the only
-   * signals published are for frames we actually trusted.
+   * Rolling-window stats on accepted-frame latency. Fed via {@link #periodic()} on every frame that
+   * passes the acceptance gates; ticked once per cycle to publish min/max/mean/p95 under {@code
+   * VisionLatency/*}. Owning it here (rather than on {@code Robot.java}) means the only signals
+   * published are for frames we actually trusted.
    */
   private final VisionLatencyTracker visionLatencyTracker = new VisionLatencyTracker();
 
@@ -281,9 +281,9 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
-   * Theta stddev for the vision measurement. Multi-tag (MegaTag2 orientation-robust) gets the
-   * tight value; single-tag gets the reject sentinel so the Kalman filter ignores vision yaw and
-   * the gyro drives heading. Package-private for testing.
+   * Theta stddev for the vision measurement. Multi-tag (MegaTag2 orientation-robust) gets the tight
+   * value; single-tag gets the reject sentinel so the Kalman filter ignores vision yaw and the gyro
+   * drives heading. Package-private for testing.
    */
   static double computeThetaStdDev(int tagCount) {
     return tagCount >= 2 ? kMultiTagThetaStdDev : kRejectThetaStdDev;

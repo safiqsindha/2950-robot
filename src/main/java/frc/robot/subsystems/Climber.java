@@ -8,8 +8,8 @@ import org.littletonrobotics.junction.Logger;
  *
  * <p><b>Scaffold status:</b> the physical climber is not installed on the 2026 robot. This
  * subsystem ships so commands + sim can exercise it ahead of hardware arrival. When the real
- * climber is wired, instantiate with {@code new Climber(new ClimberIOReal(canId))} in
- * {@code RobotContainer}; until then, {@code new Climber(new ClimberIOSim())} keeps it HAL-free.
+ * climber is wired, instantiate with {@code new Climber(new ClimberIOReal(canId))} in {@code
+ * RobotContainer}; until then, {@code new Climber(new ClimberIOSim())} keeps it HAL-free.
  */
 public final class Climber extends SubsystemBase {
 
@@ -49,12 +49,16 @@ public final class Climber extends SubsystemBase {
     io.stop();
   }
 
-  /** @return current climber position (encoder rotations). */
+  /**
+   * @return current climber position (encoder rotations).
+   */
   public double getPositionRotations() {
     return inputs.positionRotations;
   }
 
-  /** @return current drawn by the climber motor (A). */
+  /**
+   * @return current drawn by the climber motor (A).
+   */
   public double getCurrentAmps() {
     return inputs.currentAmps;
   }

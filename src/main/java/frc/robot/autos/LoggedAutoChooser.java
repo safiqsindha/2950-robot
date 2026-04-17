@@ -15,12 +15,12 @@ import org.littletonrobotics.junction.Logger;
  * shows the student's explicit choice.
  *
  * <p>Also adds a tiny randomised-selection helper for practice sessions — {@link
- * #selectRandom(long)} picks one of the registered options deterministically (seedable) so
- * students can rehearse without the "always runs my favourite" bias.
+ * #selectRandom(long)} picks one of the registered options deterministically (seedable) so students
+ * can rehearse without the "always runs my favourite" bias.
  *
- * <p><b>Testability:</b> the underlying {@link SendableChooser} is <i>lazily</i> created on
- * {@link #publish()}. Constructing a {@code LoggedAutoChooser} in a JUnit test doesn't touch HAL;
- * only calling {@link #publish()} does. Tests that exercise registration + selection logic stay
+ * <p><b>Testability:</b> the underlying {@link SendableChooser} is <i>lazily</i> created on {@link
+ * #publish()}. Constructing a {@code LoggedAutoChooser} in a JUnit test doesn't touch HAL; only
+ * calling {@link #publish()} does. Tests that exercise registration + selection logic stay
  * HAL-free.
  *
  * <p>Log key: {@code Auto/SelectedName}. Matches the SmartDashboard entry name (if published) so
@@ -41,7 +41,9 @@ public final class LoggedAutoChooser {
    */
   private SendableChooser<Command> chooser;
 
-  /** Set by {@link #publish()} so subsequent addOption calls still propagate to the live chooser. */
+  /**
+   * Set by {@link #publish()} so subsequent addOption calls still propagate to the live chooser.
+   */
   private boolean published = false;
 
   private String defaultName = "";
@@ -74,8 +76,8 @@ public final class LoggedAutoChooser {
 
   /**
    * Instantiate the underlying SendableChooser and push it to SmartDashboard under the configured
-   * key. Call once from {@code RobotContainer} after all options are added; subsequent
-   * {@code addOption} / {@code setDefaultOption} calls still propagate.
+   * key. Call once from {@code RobotContainer} after all options are added; subsequent {@code
+   * addOption} / {@code setDefaultOption} calls still propagate.
    *
    * <p>This is the only method that touches HAL. Tests must not call it.
    */
@@ -98,7 +100,9 @@ public final class LoggedAutoChooser {
     SmartDashboard.putData(nameSmartDashboardKey, chooser);
   }
 
-  /** @return the currently-selected command, or the default if nothing selected. */
+  /**
+   * @return the currently-selected command, or the default if nothing selected.
+   */
   public Command getSelected() {
     if (published) {
       return chooser.getSelected();
@@ -111,10 +115,10 @@ public final class LoggedAutoChooser {
   }
 
   /**
-   * Force the chooser to report the option whose name matches {@code name}. The NT-selected
-   * widget still reflects the user's last pick; this only affects what {@link #getSelected()}
-   * returns on the next call. Useful for scripted practice sessions that iterate through
-   * routines programmatically.
+   * Force the chooser to report the option whose name matches {@code name}. The NT-selected widget
+   * still reflects the user's last pick; this only affects what {@link #getSelected()} returns on
+   * the next call. Useful for scripted practice sessions that iterate through routines
+   * programmatically.
    *
    * @return {@code true} if the name was known; {@code false} otherwise (call is a no-op).
    */
@@ -159,8 +163,8 @@ public final class LoggedAutoChooser {
   }
 
   /**
-   * @return the currently-selected option name, or empty string if none. Package-private for
-   *     tests; the production path is {@link #periodic()}.
+   * @return the currently-selected option name, or empty string if none. Package-private for tests;
+   *     the production path is {@link #periodic()}.
    */
   String selectedNameOrEmpty() {
     if (!published) {

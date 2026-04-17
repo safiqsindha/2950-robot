@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 /**
- * Boundary coverage for {@link BatteryAwareCurrentLimit}. Focuses on the exact-value edges
- * that the main test suite interpolates through.
+ * Boundary coverage for {@link BatteryAwareCurrentLimit}. Focuses on the exact-value edges that the
+ * main test suite interpolates through.
  */
 class BatteryAwareCurrentLimitBoundaryTest {
 

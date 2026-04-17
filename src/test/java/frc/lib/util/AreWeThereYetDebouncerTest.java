@@ -107,8 +107,7 @@ class AreWeThereYetDebouncerTest {
   @Test
   void constructor_zeroTolerance_throws() {
     assertThrows(
-        IllegalArgumentException.class,
-        () -> new AreWeThereYetDebouncer(0, 0.1, new FakeClock()));
+        IllegalArgumentException.class, () -> new AreWeThereYetDebouncer(0, 0.1, new FakeClock()));
   }
 
   @Test

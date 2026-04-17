@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * HAL-init canary — demonstrates the pattern for exercising WPILib simulation classes
- * ({@link edu.wpi.first.wpilibj.simulation.DCMotorSim}, {@link
- * edu.wpi.first.wpilibj.simulation.ElevatorSim}, etc.) in JUnit by initialising HAL once before
- * any test method runs.
+ * HAL-init canary — demonstrates the pattern for exercising WPILib simulation classes ({@link
+ * edu.wpi.first.wpilibj.simulation.DCMotorSim}, {@link
+ * edu.wpi.first.wpilibj.simulation.ElevatorSim}, etc.) in JUnit by initialising HAL once before any
+ * test method runs.
  *
  * <p>Without HAL, {@code DCMotorSim.setInputVoltage} internally calls {@code
  * RobotController.getBatteryVoltage()} which loads {@code wpiHaljni} and crashes the test JVM.

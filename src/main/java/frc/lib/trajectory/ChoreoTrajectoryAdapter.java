@@ -14,8 +14,8 @@ import java.util.Optional;
  *
  * <p>Alliance mirroring is handled in one place — construct with {@code mirrorForRedAlliance =
  * true} when a flipped trajectory is needed; the adapter propagates the flag into every Choreo
- * sample call. This centralises red/blue handling so downstream followers don't need to know
- * about alliance.
+ * sample call. This centralises red/blue handling so downstream followers don't need to know about
+ * alliance.
  *
  * <p>Usage:
  *
@@ -47,8 +47,7 @@ public final class ChoreoTrajectoryAdapter implements HolonomicTrajectory {
         .sampleAt(timestampSeconds, mirrorForRedAlliance)
         .map(
             s ->
-                new HolonomicTrajectorySample(
-                    s.getTimestamp(), s.getPose(), s.getChassisSpeeds()));
+                new HolonomicTrajectorySample(s.getTimestamp(), s.getPose(), s.getChassisSpeeds()));
   }
 
   @Override

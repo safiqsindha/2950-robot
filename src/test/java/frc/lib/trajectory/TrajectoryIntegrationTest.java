@@ -15,12 +15,12 @@ import org.junit.jupiter.api.Test;
  * Integration tests that compose {@link ChoreoTrajectoryAdapter} + {@link TrajectoryFollower}.
  *
  * <p>Each unit test file in this package verifies one piece in isolation; this suite verifies the
- * composition. The value: catches any contract mismatch between the adapter's
- * {@link HolonomicTrajectorySample} output and the follower's expected input — including the
- * trickiest part, the sign convention of the feedforward speeds.
+ * composition. The value: catches any contract mismatch between the adapter's {@link
+ * HolonomicTrajectorySample} output and the follower's expected input — including the trickiest
+ * part, the sign convention of the feedforward speeds.
  *
- * <p>The follower's contract is "sample FF + field-frame PID correction". We build a short
- * Choreo trajectory, wrap it, and watch what the follower emits at different robot poses.
+ * <p>The follower's contract is "sample FF + field-frame PID correction". We build a short Choreo
+ * trajectory, wrap it, and watch what the follower emits at different robot poses.
  */
 class TrajectoryIntegrationTest {
 
@@ -55,7 +55,8 @@ class TrajectoryIntegrationTest {
     TrajectoryFollower follower = TrajectoryFollower.withDefaultGains();
 
     // Robot is exactly where the 0.5 s sample says it should be → PID contributes zero.
-    Optional<ChassisSpeeds> out = follower.follow(adapter, new Pose2d(0.5, 0.0, new Rotation2d()), 0.5);
+    Optional<ChassisSpeeds> out =
+        follower.follow(adapter, new Pose2d(0.5, 0.0, new Rotation2d()), 0.5);
     assertTrue(out.isPresent(), "mid-trajectory sample must exist");
     assertEquals(1.0, out.get().vxMetersPerSecond, 1e-6);
     assertEquals(0.0, out.get().vyMetersPerSecond, 1e-6);
@@ -68,7 +69,8 @@ class TrajectoryIntegrationTest {
     TrajectoryFollower follower = new TrajectoryFollower(4.0, 3.0);
 
     // At t=0.5 the sample wants x=0.5, but the robot is at x=0.3 → 0.2 m lag × kP 4.0 = +0.8
-    Optional<ChassisSpeeds> out = follower.follow(adapter, new Pose2d(0.3, 0.0, new Rotation2d()), 0.5);
+    Optional<ChassisSpeeds> out =
+        follower.follow(adapter, new Pose2d(0.3, 0.0, new Rotation2d()), 0.5);
     assertTrue(out.isPresent());
     assertEquals(1.0 + 0.8, out.get().vxMetersPerSecond, 1e-6);
   }

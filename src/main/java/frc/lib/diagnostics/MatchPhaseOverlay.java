@@ -5,13 +5,13 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Annotates raw match time with useful derived flags — elapsed seconds, endgame-active flag, and
- * a "phase" label that combines {@code DriverStation.isAutonomous()} / {@code isTeleop()}. A
- * single call-site in {@code Robot.robotPeriodic()} instead of scattering the same booleans
- * across every subsystem.
+ * Annotates raw match time with useful derived flags — elapsed seconds, endgame-active flag, and a
+ * "phase" label that combines {@code DriverStation.isAutonomous()} / {@code isTeleop()}. A single
+ * call-site in {@code Robot.robotPeriodic()} instead of scattering the same booleans across every
+ * subsystem.
  *
- * <p>HAL-free via supplier injection — pass {@code DriverStation::getMatchTime} and
- * {@code DriverStation::isAutonomous} in production; pass lambdas in tests.
+ * <p>HAL-free via supplier injection — pass {@code DriverStation::getMatchTime} and {@code
+ * DriverStation::isAutonomous} in production; pass lambdas in tests.
  *
  * <p>Log keys (all under {@code Match/}):
  *

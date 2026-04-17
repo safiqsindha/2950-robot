@@ -6,10 +6,10 @@ import org.littletonrobotics.junction.AutoLog;
  * Hardware abstraction interface for the Climber subsystem — 2590 IO pattern.
  *
  * <p><b>Scaffold status:</b> the physical climber is not installed on the 2026 robot. This
- * interface + its {@link ClimberIOSim} ship so the subsystem can be tested + exercised in sim
- * ahead of hardware arrival. When the real climber is wired, implement {@code ClimberIOReal}
- * against SPARK MAX + the vertical motor on CAN ID 11 (see CAN_ID_REFERENCE.md) and flip the
- * wiring in {@code RobotContainer}.
+ * interface + its {@link ClimberIOSim} ship so the subsystem can be tested + exercised in sim ahead
+ * of hardware arrival. When the real climber is wired, implement {@code ClimberIOReal} against
+ * SPARK MAX + the vertical motor on CAN ID 11 (see CAN_ID_REFERENCE.md) and flip the wiring in
+ * {@code RobotContainer}.
  *
  * <p>Motor layout (planned):
  *

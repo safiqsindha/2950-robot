@@ -44,8 +44,7 @@ class JvmLoggerTest {
     JvmLogger.JvmMetrics m = logger.collectMetrics();
     assertTrue(m.heapUsedMb() > 0.0, "heap used must be > 0 in a live JVM");
     assertTrue(m.heapMaxMb() > 0.0, "heap max must be > 0");
-    assertTrue(
-        m.heapUsedMb() <= m.heapMaxMb(), "heap used must not exceed heap max");
+    assertTrue(m.heapUsedMb() <= m.heapMaxMb(), "heap used must not exceed heap max");
     assertTrue(m.nonHeapUsedMb() >= 0.0, "non-heap used must be >= 0");
     assertTrue(m.gcTotalCount() >= 0L, "GC count must be >= 0");
     assertTrue(m.gcTotalTimeMs() >= 0L, "GC time must be >= 0");
