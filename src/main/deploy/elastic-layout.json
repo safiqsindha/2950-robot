@@ -1,0 +1,278 @@
+{
+  "tabs": [
+    {
+      "name": "Match",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Auto Chooser",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Battery Voltage",
+            "x": 320.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Voltage View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Robot/BatteryVoltage",
+              "min_value": 6.0,
+              "max_value": 13.0,
+              "divisions": 8,
+              "inverted": false,
+              "orientation": "horizontal"
+            }
+          },
+          {
+            "title": "Match Time",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Robot/MatchTimeRemaining",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 15,
+              "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "Superstructure State",
+            "x": 960.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Single Color View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Superstructure/State"
+            }
+          },
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 180.0,
+            "width": 960.0,
+            "height": 540.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Drive/Pose",
+              "field_game": "Reefscape",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true
+            }
+          },
+          {
+            "title": "Gyro",
+            "x": 960.0,
+            "y": 180.0,
+            "width": 320.0,
+            "height": 270.0,
+            "type": "Gyro",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Drive/GyroYaw",
+              "counter_clockwise_positive": true
+            }
+          },
+          {
+            "title": "Flywheel",
+            "x": 960.0,
+            "y": 450.0,
+            "width": 320.0,
+            "height": 270.0,
+            "type": "Graph",
+            "properties": {
+              "topics": [
+                "/AdvantageKit/RealOutputs/Flywheel/GoalRpm",
+                "/AdvantageKit/RealOutputs/Flywheel/SetpointRpm",
+                "/AdvantageKit/Flywheel/VelocityRpm"
+              ],
+              "time_displayed_seconds": 10.0,
+              "min_value": 0.0,
+              "max_value": 4500.0
+            }
+          },
+          {
+            "title": "Brownout Scale",
+            "x": 0.0,
+            "y": 720.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Robot/BrownoutScale",
+              "min_value": 0.5,
+              "max_value": 1.0,
+              "divisions": 5,
+              "orientation": "horizontal",
+              "inverted": false
+            }
+          },
+          {
+            "title": "CAN Bus %",
+            "x": 320.0,
+            "y": 720.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/CAN/UtilizationPct",
+              "min_value": 0.0,
+              "max_value": 100.0,
+              "divisions": 10,
+              "orientation": "horizontal",
+              "inverted": false
+            }
+          },
+          {
+            "title": "AllPass",
+            "x": 640.0,
+            "y": 720.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/SystemTest/AllPass",
+              "true_color": 4283215696,
+              "false_color": 4294198070
+            }
+          }
+        ],
+        "containers": []
+      }
+    },
+    {
+      "name": "Pit",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Run System Test",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Run System Test"
+            }
+          },
+          {
+            "title": "SysId/Drive Full Sweep",
+            "x": 320.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/SysId/Drive Full Sweep (Quasi F/R + Dynamic F/R)"
+            }
+          },
+          {
+            "title": "SysId/Steer Full Sweep",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/SysId/Steer Full Sweep"
+            }
+          },
+          {
+            "title": "Battery",
+            "x": 0.0,
+            "y": 180.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Voltage View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Robot/BatteryVoltage",
+              "min_value": 6.0,
+              "max_value": 13.0
+            }
+          },
+          {
+            "title": "PDH Total Current",
+            "x": 320.0,
+            "y": 180.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/PDH/TotalCurrentA",
+              "min_value": 0.0,
+              "max_value": 200.0,
+              "orientation": "horizontal"
+            }
+          },
+          {
+            "title": "JVM Heap MB",
+            "x": 640.0,
+            "y": 180.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Graph",
+            "properties": {
+              "topics": [
+                "/AdvantageKit/RealOutputs/JVM/HeapUsedMB",
+                "/AdvantageKit/RealOutputs/JVM/HeapMaxMB"
+              ],
+              "time_displayed_seconds": 30.0,
+              "min_value": 0.0,
+              "max_value": 256.0
+            }
+          },
+          {
+            "title": "Flywheel SystemTest RPM",
+            "x": 0.0,
+            "y": 360.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Text View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/SystemTest/Flywheel/RPM",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Flywheel SystemTest Current",
+            "x": 320.0,
+            "y": 360.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Text View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/SystemTest/Flywheel/CurrentAmps",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Intake SystemTest Current",
+            "x": 640.0,
+            "y": 360.0,
+            "width": 320.0,
+            "height": 180.0,
+            "type": "Text View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/SystemTest/IntakeWheel/CurrentAmps",
+              "show_submit_button": false
+            }
+          }
+        ],
+        "containers": []
+      }
+    }
+  ]
+}
