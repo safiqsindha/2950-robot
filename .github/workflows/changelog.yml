@@ -1,0 +1,87 @@
+name: Update CHANGELOG
+
+# Fires when a PR merges to main. Appends one line to CHANGELOG.md with the PR number, title,
+# and merge date, then commits back to main.
+#
+# Intentionally simple — we don't try to categorise by type (feat/fix/docs/test) because the
+# commit titles already do that via conventional-commit prefixes. A mentor reading CHANGELOG.md
+# can sort or filter on the prefix to their heart's content.
+#
+# Skips PRs from Dependabot to avoid the monthly bump-noise polluting the ship log. Mentors
+# who want the full audit trail can always check the git log.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  append-changelog:
+    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.user.login, 'dependabot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          # Fetch full history so we can amend-and-push without the fast-forward warning.
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name  "changelog-bot"
+          git config user.email "changelog-bot@users.noreply.github.com"
+
+      - name: Ensure CHANGELOG.md exists
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            cat > CHANGELOG.md <<'HEADER'
+          # Changelog
+
+          Every merged PR appends one line here via `.github/workflows/changelog.yml`. Dependabot
+          PRs are skipped — see `.github/dependabot.yml` for the dependency-update cadence.
+          HEADER
+          fi
+
+      - name: Append PR line
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+        run: |
+          # Prepend (after the header block) so newest entries stay on top.
+          date_only=$(printf '%s' "$PR_MERGED_AT" | cut -c1-10)
+          entry="- $date_only  #${PR_NUMBER}  ${PR_TITLE}"
+          # Split header from body. Keep the first two paragraphs (title + intro) intact.
+          awk -v entry="$entry" '
+            NR == FNR { lines[NR] = $0; total = NR; next }
+          ' CHANGELOG.md CHANGELOG.md > /dev/null
+          # Simple two-step: read all lines, find the first blank line after the header title,
+          # insert the new entry right after.
+          python3 <<PY
+          import re, pathlib
+          p = pathlib.Path("CHANGELOG.md")
+          text = p.read_text()
+          lines = text.splitlines()
+          # Find first blank line after the # Changelog heading; insert below it.
+          insert_at = next((i for i, l in enumerate(lines) if l.strip() == "" and i > 0), len(lines))
+          entry = "- ${date_only}  #${PR_NUMBER}  ${PR_TITLE}".replace("\n", " ")
+          # The shell-rendered entry may contain quotes; safer to reconstruct from env.
+          import os
+          entry = f"- {os.environ['PR_MERGED_AT'][:10]}  #{os.environ['PR_NUMBER']}  {os.environ['PR_TITLE']}"
+          lines.insert(insert_at + 1, entry)
+          p.write_text("\n".join(lines) + "\n")
+          PY
+
+      - name: Commit + push if changed
+        run: |
+          if git diff --quiet CHANGELOG.md; then
+            echo "changelog unchanged — skipping"
+            exit 0
+          fi
+          git add CHANGELOG.md
+          git commit -m "chore(changelog): append #${{ github.event.pull_request.number }}"
+          git push origin main

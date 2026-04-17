@@ -199,6 +199,41 @@
           }
         ]
       }
+    },
+    {
+      "type": "line-graph",
+      "title": "Spark Faults (cumulative)",
+      "controller": {
+        "range": [0, null],
+        "legend": "bottom",
+        "fields": [
+          {
+            "key": "AdvantageKit/RealOutputs/Faults/Flywheel/leftVortex/Fault/Temperature_Count",
+            "color": "#d7191c",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Faults/Flywheel/leftVortex/Warn/Brownout_Count",
+            "color": "#fdae61",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Faults/Intake/wheel/Fault/Sensor_Count",
+            "color": "#2b83ba",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Faults/Swerve/Module0/drive/Warn/Brownout_Count",
+            "color": "#abdda4",
+            "show": true
+          },
+          {
+            "key": "AdvantageKit/RealOutputs/Faults/Conveyor/conveyor/Warn/Stall_Count",
+            "color": "#756bb1",
+            "show": true
+          }
+        ]
+      }
     }
   ]
 }
