@@ -52,9 +52,14 @@ public class RobotContainer {
   private final SwerveSubsystem swerve = new SwerveSubsystem();
   public final VisionSubsystem vision = new VisionSubsystem(swerve);
   private final LEDs leds = new LEDs();
+
+  // Hold a direct reference to the sim IO (null on a real robot) so we can attach the maple-sim
+  // drive after swerve construction for arena-driven game-piece pickup.
+  private final IntakeIOSim simIntakeIO =
+      RobotBase.isSimulation() ? new IntakeIOSim() : null;
+
   public final Intake intake =
-      new Intake(
-          edu.wpi.first.wpilibj.RobotBase.isSimulation() ? new IntakeIOSim() : new IntakeIOReal());
+      new Intake(simIntakeIO != null ? simIntakeIO : new IntakeIOReal());
   private final Conveyor conveyor =
       new Conveyor(
           edu.wpi.first.wpilibj.RobotBase.isSimulation()
@@ -90,6 +95,13 @@ public class RobotContainer {
     configureDriverBindings();
     configureAutonomous();
     configureTestMode();
+
+    // Sim-only wiring: attach the IntakeIOSim to the swerve drive simulation so the maple-sim
+    // arena intake rectangle picks up spawned fuel. Safe to call — the swerve helper itself
+    // no-ops when maple-sim isn't configured.
+    if (simIntakeIO != null) {
+      swerve.attachIntakeSimulation(simIntakeIO);
+    }
   }
 
   private void configureDefaultCommands() {
