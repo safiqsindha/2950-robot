@@ -58,11 +58,11 @@ class GeomUtilTest {
 
   @Test
   void getClosestFuturePose_movingTowardFarTarget_picksFar() {
-    // At (0,0) with (vx=5, vy=0), extrapolating 1s ahead puts us at (5,0).
-    // Candidates at (2,0) and (10,0): (10,0) is closer to (5,0).
+    // At (0,0) with (vx=5, vy=0), extrapolating 2s ahead puts us exactly at (10,0).
+    // Candidates (2,0) = distance 8; (10,0) = distance 0 → far candidate wins.
     var speeds = new ChassisSpeeds(5.0, 0, 0);
     var result =
-        GeomUtil.getClosestFuturePose(pose(0, 0), speeds, 1.0, List.of(pose(2, 0), pose(10, 0)));
+        GeomUtil.getClosestFuturePose(pose(0, 0), speeds, 2.0, List.of(pose(2, 0), pose(10, 0)));
     assertEquals(10.0, result.getX(), 1e-9);
   }
 
