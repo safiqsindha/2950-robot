@@ -232,6 +232,22 @@ public final class Constants {
     // SCORING state auto-exit timeout: if no requestIdle() arrives within this window, the SSM
     // self-clears back to IDLE so a missed scoring command never locks the superstructure.
     public static final double kScoringTimeoutSeconds = 2.0;
+
+    /**
+     * INTAKING state auto-exit timeout — if no game piece is detected within this window, fall
+     * back to IDLE so a missed release of the intake button doesn't leave the state machine
+     * permanently fishing. 6 s matches the practice-session default "if it didn't catch by now,
+     * reset and try again."
+     */
+    public static final double kIntakingTimeoutSeconds = 6.0;
+
+    /**
+     * STAGING state auto-exit timeout — if score wasn't requested within this window the piece
+     * stays staged but the SSM doesn't flag it as "actively waiting to score"; a stale STAGING
+     * can confuse downstream LED / dashboard indicators. 10 s is generous — a normal auto
+     * workflow acquires + scores in 2-3 s.
+     */
+    public static final double kStagingTimeoutSeconds = 10.0;
   }
 
   /**
