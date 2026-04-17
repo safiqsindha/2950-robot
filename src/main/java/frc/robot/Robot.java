@@ -8,7 +8,9 @@ import frc.lib.diagnostics.CanBusLogger;
 import frc.lib.diagnostics.CommandLifecycleLogger;
 import frc.lib.diagnostics.JvmLogger;
 import frc.lib.diagnostics.LoopTimeLogger;
+import frc.lib.diagnostics.MatchPhaseOverlay;
 import frc.lib.diagnostics.PdhLogger;
+import frc.lib.diagnostics.VisionLatencyTracker;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -62,6 +64,21 @@ public class Robot extends LoggedRobot {
    * HAL is only hit when {@link LoopTimeLogger#periodic()} runs.
    */
   private final LoopTimeLogger loopTimeLogger = new LoopTimeLogger();
+
+  /** Rolling-window vision latency stats (min/max/mean/p95). Fed by {@code VisionSubsystem}. */
+  private final VisionLatencyTracker visionLatencyTracker = new VisionLatencyTracker();
+
+  /**
+   * Match-time + phase overlay — combines {@code getMatchTime()} with the auto/teleop/endgame
+   * label in one place. Ticks via {@link #robotPeriodic()}.
+   */
+  private final MatchPhaseOverlay matchPhaseOverlay =
+      new MatchPhaseOverlay(
+          DriverStation::getMatchTime,
+          DriverStation::isAutonomous,
+          DriverStation::isTeleop,
+          edu.wpi.first.wpilibj.Timer::getFPGATimestamp,
+          MatchPhaseOverlay.DEFAULT_ENDGAME_THRESHOLD_SECONDS);
 
   // ── Match phase tracking ──
   private enum MatchPhase {
@@ -158,6 +175,11 @@ public class Robot extends LoggedRobot {
     if (robotContainer != null) {
       robotContainer.tickAutoLog();
     }
+
+    // Vision latency rolling stats + match phase overlay — cheap, just a couple of log writes
+    // plus the rolling-window math. See frc.lib.diagnostics.* for each schema.
+    visionLatencyTracker.periodic();
+    matchPhaseOverlay.periodic();
   }
 
   /**
