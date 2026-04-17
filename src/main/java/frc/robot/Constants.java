@@ -15,11 +15,23 @@ public final class Constants {
   // Robot physical constants (used for velocity limiting in swerve)
   public static final double kRobotMassKg = (148 - 20.3) * 0.453592;
 
-  /** FRC field length in meters (54 ft 3.25 in). */
+  /**
+   * FRC field length in meters — 2026 REBUILT WELDED variant, per WPILib
+   * {@code 2026-rebuilt-welded.json} ({@code AprilTagFields.k2026RebuiltWelded}).
+   * AndyMark variant is 16.518 m; teams running the AndyMark field layout should override.
+   */
   public static final double kFieldLengthMeters = 16.541;
 
-  /** FRC field width in meters (26 ft 11.25 in). */
-  public static final double kFieldWidthMeters = 8.211;
+  /**
+   * FRC field width in meters — 2026 REBUILT WELDED variant, per WPILib
+   * {@code 2026-rebuilt-welded.json}. AndyMark variant is 8.043 m.
+   *
+   * <p>Historical note: prior value was 8.211 m (2024 Crescendo width) — incorrect for every
+   * season since. Migration PR #84 corrected to 2026 WELDED. Confirmed against the authoritative
+   * {@code apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json}
+   * in {@code wpilibsuite/allwpilib}.
+   */
+  public static final double kFieldWidthMeters = 8.069;
 
   public static final Matter kChassis =
       new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), kRobotMassKg);
