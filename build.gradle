@@ -142,7 +142,9 @@ spotbugs {
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
     reports {
         html.required = true
-        xml.required = false
+        // XML enabled so CI can surface warning details (HTML is uploaded too,
+        // but XML is grep-able in log output / artifact post-processing).
+        xml.required = true
     }
     // Exclude generated code and vendordep wrappers
     excludeFilter = file("config/spotbugs-exclude.xml")

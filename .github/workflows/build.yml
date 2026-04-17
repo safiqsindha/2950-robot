@@ -51,3 +51,11 @@ jobs:
           name: coverage-report
           path: build/reports/jacoco/test/html/
           retention-days: 7
+
+      - name: Upload SpotBugs reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-reports
+          path: build/reports/spotbugs/
+          retention-days: 7
