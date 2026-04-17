@@ -118,7 +118,7 @@ public final class ChoreoAutoCommand {
    * <p>Requires: {@value #TRAJ_LEAVE_START}.traj
    */
   public static AutoRoutine scoreAndLeaveRoutine(
-      AutoFactory factory, Flywheel flywheel, Conveyor conveyor) {
+      AutoFactory factory, Flywheel flywheel, Conveyor conveyor, SwerveSubsystem swerve) {
     AutoRoutine routine = factory.newRoutine("Score and Leave");
     AutoTrajectory leave = routine.trajectory(TRAJ_LEAVE_START);
 
@@ -127,7 +127,8 @@ public final class ChoreoAutoCommand {
         .onTrue(
             Commands.sequence(
                 // Shoot preloaded coral (up to 3 s), then drive off line
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                    .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 leave.resetOdometry().andThen(leave.cmd())));
 
     return routine;
@@ -152,7 +153,11 @@ public final class ChoreoAutoCommand {
    * </ul>
    */
   public static AutoRoutine twoCoralRoutine(
-      AutoFactory factory, Flywheel flywheel, Conveyor conveyor, SuperstructureStateMachine ssm) {
+      AutoFactory factory,
+      Flywheel flywheel,
+      Conveyor conveyor,
+      SuperstructureStateMachine ssm,
+      SwerveSubsystem swerve) {
     AutoRoutine routine = factory.newRoutine("2 Coral");
     AutoTrajectory toStation = routine.trajectory(TRAJ_REEF_TO_STATION);
     AutoTrajectory stationToReef = routine.trajectory(TRAJ_STATION_TO_REEF);
@@ -162,7 +167,8 @@ public final class ChoreoAutoCommand {
         .active()
         .onTrue(
             Commands.sequence(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                    .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation.resetOdometry().andThen(toStation.cmd())));
 
     // Step 2: when arriving at station, drive back toward reef
@@ -183,7 +189,8 @@ public final class ChoreoAutoCommand {
         .done()
         .onTrue(
             new ConditionalCommand(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                    .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(
@@ -208,7 +215,11 @@ public final class ChoreoAutoCommand {
    * cycles require different paths, split them into separate {@code .traj} files.
    */
   public static AutoRoutine threeCoralRoutine(
-      AutoFactory factory, Flywheel flywheel, Conveyor conveyor, SuperstructureStateMachine ssm) {
+      AutoFactory factory,
+      Flywheel flywheel,
+      Conveyor conveyor,
+      SuperstructureStateMachine ssm,
+      SwerveSubsystem swerve) {
     AutoRoutine routine = factory.newRoutine("3 Coral");
 
     // First cycle uses split index 0 (or whole file if no splits defined)
@@ -224,7 +235,8 @@ public final class ChoreoAutoCommand {
         .active()
         .onTrue(
             Commands.sequence(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                    .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation1.resetOdometry().andThen(toStation1.cmd())));
 
     toStation1.done().onTrue(stationToReef1.cmd());
@@ -245,7 +257,8 @@ public final class ChoreoAutoCommand {
         .onTrue(
             Commands.sequence(
                 new ConditionalCommand(
-                    new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                    new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                        .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                     Commands.runOnce(
                         () ->
                             org.littletonrobotics.junction.Logger.recordOutput(
@@ -272,7 +285,8 @@ public final class ChoreoAutoCommand {
         .done()
         .onTrue(
             new ConditionalCommand(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
+                new FlywheelAutoFeed(flywheel, conveyor, swerve)
+                    .withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(

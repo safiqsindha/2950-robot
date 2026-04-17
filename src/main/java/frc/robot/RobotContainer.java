@@ -155,7 +155,8 @@ public class RobotContainer {
     driver
         .leftTrigger(0.5)
         .whileTrue(
-            Commands.parallel(new FlywheelAim(swerve), new FlywheelAutoFeed(flywheel, conveyor)));
+            Commands.parallel(
+                new FlywheelAim(swerve), new FlywheelAutoFeed(flywheel, conveyor, swerve)));
 
     // B: blink LEDs when vision has a target (diagnostic)
     driver
@@ -185,7 +186,8 @@ public class RobotContainer {
     // ── Default: leave-only (drive off the line) ─────────────────────────────
     autoChooser.addOption(
         "Shoot Only",
-        Commands.parallel(new FlywheelAutoFeed(flywheel, conveyor), new FlywheelAim(swerve))
+        Commands.parallel(
+                new FlywheelAutoFeed(flywheel, conveyor, swerve), new FlywheelAim(swerve))
             .withTimeout(19));
 
     // ── Choreo mobility autos ────────────────────────────────────────────────
@@ -207,13 +209,15 @@ public class RobotContainer {
 
     autoChooser.addOption(
         "Score + Leave",
-        ChoreoAutoCommand.scoreAndLeaveRoutine(autoFactory, flywheel, conveyor).cmd());
+        ChoreoAutoCommand.scoreAndLeaveRoutine(autoFactory, flywheel, conveyor, swerve).cmd());
 
     autoChooser.addOption(
-        "2 Coral", ChoreoAutoCommand.twoCoralRoutine(autoFactory, flywheel, conveyor, ssm).cmd());
+        "2 Coral",
+        ChoreoAutoCommand.twoCoralRoutine(autoFactory, flywheel, conveyor, ssm, swerve).cmd());
 
     autoChooser.addOption(
-        "3 Coral", ChoreoAutoCommand.threeCoralRoutine(autoFactory, flywheel, conveyor, ssm).cmd());
+        "3 Coral",
+        ChoreoAutoCommand.threeCoralRoutine(autoFactory, flywheel, conveyor, ssm, swerve).cmd());
 
     // ── Full Autonomous (Phase 3) ─────────────────────────────────────────────
     // Strategy-driven loop: evaluate targets → pathfind → execute → repeat.
