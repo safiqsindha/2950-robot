@@ -388,6 +388,84 @@ public final class SwerveSubsystem extends SubsystemBase {
             Constants.Swerve.kMaxAngularSpeedRadPerSec));
   }
 
+  // ─── SysId characterization commands ─────────────────────────────────────
+  //
+  // WPILib sysid wraps a standard quasistatic + dynamic sweep that solves for
+  // kS, kV, kA from the resulting motion data. YAGSL 2026 exposes both the
+  // drive and the angle (steer) routines via SwerveDriveTest; we thin-wrap
+  // them here so RobotContainer can bind them to SmartDashboard buttons and
+  // students can run characterization without editing code.
+  //
+  // Usage (from a practice session):
+  //   1. Place the robot on carpet with >2 m of clear runway (for drive)
+  //      or on blocks with wheels off the ground (for angle).
+  //   2. Enable the DS in Test mode.
+  //   3. Click one of the 4 "Drive/SysId ..." or "Steer/SysId ..." buttons
+  //      in Elastic / SmartDashboard.
+  //   4. Export the log with the WPILib SysId tool for analysis.
+
+  /**
+   * Lazily-created SysId routine for the drive motors. Reusing the same instance across calls is
+   * important — each SysIdRoutine registers itself with DataLog and creating a new one per click
+   * would leak logger state.
+   */
+  private SysIdRoutine driveSysIdRoutine;
+
+  /** Lazily-created SysId routine for the steer/angle motors. */
+  private SysIdRoutine steerSysIdRoutine;
+
+  private SysIdRoutine getDriveSysIdRoutine() {
+    if (driveSysIdRoutine == null) {
+      // `testWithSpinning = false` drives the robot forward in a straight line — use a clear
+      // runway. Max applied voltage capped at 6 V to avoid wheel slip on carpet; increase if your
+      // surface has good grip.
+      driveSysIdRoutine =
+          SwerveDriveTest.setDriveSysIdRoutine(
+              new SysIdRoutine.Config(), this, swerveDrive, 6.0, false);
+    }
+    return driveSysIdRoutine;
+  }
+
+  private SysIdRoutine getSteerSysIdRoutine() {
+    if (steerSysIdRoutine == null) {
+      steerSysIdRoutine =
+          SwerveDriveTest.setAngleSysIdRoutine(new SysIdRoutine.Config(), this, swerveDrive);
+    }
+    return steerSysIdRoutine;
+  }
+
+  /**
+   * Full drive-motor SysId sweep: quasistatic forward → reverse → dynamic forward → reverse, with
+   * 1-second pauses between phases. Total run-time ≈ 16 s.
+   */
+  public Command driveSysIdFullRoutine() {
+    return SwerveDriveTest.generateSysIdCommand(
+        getDriveSysIdRoutine(), /*delay*/ 1.0, /*quasiTimeout*/ 4.0, /*dynamicTimeout*/ 2.5);
+  }
+
+  /** Full steer-motor SysId sweep — place the robot on blocks first. Total run-time ≈ 16 s. */
+  public Command steerSysIdFullRoutine() {
+    return SwerveDriveTest.generateSysIdCommand(
+        getSteerSysIdRoutine(), /*delay*/ 1.0, /*quasiTimeout*/ 4.0, /*dynamicTimeout*/ 2.5);
+  }
+
+  /** Individual drive-motor phases — bind separately if a student wants granular control. */
+  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return getDriveSysIdRoutine().quasistatic(direction);
+  }
+
+  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return getDriveSysIdRoutine().dynamic(direction);
+  }
+
+  public Command steerSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return getSteerSysIdRoutine().quasistatic(direction);
+  }
+
+  public Command steerSysIdDynamic(SysIdRoutine.Direction direction) {
+    return getSteerSysIdRoutine().dynamic(direction);
+  }
+
   private boolean isRedAlliance() {
     var alliance = DriverStation.getAlliance();
     return alliance.isPresent() && alliance.get() == Alliance.Red;
