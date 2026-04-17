@@ -3,6 +3,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.lib.diagnostics.CommandLifecycleLogger;
+import frc.lib.diagnostics.JvmLogger;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -26,6 +28,12 @@ public class Robot extends LoggedRobot {
   private static final double kBrownoutFloorVolts = 6.0;
 
   private RobotContainer robotContainer;
+
+  /** JVM memory + GC telemetry publisher; ticked from {@link #robotPeriodic()}. */
+  private final JvmLogger jvmLogger = new JvmLogger();
+
+  /** Command lifecycle event logger; wired to CommandScheduler in {@link #robotInit()}. */
+  private final CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
 
   // ── Match phase tracking ──
   private enum MatchPhase {
@@ -57,6 +65,13 @@ public class Robot extends LoggedRobot {
 
     // Start AdvantageKit logger
     Logger.start();
+
+    // Register command-scheduler lifecycle hooks so every init/finish/interrupt
+    // shows up in AdvantageScope replay. Must be after Logger.start().
+    CommandScheduler scheduler = CommandScheduler.getInstance();
+    scheduler.onCommandInitialize(commandLogger::onInit);
+    scheduler.onCommandInterrupt(commandLogger::onInterrupt);
+    scheduler.onCommandFinish(commandLogger::onFinish);
 
     // Instantiate our RobotContainer. This will perform all button bindings,
     // set default commands, and configure the autonomous chooser.
@@ -91,6 +106,9 @@ public class Robot extends LoggedRobot {
                 (batteryVolts - kBrownoutFloorVolts)
                     / (kBrownoutThresholdVolts - kBrownoutFloorVolts));
     Logger.recordOutput("Robot/BrownoutScale", brownoutScale);
+
+    // JVM memory + GC telemetry — makes GC pauses visible in AdvantageScope.
+    jvmLogger.periodic();
   }
 
   /**
