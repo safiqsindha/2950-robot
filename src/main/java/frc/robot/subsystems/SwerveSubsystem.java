@@ -20,12 +20,15 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.revrobotics.spark.SparkBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.diagnostics.SparkAlertLogger;
 import java.io.File;
 import org.littletonrobotics.junction.Logger;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -74,6 +77,13 @@ public final class SwerveSubsystem extends SubsystemBase {
    */
   private double lastPoseResetTimeSeconds = 0.0;
 
+  /**
+   * Fault / warning logger for every SPARK drive + steer motor inside YAGSL's modules. Populated
+   * in the constructor by reflecting over {@code swerveDrive.getModules()} and registering any
+   * motor whose underlying driver is a {@link SparkBase}. Ticked from {@link #periodic()}.
+   */
+  private final SparkAlertLogger swerveSparkAlerts = new SparkAlertLogger();
+
   /** Creates the swerve subsystem by parsing YAGSL JSON configuration. */
   public SwerveSubsystem() {
     File swerveJsonDir =
@@ -121,7 +131,27 @@ public final class SwerveSubsystem extends SubsystemBase {
       swerveDrive.resetOdometry(new Pose2d(2.0, 4.0, new Rotation2d(0)));
     }
 
+    registerSwerveSparkAlerts();
     setupPathPlanner();
+  }
+
+  /**
+   * Register every REV {@link SparkBase} in YAGSL's swerve modules (drive + angle) with the
+   * {@link SparkAlertLogger}. YAGSL's {@code SwerveMotor.getMotor()} returns {@code Object} —
+   * only {@link SparkBase} instances are registered; TalonFX / other hardware is silently
+   * skipped, so this is safe to call regardless of vendordep mix.
+   */
+  private void registerSwerveSparkAlerts() {
+    for (SwerveModule module : swerveDrive.getModules()) {
+      Object driveMotor = module.getDriveMotor().getMotor();
+      Object angleMotor = module.getAngleMotor().getMotor();
+      if (driveMotor instanceof SparkBase drive) {
+        swerveSparkAlerts.register(drive, "Swerve/Module" + module.moduleNumber + "/drive");
+      }
+      if (angleMotor instanceof SparkBase angle) {
+        swerveSparkAlerts.register(angle, "Swerve/Module" + module.moduleNumber + "/angle");
+      }
+    }
   }
 
   /**
@@ -214,6 +244,8 @@ public final class SwerveSubsystem extends SubsystemBase {
     swerveDrive
         .getSimulationDriveTrainPose()
         .ifPresent(p -> Logger.recordOutput("Drive/SimGroundTruth", p));
+    // REV swerve fault / warning bits → WPILib Alerts under the "SparkFaults" group.
+    swerveSparkAlerts.periodic();
   }
 
   /**
