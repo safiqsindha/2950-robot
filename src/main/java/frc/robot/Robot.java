@@ -32,6 +32,9 @@ public class Robot extends LoggedRobot {
   /** JVM memory + GC telemetry publisher; ticked from {@link #robotPeriodic()}. */
   private final JvmLogger jvmLogger = new JvmLogger();
 
+  /** Command lifecycle event logger; wired to CommandScheduler in {@link #robotInit()}. */
+  private final CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
+
   // ── Match phase tracking ──
   private enum MatchPhase {
     DISABLED,
@@ -65,7 +68,10 @@ public class Robot extends LoggedRobot {
 
     // Register command-scheduler lifecycle hooks so every init/finish/interrupt
     // shows up in AdvantageScope replay. Must be after Logger.start().
-    CommandLifecycleLogger.start();
+    CommandScheduler scheduler = CommandScheduler.getInstance();
+    scheduler.onCommandInitialize(commandLogger::onInit);
+    scheduler.onCommandInterrupt(commandLogger::onInterrupt);
+    scheduler.onCommandFinish(commandLogger::onFinish);
 
     // Instantiate our RobotContainer. This will perform all button bindings,
     // set default commands, and configure the autonomous chooser.

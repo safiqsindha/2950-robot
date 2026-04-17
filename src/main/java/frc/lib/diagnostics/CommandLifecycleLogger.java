@@ -2,21 +2,32 @@ package frc.lib.diagnostics;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Hooks CommandScheduler lifecycle events (initialize / finish / interrupt) and emits them to
+ * Tracks CommandScheduler lifecycle events (initialize / finish / interrupt) and emits them to
  * AdvantageKit. Makes every command boundary searchable in AdvantageScope log replay — essential
  * for post-match diagnosis of "why did the panic fire?" or "did the auto command actually run?".
  *
- * <p>Adapted from Team 3005 RoboChargers' Python DataLogger pattern (their 2025-offseason-python
- * repo). Pure additive observability — never changes scheduler behaviour.
+ * <p>Adapted from Team 3005 RoboChargers' Python DataLogger pattern. Pure additive observability —
+ * never changes scheduler behaviour.
  *
- * <p>Usage: call {@link #start()} once during {@code Robot.robotInit()} after {@code
- * Logger.start()} has been invoked. Idempotent; subsequent calls are no-ops.
+ * <p>This class intentionally does <b>not</b> wire itself to {@code CommandScheduler}; the consumer
+ * (typically {@code Robot.robotInit()}) is responsible for that wiring. Keeping the HAL-coupled
+ * plumbing out of this class makes it 100% testable without bringing up WPILib native.
+ *
+ * <p>Usage (in {@code Robot.robotInit()} after {@code Logger.start()}):
+ *
+ * <pre>{@code
+ * CommandLifecycleLogger commandLogger = new CommandLifecycleLogger();
+ * CommandScheduler sch = CommandScheduler.getInstance();
+ * sch.onCommandInitialize(commandLogger::onInit);
+ * sch.onCommandInterrupt(commandLogger::onInterrupt);
+ * sch.onCommandFinish(commandLogger::onFinish);
+ * }</pre>
  *
  * <p>Log keys emitted to AdvantageKit:
  *
@@ -31,32 +42,27 @@ import org.littletonrobotics.junction.Logger;
  * </ul>
  */
 public final class CommandLifecycleLogger {
-  private static boolean started = false;
-  private static int activeCount = 0;
-  private static int totalStarted = 0;
-  private static int totalInterrupted = 0;
-  private static final Map<String, Double> startTimes = new HashMap<>();
 
-  private CommandLifecycleLogger() {}
+  private final DoubleSupplier timeSource;
+  private final Map<String, Double> startTimes = new HashMap<>();
+  private int activeCount = 0;
+  private int totalStarted = 0;
+  private int totalInterrupted = 0;
 
-  /**
-   * Registers lifecycle hooks on {@link CommandScheduler}. Idempotent — safe to call multiple
-   * times, but only the first call has effect.
-   */
-  public static void start() {
-    if (started) {
-      return;
-    }
-    started = true;
-    CommandScheduler scheduler = CommandScheduler.getInstance();
-    scheduler.onCommandInitialize(CommandLifecycleLogger::onInit);
-    scheduler.onCommandInterrupt(CommandLifecycleLogger::onInterrupt);
-    scheduler.onCommandFinish(CommandLifecycleLogger::onFinish);
+  /** Creates a logger using FPGA time. */
+  public CommandLifecycleLogger() {
+    this(Timer::getFPGATimestamp);
   }
 
-  private static void onInit(Command cmd) {
+  /** Package-private ctor that injects a time source — unit tests use this. */
+  CommandLifecycleLogger(DoubleSupplier timeSource) {
+    this.timeSource = timeSource;
+  }
+
+  /** Called by {@code CommandScheduler.onCommandInitialize}. */
+  public void onInit(Command cmd) {
     String name = cmd.getName();
-    startTimes.put(name, Timer.getFPGATimestamp());
+    startTimes.put(name, timeSource.getAsDouble());
     activeCount++;
     totalStarted++;
     Logger.recordOutput("Commands/LastStarted", name);
@@ -64,7 +70,8 @@ public final class CommandLifecycleLogger {
     Logger.recordOutput("Commands/TotalStarted", totalStarted);
   }
 
-  private static void onFinish(Command cmd) {
+  /** Called by {@code CommandScheduler.onCommandFinish}. */
+  public void onFinish(Command cmd) {
     String name = cmd.getName();
     activeCount = Math.max(0, activeCount - 1);
     double duration = consumeDuration(name);
@@ -73,7 +80,8 @@ public final class CommandLifecycleLogger {
     Logger.recordOutput("Commands/Durations/" + name, duration);
   }
 
-  private static void onInterrupt(Command cmd) {
+  /** Called by {@code CommandScheduler.onCommandInterrupt}. */
+  public void onInterrupt(Command cmd) {
     String name = cmd.getName();
     activeCount = Math.max(0, activeCount - 1);
     totalInterrupted++;
@@ -84,11 +92,28 @@ public final class CommandLifecycleLogger {
     Logger.recordOutput("Commands/Durations/" + name, duration);
   }
 
-  private static double consumeDuration(String name) {
+  private double consumeDuration(String name) {
     Double start = startTimes.remove(name);
     if (start == null) {
       return 0.0;
     }
-    return Timer.getFPGATimestamp() - start;
+    return timeSource.getAsDouble() - start;
+  }
+
+  // ─── Getters for unit tests + external introspection ─────────────────────
+
+  /** Number of commands currently scheduled (seen init but not yet finish/interrupt). */
+  public int activeCount() {
+    return activeCount;
+  }
+
+  /** Cumulative count of command initialisations since construction. */
+  public int totalStarted() {
+    return totalStarted;
+  }
+
+  /** Cumulative count of interruptions since construction. */
+  public int totalInterrupted() {
+    return totalInterrupted;
   }
 }
