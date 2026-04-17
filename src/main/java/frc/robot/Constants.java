@@ -94,8 +94,8 @@ public final class Constants {
     public static final double kReadyThreshold = 0.10; // 10% of target RPM
 
     /**
-     * Ball exit speed from the flywheel (m/s). Used by MovingShotCompensation for heading offset
-     * and by Helper.rpmFromMeters(double, ChassisSpeeds) for effective-distance adjustment.
+     * Ball exit speed from the flywheel (m/s). Used by {@link frc.robot.Helper#rpmFromMeters}
+     * for effective-distance adjustment in the 971 3-iter fixed-point shoot-on-the-fly.
      */
     public static final double kBallExitVelocityMps = 12.0;
 

@@ -60,9 +60,4 @@ public class PathfindToGoalCommand extends Command {
     Logger.recordOutput("Pathfind/Status", interrupted ? "INTERRUPTED" : "ARRIVED");
     Logger.recordOutput("Pathfind/FinalPose", swerve.getPose());
   }
-
-  /** Get the target pose this command is driving toward. */
-  public Pose2d getTargetPose() {
-    return targetPose;
-  }
 }
