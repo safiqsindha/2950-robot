@@ -127,7 +127,7 @@ public final class ChoreoAutoCommand {
         .onTrue(
             Commands.sequence(
                 // Shoot preloaded coral (up to 3 s), then drive off line
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 leave.resetOdometry().andThen(leave.cmd())));
 
     return routine;
@@ -162,7 +162,7 @@ public final class ChoreoAutoCommand {
         .active()
         .onTrue(
             Commands.sequence(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation.resetOdometry().andThen(toStation.cmd())));
 
     // Step 2: when arriving at station, drive back toward reef
@@ -170,10 +170,11 @@ public final class ChoreoAutoCommand {
 
     // Step 3: spin up flywheel 1.5 s before reaching reef — only if game piece was acquired
     stationToReef
-        .atTimeBeforeEnd(1.5)
+        .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, 3000).withTimeout(2.5),
+                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                    .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));
 
@@ -182,7 +183,7 @@ public final class ChoreoAutoCommand {
         .done()
         .onTrue(
             new ConditionalCommand(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(
@@ -223,17 +224,18 @@ public final class ChoreoAutoCommand {
         .active()
         .onTrue(
             Commands.sequence(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 toStation1.resetOdometry().andThen(toStation1.cmd())));
 
     toStation1.done().onTrue(stationToReef1.cmd());
 
     // Spin up only if game piece acquired at station 1
     stationToReef1
-        .atTimeBeforeEnd(1.5)
+        .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, 3000).withTimeout(2.5),
+                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                    .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));
 
@@ -243,7 +245,7 @@ public final class ChoreoAutoCommand {
         .onTrue(
             Commands.sequence(
                 new ConditionalCommand(
-                    new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                    new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                     Commands.runOnce(
                         () ->
                             org.littletonrobotics.junction.Logger.recordOutput(
@@ -257,10 +259,11 @@ public final class ChoreoAutoCommand {
 
     // Spin up only if game piece acquired at station 2
     stationToReef2
-        .atTimeBeforeEnd(1.5)
+        .atTimeBeforeEnd(frc.robot.Constants.Autonomous.kFlywheelSpinupLeadSeconds)
         .onTrue(
             new ConditionalCommand(
-                new FlywheelStatic(flywheel, conveyor, 3000).withTimeout(2.5),
+                new FlywheelStatic(flywheel, conveyor, frc.robot.Constants.Autonomous.kAutoStaticShotRpm)
+                    .withTimeout(frc.robot.Constants.Autonomous.kStaticSpinupDurationSeconds),
                 Commands.none(),
                 ssm::hasGamePiece));
 
@@ -269,7 +272,7 @@ public final class ChoreoAutoCommand {
         .done()
         .onTrue(
             new ConditionalCommand(
-                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(3.0),
+                new FlywheelAutoFeed(flywheel, conveyor).withTimeout(frc.robot.Constants.Autonomous.kShootTimeoutSeconds),
                 Commands.runOnce(
                     () ->
                         org.littletonrobotics.junction.Logger.recordOutput(

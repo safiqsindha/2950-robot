@@ -204,4 +204,23 @@ public final class Constants {
     // self-clears back to IDLE so a missed scoring command never locks the superstructure.
     public static final double kScoringTimeoutSeconds = 2.0;
   }
+
+  /**
+   * Autonomous-routine timing constants. Previously lived as magic literals inside {@code
+   * ChoreoAutoCommand} (3.0, 1.5, 3000, 2.5) — extracted during audit follow-up so a future
+   * re-tune changes one place, not nine.
+   */
+  public static final class Autonomous {
+    /** Shoot-cycle timeout per scoring attempt (seconds). */
+    public static final double kShootTimeoutSeconds = 3.0;
+
+    /** How long before the end of a trajectory to start spinning up the flywheel (seconds). */
+    public static final double kFlywheelSpinupLeadSeconds = 1.5;
+
+    /** Default RPM for static-shot presets in auto routines. */
+    public static final double kAutoStaticShotRpm = 3000;
+
+    /** Duration to hold a static-shot spin-up during trajectory approach (seconds). */
+    public static final double kStaticSpinupDurationSeconds = 2.5;
+  }
 }

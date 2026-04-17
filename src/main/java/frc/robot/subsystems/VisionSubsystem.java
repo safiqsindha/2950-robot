@@ -39,35 +39,25 @@ import org.littletonrobotics.junction.Logger;
  */
 public class VisionSubsystem extends SubsystemBase {
 
+  // Single source of truth lives in Constants.Vision — mirrored here as package-private
+  // finals so unit tests can reference them without importing Constants (stable test API).
+  // See Constants.Vision for the full documentation of each value.
+
   // ─── Acceptance gates ─────────────────────────────────────────────────────
-  // Minimum tags visible before we trust the measurement
-  private static final int kMinTagCount = 1;
-  // Maximum total latency before we discard the measurement (ms)
-  private static final double kMaxLatencyMs = 50.0;
-  // Maximum average tag distance before we discount heavily (meters)
-  private static final double kMaxTagDistM = 4.0;
+  private static final int kMinTagCount = Constants.Vision.kMinTagCount;
+  private static final double kMaxLatencyMs = Constants.Vision.kMaxLatencyMs;
+  private static final double kMaxTagDistM = Constants.Vision.kMaxTagDistM;
 
   // ─── Consensus rejection rules (971 / 1678 / 1619 / 4481) ────────────────
-  // Skip vision updates when the robot is moving faster than this — Limelight
-  // latency + motion blur make pose accuracy too noisy to fuse. 1619 pattern.
-  static final double kMaxLinearSpeedForVisionMps = 4.0;
-  // Inhibit vision measurements briefly after resetOdometry/zeroGyro —
-  // prevents the Kalman filter from re-snapping after a teleport. 4481 pattern
-  // (6 loops × 20 ms).
-  static final double kResetInhibitionSeconds = 0.12;
-  // Max allowed vision-vs-odometry drift before rejecting. Tighter in auto to
-  // protect trajectory following. 1678 pattern.
-  static final double kMaxCorrectionTeleopMeters = 1.0;
-  static final double kMaxCorrectionAutoMeters = 0.5;
+  static final double kMaxLinearSpeedForVisionMps = Constants.Vision.kMaxLinearSpeedForVisionMps;
+  static final double kResetInhibitionSeconds = Constants.Vision.kResetInhibitionSeconds;
+  static final double kMaxCorrectionTeleopMeters = Constants.Vision.kMaxCorrectionTeleopMeters;
+  static final double kMaxCorrectionAutoMeters = Constants.Vision.kMaxCorrectionAutoMeters;
 
   // ─── Stddev weighting (971 d²/tagCount pattern) ──────────────────────────
-  // Base xy stddev at 1 m distance; multi-tag divides by √tagCount.
-  static final double kBaseXyStdDevMeters = 0.5;
-  // Theta stddev for multi-tag (MegaTag2 heading is accurate when seeing ≥2 tags).
-  static final double kMultiTagThetaStdDev = 0.1;
-  // Large stddev that effectively rejects vision yaw — trust gyro instead.
-  // Consensus across 971/1619/4481: never fuse vision heading for single-tag.
-  static final double kRejectThetaStdDev = 1000.0;
+  static final double kBaseXyStdDevMeters = Constants.Vision.kBaseXyStdDevMeters;
+  static final double kMultiTagThetaStdDev = Constants.Vision.kMultiTagThetaStdDev;
+  static final double kRejectThetaStdDev = Constants.Vision.kRejectThetaStdDev;
 
   private final SwerveSubsystem swerve;
 
