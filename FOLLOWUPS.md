@@ -6,6 +6,32 @@ Intent queue for work surfaced during a session but not done in that session. Ad
 
 ## 2026-04-18 — next session
 
+- [ ] **2025→2026 terminology sweep.** The codebase is in a mixed state: some classes correctly use 2026 REBUILT terminology (FUEL game piece, HUB scoring, TOWER climbing — see `ShotSimulation` / `RebuiltFuelOnFly`, `IntakeSimulationAdapter`, `FuelDetectionConsumer`, maple-sim's `rebuilt2026` package) while autonomous routines + dashboards + many docs are still stuck on 2025 Reefscape (Coral game piece, Reef scoring, Coral Station). **136 lines across 37 files.**
+
+  Split the cleanup into two PRs:
+
+  **PR-A — cosmetic renames (low risk, ~3 hours):**
+  - `ChoreoAutoCommand.twoCoralRoutine` → `twoFuelRoutine`; same for `threeCoralRoutine`, `scoreAndLeaveRoutine` and any test-side references. Update `RobotContainer` call sites + auto-chooser labels.
+  - `.traj` file renames: `reefToStation.traj` → `hubToIntake.traj` (or the team's preferred naming), `stationToReef.traj` → `intakeToHub.traj`, `leaveStart.traj` → keep (neutral). Update `TRAJ_*` string constants accordingly.
+  - `advantagescope-layout.json`: change `"game": "2026Reefscape"` → `"game": "2026REBUILT"` (verify AdvantageScope's supported game-name string for 2026 — may still be `"Reefscape"` if AS hasn't updated).
+  - `docs/advantagescope-setup.md`: "2026 Reefscape field" → "2026 REBUILT field."
+  - `GLOSSARY.md`: Reef entry → HUB entry with correct description; add FUEL + TOWER entries.
+  - Replace "coral"/"station"/"reef" example poses in `AllianceFlipTest`, `MatchPhaseOverlayTest`, `DriverPracticeModeTest`, `FuelDetectionConsumerTest` with 2026 field coordinates.
+  - Update README, ARCHITECTURE, PRACTICE_SESSION_PLAYBOOK, PIT_CHECKLIST, SIM_VALIDATION_SCRIPT for terminology consistency.
+
+  **PR-B — trajectory rewrites (requires Choreo desktop + 2026 field knowledge):**
+  - The `.traj` file contents themselves are 2025 Reefscape waypoints. Even after renaming the files, the paths still drive to the 2025 Coral Reef locations, not the 2026 HUB. Re-author each path in the Choreo desktop app against the 2026 REBUILT field layout. This needs either (a) the 2026 field JSON from Choreo's update, or (b) measured waypoints from practice.
+  - Verify Choreo's `ReefscapeCoralAlgaeStack` vs 2026 REBUILT's equivalent in the trajectory-author's game-piece-aware features.
+
+  **Search command for the sweep:**
+  ```
+  grep -rn "coral\|reef\|station\b" src/ *.md docs/ advantagescope-layout.json \
+    --include=*.java --include=*.md --include=*.json \
+    | grep -vE "swervelib|RebuiltFuel"
+  ```
+
+  Note: some "station" mentions are non-game (e.g. "test station" in PRACTICE_SESSION_PLAYBOOK, "driver station" in everything) — triage with grep `-v`.
+
 - [ ] **Delete `.cursorrules`.** Stale from April 8, predates the offseason refactor. Lies in three specific ways — claims CTRE Phoenix 6 / Kraken drivetrain (we're REV-only), forbids software-side PIDs (contradicted by `LinearProfile`, `AsymmetricRateLimiter`, `TrajectoryFollower`, `BatteryAwareCurrentLimit`), forbids IO interfaces broadly (we deliberately adopted the 2590 IO-layer pattern for every mechanism except Swerve). Any Cursor agent reading both the file and `AGENTS.md` would hit contradictions. Successor docs already maintained: `AGENTS.md`, `DEVELOPER_TESTING_GUIDE.md`, `MENTOR_GUIDE.md`, `CODE_TOUR.md`, 10 ADRs.
 
 - [ ] **Line-by-line audit of every source file.** Walk every `*.java` in `src/main/java/` and `src/test/java/`, plus every Python file in `tools/`, plus every markdown doc, and for each line ask: is this needed? Specifically look for:
