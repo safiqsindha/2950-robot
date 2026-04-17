@@ -4,67 +4,63 @@ Intent queue for work surfaced during a session but not done in that session. Ad
 
 ---
 
-## 2026-04-18 — next session
+## 2026-04-17 — remaining migration items (all externally blocked)
 
-- [ ] **2025→2026 deep migration (NOT just a rename).** Audit after research against WPILib's authoritative JSON narrowed the scope — not everything flagged in the first pass was actually wrong. Remaining work is real but smaller.
+The 2025 Reefscape → 2026 REBUILT migration is 6-of-9 shipped (see `PLAN.md` Phase 9). Three
+steps remain, each blocked on an input we don't currently have.
 
-  **Authoritative source** — WPILib bundles the field JSON:
-  - `apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json` — WELDED 16.541 m × 8.069 m, 32 tags (IDs 1–32)
-  - `apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-andymark.json` — AndyMark 16.518 m × 8.043 m, 32 tags
-  - 2025 Reefscape for contrast: 17.548 m × 8.052 m, 22 tags (1–22). Tag 26 does not exist in 2025.
+- [ ] **Migration step 3 — rebuild navgrid obstacle body for 2026.** Grid dims are correct
+  (16.541 × 8.069) and declared dims in both `src/main/deploy/navgrid.json` and
+  `src/main/deploy/pathplanner/navgrid.json` are fixed. The obstacle body itself still
+  traces 2025 Reef hexagons at 2025 coordinates — `NavigationGridTest.testHubLocation_isObstacle`
+  asserts (3.39, 4.11) is blocked, which was the 2025 Blue Reef center; 2026 Blue HUB is at
+  approximately (4.6, 4.0). **Blocker:** 2026 REBUILT CAD (Onshape, or STEP files from FIRST's
+  Playing Field Assets page). Either write `tools/navgrid_generator.py` from the CAD or
+  manually rasterize the HUB + TOWER + OUTPOST + TRENCH + STARTING ZONE footprints into the
+  164×82 grid. Update the `testHubLocation_isObstacle` coordinates to the 2026 Blue HUB.
 
-  **What's actually wrong (corrected from prior pass):**
+- [ ] **Migration step 4 — re-calibrate the flywheel Lagrange curve.** `Helper.rpmFromMeters`
+  uses three calibration points (1.125 → 2500, 1.714 → 3000, 2.500 → 3500) whose provenance
+  isn't captured in git history — could be 2025 Coral calibration, could be 2026 FUEL
+  practice-session. The docstring has been updated with a hardware-verification warning.
+  **Blocker:** hardware + practice time. Measure 3+ (distance, RPM) pairs with real 2026 FUEL
+  vs 2026 HUB, then run `tools/rpm_curve_fit.py` to regenerate Lagrange constants. A side-task
+  would be `git log -p src/main/java/frc/robot/Helper.java` to confirm whether the existing
+  points are 2026-tuned (would skip the hardware work).
 
-  - ~~`Helper.llSetup()` filters tags {2, 5, 10, 18, 21, 26} — 2025 Reefscape IDs~~. **False, and the rationale is now documented.** All six ARE in the 2026 HUB tag set {2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27}; tag 26 doesn't exist in 2025. The filter picks one tag from each of three HUB faces per alliance — Red uses N+S+E faces (W excluded, facing blue), Blue uses N+S+W faces (E excluded, facing red). Filter-face and yaw data now documented in `Helper.llSetup()` javadoc.
-  - ~~`Constants.kFieldLengthMeters = 16.541` is a 2025 value~~. **False.** 2025 was 17.548. The 16.541 value is 2026 WELDED exactly (also coincidentally the 2024 Crescendo length — the repo inherited Crescendo constants in the initial commit).
-  - `Constants.kFieldWidthMeters = 8.211` — **Actually wrong.** This is the 2024 Crescendo width, doesn't match any post-2024 season. Fixed to 8.069 in this PR.
-  - `src/main/deploy/navgrid.json` + `src/main/deploy/pathplanner/navgrid.json` — declared dims were `field_length_m: 16.46` / `field_width_m: 8.23` (matched no season). Fixed to 16.541 / 8.069 in this PR. `NavigationGrid.java` only reads `columns`/`rows`/`cell_size_m`/`grid`, so the fix is documentary only — does not affect pathfinding. The real problem is separate: the grid body itself traces 2025 Reef geometry — `NavigationGridTest.testHubLocation_isObstacle` asserts (3.39, 4.11) is blocked, which was the 2025 Blue Reef center. The 2026 Blue HUB is at approximately (4.6, 4.0) per the WPILib tag data. **Grid body still needs a full rebuild** against the 2026 CAD.
-  - `Helper.rpmFromMeters` Lagrange points (1.125 → 2500, 1.714 → 3000, 2.500 → 3500) — provenance unknown from git history. Could be 2025 Coral calibration inherited, could be 2026 FUEL practice-session. Hardware verification required.
-  - Choreo `.traj` files — current `reefToStation.traj` / `stationToReef.traj` use waypoints (4.50, 4.00) ↔ (0.90, 7.20). The (4.50, 4.00) point coincidentally matches the 2026 Blue HUB centerline, but (0.90, 7.20) doesn't land on any identifiable 2026 feature. Paths need Choreo desktop re-authoring anyway for 2026 HUB approach geometry.
-  - `Constants.Autonomous.kSafeModeStaticShotRpm = 2800` / `kAutoStaticShotRpm = 3000` — RPMs are not inherently game-specific; only wrong if the RPM curve (Lagrange points) is wrong.
-  - `tools/navgrid_generator.py` referenced by ARCHITECTURE.md doesn't exist. Either write it or fix the doc.
-  - `STUDENT_TESTING_GUIDE.md` tag reference is **already correct** (says "2026 REBUILT hub scoring targets", 2026 AprilTag family). Prior pass claim that it listed 2025 IDs was wrong.
+- [ ] **Migration step 5 — re-author Choreo trajectories on the 2026 field.** Current
+  `leaveStart.traj`, `reefToStation.traj`, `stationToReef.traj` use 2025-shaped waypoints.
+  The (4.50, 4.00) point in the HUB approach coincidentally matches the 2026 Blue HUB
+  centerline, but (0.90, 7.20) doesn't land on any identifiable 2026 feature. **Blocker:**
+  Choreo desktop + 2026 REBUILT field descriptor. Delete the 2025-named `.traj` files; create
+  new paths named after 2026 geometry (e.g. `hubToIntake.traj`). The `TRAJ_REEF_TO_STATION` /
+  `TRAJ_STATION_TO_REEF` constant names and the local variable names mirroring those files
+  (`stationToReef`, `toStation1`, etc.) should rename in the same PR.
 
-  **Migration work order (revised):**
+- [ ] **Migration step 7 — redesign the 2- and 3-fuel auto routines.** Depends on step 5
+  (re-authored trajectories) and on whether 2026 HUB scoring + FUEL pickup supports the
+  preload + 2 station-cycle pattern at the point total the team wants to hit. Depends on
+  REBUILT scoring rules + point values.
 
-  1. ~~Find the truth~~ — **DONE.** Authoritative JSON pulled from `wpilibsuite/allwpilib`. 2026 WELDED is the team's target (standard official field).
+- [ ] **Migration step 8 (lower priority) — further tune vision pose gates.** `kMaxTagDistM`
+  (4.0 m) is likely fine — 2026 HUB tag height is 1.124 m, similar to 2025 Reef.
+  `kMaxLinearSpeedForVisionMps` + `kMaxCorrectionAutoMeters` are velocity/drift gates, not
+  distance-sensitive. Re-tune only if event-day data shows vision pose estimates are under-
+  or over-trusted.
 
-  2. **Field dimension constants + navgrid declared dims** — **DONE** this PR: `Constants.kFieldWidthMeters` 8.211 → 8.069; `tools/choreo_validator.py` FIELD_WIDTH_METERS 8.211 → 8.069; `src/main/deploy/navgrid.json` + `src/main/deploy/pathplanner/navgrid.json` declared `field_length_m`/`field_width_m` → 16.541 / 8.069. Length was already 2026-correct in Constants.
+**Risk of not doing any of the above:** event-day behaviour would be incorrect in navgrid
+pathfinding (avoids wrong obstacles), flywheel RPMs (if Lagrange points are 2025), and
+trajectory waypoints. Field dimension constants, AprilTag filter, and terminology are all
+already correct.
 
-  3. **Replace navgrid obstacle body** — requires 2026 REBUILT field CAD (Onshape, or STEP files from FIRST's Playing Field Assets page). The grid body at `src/main/deploy/navgrid.json` + `src/main/deploy/pathplanner/navgrid.json` currently encodes 2025 Reef hexagons at 2025 coordinates. Write `tools/navgrid_generator.py` from the 2026 CAD or manually rasterize the HUB + TOWER + OUTPOST + TRENCH + STARTING ZONE footprints into the 164×82 grid. Confirm with `NavigationGridTest` — update the `testHubLocation_isObstacle` coordinates to the 2026 Blue HUB (~(4.6, 4.0)).
+---
 
-  4. **Re-calibrate flywheel** — hardware + practice session. Measure 3+ (distance, RPM) pairs with real 2026 FUEL vs 2026 HUB. `tools/rpm_curve_fit.py` regenerates Lagrange constants. Parallel: inspect git history of `Helper.rpmFromMeters` to confirm the existing points weren't already 2026-tuned (unlikely but possible).
+## Always check before deleting apparent dead code
 
-  5. **Re-author trajectories** — Choreo desktop + 2026 field. New HUB approach + Fuel Intake approach paths. Delete `leaveStart.traj` / `reefToStation.traj` / `stationToReef.traj`; create new paths with game-accurate names.
-
-  6. **Scoring pose constants** — **FLAGGED** this PR (docstrings mark each pose with 2026 reference data); values unchanged pending strategic + trajectory decisions. `AutonomousStrategy.HUB_POSE = (3.39, 4.11)` is the 2025 Blue Reef center; 2026 Blue HUB center is (4.537, 4.035). `CLIMB_POSE = (8.23, 4.11)` and `DEFAULT_COLLECT_POSE` are both field-center placeholders; 2026 Blue TOWERs sit on the west wall (x=0.008) so a real climb pose is ~(1.0, 4.0). Actual value updates must coordinate with Choreo trajectory re-authoring (step 5) because the auto paths approach these exact points.
-
-  7. **Auto routine redesign** — 2/3-coral pattern (preload + 2 station cycles) depends on whether 2026 HUB scoring + FUEL pickup supports that cycle count and game-piece limit. Depends on REBUILT scoring rules + point values.
-
-  8. **Vision pose gates** — `kMaxTagDistM = 4.0` likely still OK (HUB tag height 1.124 m is similar to Reef). `kMaxLinearSpeedForVisionMps`, `kMaxCorrectionAutoMeters` are velocity/drift gates, not distance-sensitive. Low priority.
-
-  9. **Terminology pass** — **MOSTLY DONE** this PR. Source-side renames shipped: `twoCoralRoutine` → `twoFuelRoutine`, `threeCoralRoutine` → `threeFuelRoutine`, display strings "2 Coral" → "2 Fuel" / "3 Coral" → "3 Fuel", log keys `*Coral-NoGamePiece` → `*Fuel-NoGamePiece`, docstrings across `ChoreoAutoCommand`/`TrajectoryFollower`/`HolonomicTrajectory`/`GeomUtil`/`DynamicAvoidanceLayer` (all "Reef" → "HUB", "coral" → "FUEL", "coral station" → "FUEL intake"). Docs updated in PIT_CHECKLIST/README/STUDENT_TESTING_GUIDE. Layout strings corrected: `elastic-layout.json` "Reefscape" → "Rebuilt", `advantagescope-layout.json` "2026Reefscape" → "2026Rebuilt". **Still pending (coupled with step 5):** `.traj` filename renames (`reefToStation.traj` → e.g. `hubToIntake.traj`), and the `TRAJ_REEF_TO_STATION`/`TRAJ_STATION_TO_REEF` constant names + local variable names (`stationToReef`, `toStation1` etc.) that mirror the .traj filenames — these rename when the 2026 paths are re-authored in Choreo desktop.
-
-  **Cannot be done in a single PR.** Items 3, 4, 5 are hardware-/CAD-gated and each large. Item 9 is two sub-PRs (source renames vs trajectory-file renames). Expect ~6 more PRs after this one.
-
-  **Risk of not doing it:** event-day behaviour would still be incorrect in: navgrid pathfinding (avoids wrong obstacles), flywheel RPMs (if Lagrange points really are 2025), scoring poses (CLIMB_POSE likely placeholder), trajectory waypoints. Would NOT be incorrect in: field dimension constants (fixed this PR), AprilTag filter (was already correct).
-
-- [ ] **Line-by-line audit of every source file.** Walk every `*.java` in `src/main/java/` and `src/test/java/`, plus every Python file in `tools/`, plus every markdown doc, and for each line ask: is this needed? Specifically look for:
-  - Dead imports that Spotless missed (rare but possible after major refactors)
-  - Stale `// TODO` / `// FIXME` referring to already-fixed issues
-  - Commented-out code
-  - Docstrings that describe an old behaviour (the "intake marker is bound" docstring we just fixed was one of these — caught by an external judge, not internal review)
-  - Fields declared but never read
-  - Private methods never called
-  - Log keys emitted but never consumed by any dashboard / doc (dead telemetry, the `VisionLatencyTracker` class of bug)
-  - Constants that look like copy-paste drift from a previous subsystem
-  - ArchUnit / SpotBugs suppressions whose original rationale no longer applies
-  - Test assertions that look defensive but never actually fail
-  - Config entries in `build.gradle` / `vendordeps/` / `config/` that reference removed features
-
-  **Method:** branch per subsystem / package. Keep each PR < 300 LOC so reviewers can actually check every deletion. Don't batch unrelated deletions — one reason per PR. Use `git blame` to verify the original intent before removing anything non-obvious.
-
-  **Stop condition:** every line answers "yes, this is needed" with a specific reason.
+See [`SCAFFOLDS.md`](SCAFFOLDS.md). Four categories of intentionally-unwired classes currently
+exist (`StallDetector`, `BatteryAwareCurrentLimit`, `Climber`, `SideClaw` + their IO layers;
+plus `FlywheelIO.stop`/`ConveyorIO.stop`). An audit that greps for `new <Foo>()` will flag
+them; `SCAFFOLDS.md` explains why each one stays.
 
 ---
 

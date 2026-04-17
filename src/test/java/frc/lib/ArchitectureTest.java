@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
  * <p>The rules codify the layering we've talked about informally:
  *
  * <ul>
- *   <li>{@code frc.lib.*} is the reusable utility layer. It must NOT depend on {@code
- *       frc.robot.*} — otherwise it can't be lifted into another repo next season.
+ *   <li>{@code frc.lib.*} is the reusable utility layer. It must NOT depend on {@code frc.robot.*}
+ *       — otherwise it can't be lifted into another repo next season.
  *   <li>{@code frc.lib.*} must not depend on the in-tree YAGSL copy ({@code swervelib.*}) so the
  *       utility layer stays drivetrain-agnostic.
- *   <li>Subsystems (under {@code frc.robot.subsystems.*}) must not reach up into commands.
- *       Commands drive subsystems, never the reverse.
+ *   <li>Subsystems (under {@code frc.robot.subsystems.*}) must not reach up into commands. Commands
+ *       drive subsystems, never the reverse.
  *   <li>{@code frc.lib.diagnostics.*} is consumer-only telemetry — any outbound edge into {@code
  *       frc.robot.*} would defeat its reuse story.
  * </ul>
@@ -102,11 +102,7 @@ class ArchitectureTest {
             .should()
             .onlyDependOnClassesThat()
             .resideInAnyPackage(
-                "frc.lib..",
-                "java..",
-                "javax..",
-                "edu.wpi.first..",
-                "org.littletonrobotics..")
+                "frc.lib..", "java..", "javax..", "edu.wpi.first..", "org.littletonrobotics..")
             .because(
                 "frc.lib.diagnostics is consumer-only — any outbound edge to frc.robot.* means"
                     + " the telemetry layer has grown knowledge of the specific robot, defeating"
@@ -195,6 +191,42 @@ class ArchitectureTest {
                 "Robot-wide constants live in frc.robot.Constants (inner classes per subsystem)."
                     + " Adding a parallel frc.robot.config / constants package fragments the"
                     + " tuning story. Add a new inner class to Constants instead.");
+    rule.check(allClasses);
+  }
+
+  @Test
+  void productionCodeMustNotUse2025Vocabulary() {
+    // 2025 Reefscape season terminology leaked during the 2026 REBUILT migration and was
+    // cleaned up in PR #86. This rule prevents regression: any class, package, or inner-class
+    // name containing "coral", "reef", or "reefscape" in frc.robot.* will fail the build.
+    //
+    // Scope note: this matches class NAMES and their containing PACKAGE paths. It does NOT
+    // scan method bodies or string literals — ArchUnit reads bytecode, not source. If a
+    // student writes Logger.recordOutput("Coral/Whatever", …) the rule won't catch it;
+    // reviewer vigilance is the backup. But naming a class `CoralFeeder.java` is the most
+    // common slip and that we do catch.
+    //
+    // If the 2027 season re-introduces a game piece legitimately called "coral" or "reef",
+    // update this rule.
+    ArchRule rule =
+        noClasses()
+            .that()
+            .resideInAPackage("frc.robot..")
+            .should()
+            .haveSimpleNameContaining("Coral")
+            .orShould()
+            .haveSimpleNameContaining("coral")
+            .orShould()
+            .haveSimpleNameContaining("Reef")
+            .orShould()
+            .haveSimpleNameContaining("reef")
+            .orShould()
+            .haveSimpleNameContaining("Reefscape")
+            .because(
+                "2025 Reefscape terminology was swept out in PR #86. If the 2027 season"
+                    + " legitimately re-introduces these terms, update this rule. Otherwise"
+                    + " a class with this name is probably a regression — the 2026 vocabulary"
+                    + " is 'fuel' (game piece), 'HUB' (scoring target), 'TOWER' (climb).");
     rule.check(allClasses);
   }
 }

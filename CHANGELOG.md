@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #91  audit(autos+pathfinding): delete 5 classes + 1 annotation, never wired
 - 2026-04-17  #90  audit(commands): delete 2 unwired utility classes + 2 dead methods
 - 2026-04-17  #89  audit(subsystems): delete 2 never-instantiated classes + README truth-up
 - 2026-04-17  #88  audit(diagnostics): delete 3 never-instantiated classes + 1 doc fix
@@ -23,7 +24,7 @@ Every merged PR appends one line here via `.github/workflows/changelog.yml`. Dep
 The last 60+ PRs shipped a full offseason refactor. Highlights:
 
 **Infrastructure**
-- Diagnostics quintet (JVM / CAN / PDH / Loop time / Vision latency) + MatchPhaseOverlay + DriverInputRecorder all ticking in `Robot.robotPeriodic()`
+- Diagnostics quartet (JVM / CAN / PDH / Loop time) + MatchPhaseOverlay ticking in `Robot.robotPeriodic()` (`VisionLatencyTracker`, `DriverInputRecorder`, `FaultMonitor`/`TimedFaultMonitor` were written, shipped, then deleted in PRs #88/#89 after never being wired)
 - ArchUnit rules enforce the `frc.lib.* ↛ frc.robot.*` invariant and the subsystems-can't-import-commands boundary
 - JaCoCo 80% line-coverage gate on `frc.lib.*`
 - Headless sim smoke test in CI, PR-size summary, release-notes-on-tag workflow, PR-preview-artifact workflow, pre-commit hook installer
@@ -34,8 +35,8 @@ The last 60+ PRs shipped a full offseason refactor. Highlights:
 - `LoggedTunableNumber`, `RollingWindowStats`, `BatteryAwareCurrentLimit` (971 CapU)
 - `HolonomicTrajectory` / `HolonomicTrajectorySample` / `ChoreoTrajectoryAdapter` / `TrajectoryFollower` (4481 pattern)
 - `Hysteresis`, `AreWeThereYetDebouncer`, `GeomUtil`, `RobotName`, `AllianceFlip`
-- `FaultMonitor` / `TimedFaultMonitor` / `JvmLogger` / `CanBusLogger` / `PdhLogger` / `LoopTimeLogger` / `VisionLatencyTracker` / `MatchPhaseOverlay` / `DriverInputRecorder` / `CommandLifecycleLogger`
-- `NavigationGrid` + `AStarPathfinder` + `DynamicAvoidanceLayer` (refactored off `Constants` as of PR #31)
+- `JvmLogger` / `CanBusLogger` / `PdhLogger` / `LoopTimeLogger` / `MatchPhaseOverlay` / `CommandLifecycleLogger` (the live diagnostics set after the PR #88/#89 audit sweep)
+- `NavigationGrid` + `DynamicAvoidanceLayer` (refactored off `Constants` as of PR #31; AD\* pathfinding is delegated to PathPlanner's runtime planner — the in-tree `AStarPathfinder` was deleted in PR #91 as never adopted)
 
 **Subsystem patterns**
 - Every mechanism is a 2590-style IO layer (`XxxIO` + `XxxIOInputs` + `XxxIOReal` + `XxxIOSim` + thin consumer)
@@ -45,8 +46,8 @@ The last 60+ PRs shipped a full offseason refactor. Highlights:
 
 **Autonomous**
 - `ChoreoAutoCommand` factory routes every sample through `TrajectoryFollower` (FF + PID) with explicit field→robot frame conversion
-- `LoggedAutoChooser` publishes `Auto/SelectedName` every cycle; `selectRandom` + `RandomAutoRotator` rotate routines in practice
-- `@AutoRoutine` annotation + `AutoRoutineRegistrar` for declarative routine registration (4481 pattern)
+- `LoggedAutoChooser` publishes `Auto/SelectedName` every cycle
+- (`@AutoRoutine` annotation + `AutoRoutineRegistrar` + `RandomAutoRotator` shipped then deleted in PR #91 — the declarative-registration infrastructure was never adopted; if the team wants it later, the 4481 pattern is re-implementable.)
 
 **Tooling**
 - `tools/can_id_validator.py` — pre-deploy CAN conflict + undocumented-ID scanner

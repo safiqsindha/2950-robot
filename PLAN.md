@@ -107,6 +107,63 @@ Shipped ~60 additional PRs across 14 thematic batches (A–Q) + 1 hotfix.
 **Process hiccup + recovery:**
 Main went red for a short window when PR #69 (SideClaw) landed while PR #60 (which held AsymmetricRateLimiter) was still queued behind a failing test. The hotfix #73 bundled the AsymmetricRateLimiter source + Intake wiring + VisionLatencyTracker fix to restore the build. Lesson codified as ADR 0010 and in `MENTOR_GUIDE.md`'s merge-policy section.
 
+---
+
+## Phase 9 — 2026 migration + audit sweep (shipped 2026-04-17)
+
+Two-track closure pass: (a) the 2025 Reefscape → 2026 REBUILT deep migration flagged in
+`FOLLOWUPS.md`, and (b) a file-by-file audit for dead code.
+
+### Migration track (items from FOLLOWUPS.md)
+
+| Step | Status | Evidence |
+|---|---|---|
+| 1. Authoritative field data located | ✓ Done | WPILib `2026-rebuilt-welded.json` pulled |
+| 2. Field-dimension constants + navgrid declared dims | ✓ Done | PR #84 — `kFieldWidthMeters` 8.211 → 8.069; test bounds + navgrid JSON updated |
+| 3. Navgrid obstacle body rebuild | ⛔ Blocked | Needs 2026 REBUILT CAD — tracked in `FOLLOWUPS.md` |
+| 4. Flywheel Lagrange re-calibration | ⛔ Blocked | Needs hardware practice — `Helper.rpmFromMeters` flagged in code |
+| 5. Choreo trajectory re-authoring | ⛔ Blocked | Needs Choreo desktop + 2026 field descriptor |
+| 6. Scoring pose constants (HUB / CLIMB / COLLECT) | ✓ Flagged | PR #85 — docstrings now carry real 2026 coordinates; values pending step 5 |
+| 7. Auto routine redesign | ⏸ Depends on step 5 | — |
+| 8. Vision pose gates | ✓ Done (bounds) | PR #84 — test hardcodes updated; further tuning is post-hardware |
+| 9. Vocabulary + dashboards | ✓ Done | PR #86 — source renames Coral→Fuel, log keys, elastic + advantagescope game strings |
+
+**Bonus bug caught during migration**: 2-fuel auto routine was missing the `.atTime("intake")` binding that PR #80 had added only to the 3-fuel routine. Fixed in PR #86. Match-losing if it had shipped.
+
+### Audit track
+
+| PR | Scope | LOC removed |
+|---|---|---|
+| #87 | Delete stale `.cursorrules` (superseded by `AGENTS.md`) | — |
+| #88 | `frc.robot.diagnostics` audit — delete `DriverInputRecorder`, `FaultMonitor`, `TimedFaultMonitor` + tests | −540 |
+| #89 | Standalone subsystems audit — delete `RumbleManager`, `OdometryDivergenceDetector` + tests | −415 |
+| #90 | `frc.robot.commands` audit — delete `SpeedModeManager`, `MovingShotCompensation`, 2 dead methods | −269 |
+| #91 | Autos + pathfinding audit — delete `AStarPathfinder`, `AutoRoutineRegistrar`, `@AutoRoutine`, `RandomAutoRotator`, `CycleTracker`, `TelemetryPublisher` + tests | −1,099 |
+
+**Total: ~2,323 LOC deleted across 11 classes + 1 annotation + associated tests.**
+
+### False positives recovered during the sweep (now tracked in `SCAFFOLDS.md`)
+
+These classes came up as "zero instantiations" in the grep pass but were kept because one of
+four scaffold reasons applied (pattern exemplar, mechanism scaffold, forward-looking infra,
+or test-harness contract):
+
+- `StallDetector` — canonical `FakeClock`/`Supplier<Double>` pattern; cited in ADR 0001, ADR 0007, AGENTS.md, CODE_TOUR.md, DEVELOPER_TESTING_GUIDE.md, FAQ.md.
+- `BatteryAwareCurrentLimit` — 971 CapU math; per-motor integration PR is the blocker, not the implementation.
+- `Climber` + `ClimberIO` + `ClimberIOSim` — TOWER climb mechanism scaffold.
+- `SideClaw` + `SideClawIO` + `SideClawIOSim` — side-claw mechanism scaffold.
+- `FlywheelIO.stop()` / `ConveyorIO.stop()` — exercised by unit tests asserting interrupt-path contract.
+- `LEDs.java` priority-override line — verified as correct Spectrum 3847 pattern, not a bug.
+
+### Follow-up infrastructure shipped in the closure pass
+
+- **`SCAFFOLDS.md`** — new file; registry of deliberately-unwired classes so the next audit doesn't re-litigate.
+- **`AGENTS.md` pitfall #6 + #7** — pointer to `SCAFFOLDS.md`; ArchUnit rule reference banning 2025 vocabulary in source.
+- **`ArchitectureTest.productionCodeMustNotUse2025Vocabulary`** — new ArchUnit rule blocks `coral` / `reef` / `reefscape` in production class names / package paths.
+- **`Helper.rpmFromMeters` deprecation notice** — docstring warns the Lagrange points may be 2025-inherited; pairs with FOLLOWUPS migration step 4.
+- **`ShotSimulation.LastHitShotNumber`** — dead log key removed; docstring already didn't advertise it.
+- **Section truth-ups** — README "Additional docs", CHANGELOG offseason summary, and this PLAN now describe the post-audit reality.
+
 ## Audit-driven backlog — closed
 
 Phase 0.1 audit surfaced 42 magic-number findings (see `AUDIT_2026-04-16.md` Section 2).

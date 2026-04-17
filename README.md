@@ -181,9 +181,8 @@ Mode picker lives on the SmartDashboard `Auto Chooser`.
 - **Bot Aborter** — aborts the current target if an opponent's ETA is 0.75 s earlier
 - **DynamicAvoidanceLayer** — neural-detected opponent positions injected as obstacles
   into the navigation grid
-- **A\* pathfinder** — custom pure-Java 8-directional A\* over `NavigationGrid` for cost
-  estimation (in `frc.lib.pathfinding`, 80 %+ test coverage)
-- **PathPlanner AD\*** — runtime path planning with `deploy/pathplanner/navgrid.json`
+- **PathPlanner AD\*** — runtime path planning with `deploy/pathplanner/navgrid.json`;
+  `PathfindToGoalCommand` wraps the inner planner with AdvantageKit lifecycle logging
 - **AllianceFlip** — HUB / CLIMB / fallback-collect poses automatically mirrored for red
 
 ---
@@ -397,7 +396,7 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
         AllianceFlip.java               # Pose / translation / rotation alliance mirroring
         control/                        # LinearProfile (6328 acceleration-limited slew)
         diagnostics/                    # CommandLifecycleLogger, JvmLogger (3005 patterns)
-        pathfinding/                    # A*, NavigationGrid, DynamicAvoidanceLayer
+        pathfinding/                    # NavigationGrid + DynamicAvoidanceLayer (AD* handled by PathPlanner)
         trajectory/                     # HolonomicTrajectory + ChoreoTrajectoryAdapter (4481)
         util/                           # Hysteresis, AreWeThereYetDebouncer, GeomUtil, RobotName
       robot/
@@ -427,36 +426,46 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
 | `util.AreWeThereYetDebouncer` | 1619 | "At goal" debounce that resets on target change |
 | `util.GeomUtil` | 4481 | `getClosestPose` / `getClosestFuturePose` (Lie-algebra extrapolation) |
 | `util.RobotName` | 3005 | File-backed per-bot enum (`/home/lvuser/ROBOT_NAME` → `COMP`/`PRACTICE`/…) |
-| `pathfinding.*` | 2950 | A* navigation grid + dynamic avoidance |
+| `pathfinding.*` | 2950 | Nav-grid cost map + opponent-aware potential-field velocity correction |
 | `diagnostics.CommandLifecycleLogger` | 3005 | Command init/finish/interrupt → AdvantageKit |
 | `diagnostics.JvmLogger` | 3005 | Heap + GC telemetry |
 
-### Deferred backlog (queued for the next session)
+### Current open work (see `FOLLOWUPS.md` for the live queue)
 
-Still on the shelf, not yet shipped:
+Blocked on external inputs — kept on the shelf until unblockers arrive:
 
-- **TrajectoryFollower** (4481) — closed-loop follower using `HolonomicTrajectory`. Foundation is in place; follower + auto migration is next.
-- **`FlywheelAutoFeed` 2D upgrade** — thread Limelight `tx` into `rpmFromMeters(d, θ, speeds)` so the 971 fixed-point compensation is actually used
-- **Drive-feel polish** — 2056 jerk-limited slew, 2056 350 ms heading-hold release gate, 2056 `UpdateDepartPose` post-score anchor
-- **HAL-init test harness** — one canary class with `HAL.initialize(500, 0)` in `@BeforeAll` to unlock physics tests in IOSim
-- **971 CapU current-limiting** — dynamic battery-aware ceiling
-- **971 hybrid EKF with replay buffer** — the big one; highest effort, highest intellectual leverage
-- **CI polish** — `./gradlew wrapper` to clear the comp-purge warning, Node 24 migration
+- **Navgrid obstacle body (2026 REBUILT)** — grid dimensions are correct (16.541 × 8.069)
+  but the obstacle body still traces 2025 Reef geometry. Blocked on 2026 REBUILT CAD so we
+  can rasterize HUB + TOWER + OUTPOST + TRENCH + STARTING ZONE footprints.
+- **Flywheel Lagrange re-fit** — `Helper.rpmFromMeters` calibration points have unknown
+  provenance; may be 2025 Coral or 2026 FUEL. Blocked on hardware practice time. Use
+  `tools/rpm_curve_fit.py` once data is collected.
+- **Choreo trajectory re-authoring** — `.traj` files still target 2025 Reef waypoints.
+  Blocked on Choreo desktop + 2026 field descriptor; once re-authored, the auto-routine
+  redesign (2-fuel / 3-fuel pose targets) naturally follows.
+- **971 hybrid EKF with replay buffer** — multi-week research project. Intentionally
+  deferred indefinitely; documented in PLAN.md step 7.8.
 
-See `PRACTICE_SESSION_PLAYBOOK.md` for how to use the existing tooling to de-risk practice.
+Always-available: see `PRACTICE_SESSION_PLAYBOOK.md` for the phase-A/B/C practice script,
+and `SCAFFOLDS.md` for the registry of deliberately-unwired classes (Climber, SideClaw,
+StallDetector, BatteryAwareCurrentLimit) that an audit sweep should NOT delete.
 
 ---
 
 ## Additional docs
 
 - **[`AGENTS.md`](AGENTS.md)** — authoritative command + convention contract for Claude / Cursor / agent sessions
+- **[`SCAFFOLDS.md`](SCAFFOLDS.md)** — registry of deliberately-unwired classes (read before deleting anything that looks dead)
+- **[`FOLLOWUPS.md`](FOLLOWUPS.md)** — live queue of known-pending work
 - **[`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md)** — stepwise guide (Phase A smoke → Phase B calibration → Phase C auto rehearsal)
 - **[`CAN_ID_REFERENCE.md`](CAN_ID_REFERENCE.md)** — complete CAN bus wiring
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — system design + subsystem interactions
+- [`CODE_TOUR.md`](CODE_TOUR.md) — guided tour of the repository layout
 - [`STUDENT_TESTING_GUIDE.md`](STUDENT_TESTING_GUIDE.md) — how to write + run tests
 - [`HARDWARE_QUESTIONNAIRE.md`](HARDWARE_QUESTIONNAIRE.md) — hardware verification checklist
-- [`AUDIT_2026-04-16.md`](AUDIT_2026-04-16.md) — 50-finding codebase audit
-- [`PLAN.md`](PLAN.md) + [`STATUS.md`](STATUS.md) — offseason refactor tracking (all 18 tasks complete)
+- [`AUDIT_2026-04-16.md`](AUDIT_2026-04-16.md) — historical 50-finding codebase audit (all findings closed; kept for context)
+- [`PLAN.md`](PLAN.md) + [`STATUS.md`](STATUS.md) — offseason refactor tracking (Phases 0–8 complete; Phase 9 audit sweep closed as of 2026-04-17)
+- [`CHANGELOG.md`](CHANGELOG.md) — one line per merged PR
 - [`INVESTIGATION_604_QUIXLIB.md`](INVESTIGATION_604_QUIXLIB.md) — why we didn't adopt 604's swerve sim
 - [`MAPLE_SIM_BUG_REPORT.md`](MAPLE_SIM_BUG_REPORT.md) — open upstream issue + our bypass
 - [`VENDORDEP_URLS.md`](VENDORDEP_URLS.md) — exact JSON URLs for every vendor dep

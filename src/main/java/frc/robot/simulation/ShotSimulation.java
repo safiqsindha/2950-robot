@@ -10,23 +10,22 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
+import org.littletonrobotics.junction.Logger;
 import swervelib.simulation.ironmaple.simulation.SimulatedArena;
 import swervelib.simulation.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
-import org.littletonrobotics.junction.Logger;
 
 /**
- * Spawns {@link RebuiltFuelOnFly} projectiles in maple-sim when the real robot fires a shot.
- * Lets us regression-test the Lagrange RPM curve, moving-shot compensation, and aim code in sim
- * rather than only in practice.
+ * Spawns {@link RebuiltFuelOnFly} projectiles in maple-sim when the real robot fires a shot. Lets
+ * us regression-test the Lagrange RPM curve, moving-shot compensation, and aim code in sim rather
+ * than only in practice.
  *
- * <p>This is pure sim infrastructure — every entry point short-circuits via
- * {@link RobotBase#isSimulation()} so calling it from production paths is safe but no-op on a
- * real robot.
+ * <p>This is pure sim infrastructure — every entry point short-circuits via {@link
+ * RobotBase#isSimulation()} so calling it from production paths is safe but no-op on a real robot.
  *
- * <p>Adapted from maple-sim's projectile-simulation docs (Shenzhen Robotics Alliance,
- * {@code maple-sim} v0.4.0-beta). Note: maple-sim projectile physics is gravity-only — no drag or
- * spin — so don't use sim tuning as a substitute for on-hardware calibration. This simulator is
- * for verifying <em>aim logic</em>, not shot ballistics.
+ * <p>Adapted from maple-sim's projectile-simulation docs (Shenzhen Robotics Alliance, {@code
+ * maple-sim} v0.4.0-beta). Note: maple-sim projectile physics is gravity-only — no drag or spin —
+ * so don't use sim tuning as a substitute for on-hardware calibration. This simulator is for
+ * verifying <em>aim logic</em>, not shot ballistics.
  *
  * <p>Log keys:
  *
@@ -86,7 +85,6 @@ public final class ShotSimulation {
     shotsFired++;
     lastHitFlag = false;
     double launchSpeedMps = rpmToExitSpeedMps(launchRpm);
-    int shotNumber = shotsFired;
 
     RebuiltFuelOnFly projectile =
         new RebuiltFuelOnFly(
@@ -99,18 +97,17 @@ public final class ShotSimulation {
             Degrees.of(LAUNCH_PITCH_DEGREES));
     projectile.withTargetPosition(() -> DEFAULT_HUB_POSITION);
     projectile.withTargetTolerance(DEFAULT_HUB_TOLERANCE);
-    projectile.withHitTargetCallBack(() -> onHit(shotNumber));
+    projectile.withHitTargetCallBack(this::onHit);
 
     SimulatedArena.getInstance().addGamePieceProjectile(projectile);
     Logger.recordOutput("Sim/Shots/Fired", shotsFired);
   }
 
   /** Callback for scored shots. Package-private visibility for testing. */
-  void onHit(int shotNumber) {
+  void onHit() {
     shotsScored++;
     lastHitFlag = true;
     Logger.recordOutput("Sim/Shots/Scored", shotsScored);
-    Logger.recordOutput("Sim/Shots/LastHitShotNumber", shotNumber);
   }
 
   /**
@@ -126,10 +123,9 @@ public final class ShotSimulation {
   }
 
   /**
-   * Rate-limited firing hook for periodic wiring. Call each robot loop with the current robot
-   * pose, field-relative chassis velocity, commanded flywheel RPM, and whether the flywheel is at
-   * speed. Spawns one projectile per {@link #kShotIntervalSeconds} while at-speed; otherwise
-   * no-ops.
+   * Rate-limited firing hook for periodic wiring. Call each robot loop with the current robot pose,
+   * field-relative chassis velocity, commanded flywheel RPM, and whether the flywheel is at speed.
+   * Spawns one projectile per {@link #kShotIntervalSeconds} while at-speed; otherwise no-ops.
    *
    * <p>On a real robot (non-simulation) this method returns immediately. Safe to call
    * unconditionally from {@code Robot.simulationPeriodic}.
@@ -158,8 +154,7 @@ public final class ShotSimulation {
    * Package-private. Returns {@code true} iff the flywheel is at speed AND at least {@link
    * #kShotIntervalSeconds} has passed since the last fire.
    */
-  static boolean shouldFireNow(
-      boolean atSpeed, double currentTimeSec, double lastFireTimeSec) {
+  static boolean shouldFireNow(boolean atSpeed, double currentTimeSec, double lastFireTimeSec) {
     if (!atSpeed) {
       return false;
     }
@@ -177,8 +172,8 @@ public final class ShotSimulation {
   }
 
   /**
-   * Converts commanded RPM to ball exit speed in m/s. Linear interp from 0 to {@code kMaxRpm}
-   * (maps to {@link #EXIT_SPEED_AT_MAX_RPM_MPS}). Package-private for testing.
+   * Converts commanded RPM to ball exit speed in m/s. Linear interp from 0 to {@code kMaxRpm} (maps
+   * to {@link #EXIT_SPEED_AT_MAX_RPM_MPS}). Package-private for testing.
    */
   static double rpmToExitSpeedMps(double rpm) {
     if (Constants.Flywheel.kMaxRpm <= 0) {

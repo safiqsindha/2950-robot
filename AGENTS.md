@@ -100,6 +100,8 @@ open /tmp/ci/index.html
 3. **Using `System.out.println`** — grep enforces zero hits in `src/main/java/`. Use `Logger.recordOutput` instead.
 4. **Amending commits when a pre-commit hook fails** — always make a NEW commit; see CLAUDE.md git-safety rules.
 5. **Adding HAL-dependent code without a flag/guard** — in particular, `DriverStation.isAutonomous()` during init throws. Gate with `RobotBase.isSimulation()` or defer to periodic.
+6. **Deleting "unused" code without checking `SCAFFOLDS.md`** — several classes (`StallDetector`, `BatteryAwareCurrentLimit`, `Climber`, `SideClaw`) are deliberately unwired pattern-exemplars or mechanism scaffolds. Running `grep 'new StallDetector'` will return zero, but that doesn't mean it's dead. Always check the scaffold registry first.
+7. **Using 2025 Reefscape terminology** — this repo is 2026 REBUILT. Don't write "coral", "reef", or "reefscape" in new code or log keys. The 2026 vocabulary is "fuel" (game piece), "HUB" (scoring target), "TOWER" (climb). An ArchUnit rule blocks the 2025 terms in `frc.robot.*` source (see `ArchitectureTest.productionCodeMustNotUse2025Vocabulary`).
 
 ## Context-gathering shortcuts
 
@@ -109,14 +111,17 @@ When starting a new session:
 # What phases / work is complete?
 cat PLAN.md STATUS.md
 
+# What's currently queued?
+cat FOLLOWUPS.md
+
+# Which classes are deliberately unwired? (READ BEFORE DELETING ANYTHING)
+cat SCAFFOLDS.md
+
 # What hardware do we have?
 cat CAN_ID_REFERENCE.md
 
-# What did the audit flag?
+# Historical context — the original audit (all findings now closed)
 cat AUDIT_2026-04-16.md
-
-# What scout patterns are outstanding?
-grep -A2 'Deferred\|Follow-up\|TODO' README.md
 ```
 
 ## Where-to-put-it index

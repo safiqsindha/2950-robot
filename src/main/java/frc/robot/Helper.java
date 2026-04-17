@@ -39,6 +39,12 @@ public class Helper {
    *   <li>2.500 m → 3500 RPM (long range)
    * </ul>
    *
+   * <p><strong>⚠ Calibration provenance unverified.</strong> These calibration points were
+   * inherited from an earlier commit without hardware-verification notes in git history. They may
+   * be 2025 Coral-tuned (wrong for 2026 FUEL) or 2026 FUEL practice-session values. Re-measure
+   * on-hardware with real 2026 FUEL against a 2026 HUB before trusting these RPMs in a match. See
+   * {@code tools/rpm_curve_fit.py} and {@code FOLLOWUPS.md} migration step 4.
+   *
    * @param meters distance to the hub in meters
    * @return target RPM clamped to [{@link Constants.Flywheel#kMinRpm}, {@link
    *     Constants.Flywheel#kMaxRpm}]
@@ -93,8 +99,8 @@ public class Helper {
   }
 
   /**
-   * Calculate flywheel RPM for a moving-shot with full 2D velocity compensation (Team 971
-   * Spartan's 3-iteration fixed-point shoot-on-the-fly algorithm).
+   * Calculate flywheel RPM for a moving-shot with full 2D velocity compensation (Team 971 Spartan's
+   * 3-iteration fixed-point shoot-on-the-fly algorithm).
    *
    * <p>Given the robot-relative target offset (from Limelight {@code tx} + distance), chassis
    * velocity (robot-relative), and ball exit speed, this iteratively solves for a "virtual target"
@@ -105,9 +111,9 @@ public class Helper {
    * forward motion via {@code vx}), this method properly accounts for strafing (lateral velocity)
    * by doing the full 2D geometry.
    *
-   * <p>Sign convention: standard {@link ChassisSpeeds} — {@code vx} positive = robot moving
-   * forward in its own frame; {@code vy} positive = robot moving left. Target is positioned at
-   * polar {@code (meters, bearingRadians)} in robot frame.
+   * <p>Sign convention: standard {@link ChassisSpeeds} — {@code vx} positive = robot moving forward
+   * in its own frame; {@code vy} positive = robot moving left. Target is positioned at polar {@code
+   * (meters, bearingRadians)} in robot frame.
    *
    * @param meters distance to the target from Limelight (meters)
    * @param bearingRadians direction to target in robot frame (Limelight {@code tx} converted to
@@ -129,8 +135,9 @@ public class Helper {
   /**
    * Computes the effective shot distance via Team 971's 3-iteration fixed-point shoot-on-the-fly.
    *
-   * <p>At convergence, returns {@code ||virtualTarget||}, where {@code virtualTarget} is the shifted
-   * aim point that accounts for robot motion during ball flight. Package-private for unit testing.
+   * <p>At convergence, returns {@code ||virtualTarget||}, where {@code virtualTarget} is the
+   * shifted aim point that accounts for robot motion during ball flight. Package-private for unit
+   * testing.
    *
    * @param targetRelative target position in robot frame (meters)
    * @param velocityRelative chassis velocity in robot frame (m/s)
@@ -153,16 +160,16 @@ public class Helper {
   /**
    * Configure Limelight to filter for the relevant AprilTag IDs for 2026 REBUILT HUB targets.
    *
-   * <p>The 2026 REBUILT WELDED layout has 16 HUB tags total — 8 per HUB at z=1.124 m, arranged
-   * on the four faces of each (square) HUB structure (two tags per face):
+   * <p>The 2026 REBUILT WELDED layout has 16 HUB tags total — 8 per HUB at z=1.124 m, arranged on
+   * the four faces of each (square) HUB structure (two tags per face):
    *
    * <pre>
    *   Red HUB  (center ≈ 12.0, 4.0): {2, 3, 4, 5, 8, 9, 10, 11}
    *   Blue HUB (center ≈ 4.5,  4.0): {18, 19, 20, 21, 24, 25, 26, 27}
    * </pre>
    *
-   * <p>The filter selects one tag from each of three faces per HUB, excluding the face that
-   * points toward the opposing alliance wall:
+   * <p>The filter selects one tag from each of three faces per HUB, excluding the face that points
+   * toward the opposing alliance wall:
    *
    * <pre>
    *   Red:  {2  (N face, yaw +90°),  5 (S face, yaw 270°), 10 (E face, yaw   0°)}
@@ -171,10 +178,10 @@ public class Helper {
    *                                                        — E face excluded
    * </pre>
    *
-   * <p>The excluded-face tags would only be visible when the robot is on the wrong side of
-   * the HUB (past midfield on the opposing alliance's side); seeing them during normal play
-   * would indicate an odometry error and could corrupt the pose estimate. Capping the filter
-   * also reduces Limelight processing load vs. accepting all 16 HUB tags.
+   * <p>The excluded-face tags would only be visible when the robot is on the wrong side of the HUB
+   * (past midfield on the opposing alliance's side); seeing them during normal play would indicate
+   * an odometry error and could corrupt the pose estimate. Capping the filter also reduces
+   * Limelight processing load vs. accepting all 16 HUB tags.
    *
    * <p>Verified against WPILib {@code 2026-rebuilt-welded.json} in {@code wpilibsuite/allwpilib}.
    * Non-HUB tags ({13,14,15,16,29,30,31,32} are short-z TOWER/OUTPOST tags; {1,6,7,12,17,22,23,28}
