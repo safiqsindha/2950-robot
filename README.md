@@ -184,7 +184,6 @@ Mode picker lives on the SmartDashboard `Auto Chooser`.
 - **A\* pathfinder** — custom pure-Java 8-directional A\* over `NavigationGrid` for cost
   estimation (in `frc.lib.pathfinding`, 80 %+ test coverage)
 - **PathPlanner AD\*** — runtime path planning with `deploy/pathplanner/navgrid.json`
-- **CycleTracker + TelemetryPublisher** — cycle times + strategy decisions → NetworkTables
 - **AllianceFlip** — HUB / CLIMB / fallback-collect poses automatically mirrored for red
 
 ---
@@ -410,7 +409,7 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
         DriverPracticeMode.java         # 6 sim practice scenarios
         subsystems/                     # 13 subsystems (incl. IOReal + IOSim + IO triplets)
         commands/                       # 18 command classes incl. flywheel/ + PanicCommand
-        autos/                          # AutonomousStrategy, GameState, CycleTracker, …
+        autos/                          # AutonomousStrategy, GameState, LoggedAutoChooser
         diagnostics/                    # SparkAlertLogger (4481 pattern)
         simulation/                     # ShotSimulation, IntakeSimulationAdapter (maple-sim)
   src/test/                             # 35+ test files; mirrors src/main/java layout
@@ -437,7 +436,6 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
 Still on the shelf, not yet shipped:
 
 - **TrajectoryFollower** (4481) — closed-loop follower using `HolonomicTrajectory`. Foundation is in place; follower + auto migration is next.
-- **`@AutoRoutine` annotation + reflective `AutoSelector`** (4481) — declarative auto registration
 - **`FlywheelAutoFeed` 2D upgrade** — thread Limelight `tx` into `rpmFromMeters(d, θ, speeds)` so the 971 fixed-point compensation is actually used
 - **Drive-feel polish** — 2056 jerk-limited slew, 2056 350 ms heading-hold release gate, 2056 `UpdateDepartPose` post-score anchor
 - **HAL-init test harness** — one canary class with `HAL.initialize(500, 0)` in `@BeforeAll` to unlock physics tests in IOSim

@@ -86,7 +86,6 @@ frc.lib                — Reusable utilities (game-agnostic, season-portable)
   ├── AllianceFlip.java            — Mirror poses blue↔red
   ├── pathfinding/
   │   ├── NavigationGrid.java      — Load/query navgrid.json
-  │   ├── AStarPathfinder.java     — A* search on NavigationGrid
   │   └── DynamicAvoidanceLayer.java — Potential field obstacle avoidance
   └── util/
       └── BatteryCompensation.java — Feedforward voltage correction
@@ -174,11 +173,6 @@ instead, change the type to `"thrifty"` and set `"id"` to the analog port number
 - `setDynamicObstacle(Translation2d min, Translation2d max)` — mark rect as blocked
 - `clearDynamicObstacles()` — reset to static grid
 
-### AStarPathfinder.java (Phase 3)
-- `findPath(Translation2d start, Translation2d goal, NavigationGrid grid)` → `List<Translation2d>`
-- 8-connected neighbors, Euclidean heuristic
-- Returns empty list if no path exists
-
 ### DynamicAvoidanceLayer.java (Phase 3)
 - `computeCorrectedVelocity(Pose2d robotPose, Translation2d nextWaypoint, List<Translation2d> opponents)` → `Translation2d`
 - Attractive force toward waypoint + repulsive forces from opponents
@@ -216,8 +210,8 @@ instead, change the type to `"thrifty"` and set `"id"` to the analog port number
 - Constants: `kCamelCase` (e.g., `kMaxSpeedMetersPerSec`)
 - Subsystem methods: `verbNoun()` (e.g., `drive()`, `zeroGyro()`, `getPose()`)
 - Commands: `VerbNounCommand` (e.g., `DriveCommand`, `AutoScoreCommand`)
-- Test classes: `ClassUnderTestTest` (e.g., `AStarPathfinderTest`)
-- Test methods: `testMethodName_scenario_expectedResult()` (e.g., `testFindPath_obstacleBlocking_pathAvoidsObstacle()`)
+- Test classes: `ClassUnderTestTest` (e.g., `NavigationGridTest`)
+- Test methods: `testMethodName_scenario_expectedResult()` (e.g., `testIsPassable_obstacle_returnsFalse()`)
 - Commit messages: `[Role] Brief description` (e.g., `[Drive] Fix YAGSL config for Thrifty encoders`)
 
 ## 8. Dependencies (Vendordeps)

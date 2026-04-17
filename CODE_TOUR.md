@@ -58,7 +58,6 @@ The health-monitoring trio. All use the `Supplier<Snapshot>` injection pattern s
 ### `frc.lib.pathfinding`
 
 - **`NavigationGrid`** — 2D grid cost map loaded from `deploy/navgrid.json`.
-- **`AStarPathfinder`** — A* search over the grid.
 - **`DynamicAvoidanceLayer`** — artificial potential-field velocity correction (opponent-aware). The PR #31 refactor lifted the Constants dependency so this class is fully library-safe.
 
 ### `frc.lib.trajectory`

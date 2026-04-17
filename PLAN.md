@@ -68,7 +68,7 @@ Every Phase 7 item has been closed or explicitly deferred with rationale.
 - [x] 7.2 FlywheelAutoFeed 2D upgrade ✓ PR #30
 - [x] 7.3 HAL-init test harness ✓ PR #24 (canary), disabled in PR #27 due to CI flakiness but pattern intact
 - [x] 7.4 TrajectoryFollower port ✓ PR #34, wired PR #39
-- [x] 7.5 @AutoRoutine annotation + reflective AutoSelector ✓ PR #74 (runtime-reflective, not annotation-processor)
+- [ ] 7.5 @AutoRoutine annotation + reflective AutoSelector — shipped in PR #74, deleted in PR #91 (infrastructure was never adopted; no @AutoRoutine method ever existed). Revisit if the team wants declarative auto registration.
 - [x] 7.6 Migrate existing Choreo autos onto HolonomicTrajectory + TrajectoryFollower ✓ PR #39
 - [x] 7.7 971 CapU current limiting ✓ PR #68 (BatteryAwareCurrentLimit; unwired pending a per-motor integration PR)
 - [ ] 7.8 971 hybrid EKF with replay buffer — **deferred**: multi-week research project requiring a modified pose estimator. Not a shipping task; documenting here so future-team knows it was considered and intentionally skipped
@@ -85,7 +85,7 @@ Shipped ~60 additional PRs across 14 thematic batches (A–Q) + 1 hotfix.
 - Cat 2 (subsystem expansions) — Intake wheel + Climber/SideClaw scaffolds ✓; rest were hardware-dependent
 - Cat 3 (HAL-free tests) — new tests for LoopTime, VisionLatency, MatchPhase, RollingWindow, BatteryAwareCurrent, Trajectory integration, Helper RPM boundaries ✓
 - Cat 4 (calibration tooling) — `can_id_validator.py`, `rpm_curve_fit.py`, `deploy_health_check.py`, `encoder_offset_finder.py`, `choreo_validator.py`, `log_analyzer.py`, `sim_smoke_test.py` ✓
-- Cat 5 (autonomous enrichments) — `LoggedAutoChooser`, `@AutoRoutine` / `AutoRoutineRegistrar`, `RandomAutoRotator`, auto-frame fix, Auto telemetry logging ✓
+- Cat 5 (autonomous enrichments) — `LoggedAutoChooser`, auto-frame fix, Auto telemetry logging ✓ (`@AutoRoutine` / `AutoRoutineRegistrar` / `RandomAutoRotator` shipped but never adopted; deleted in PR #91)
 - Cat 6 (telemetry) — `JvmLogger`, `CanBusLogger`, `PdhLogger`, `LoopTimeLogger`, `VisionLatencyTracker`, `MatchPhaseOverlay`, SparkAlertLogger cumulative counters ✓
 - Cat 7 (CI infrastructure) — headless sim smoke, PR size guard, CODEOWNERS, Dependabot, README badges, release-notes-on-tag workflow, PR-preview artifact workflow, pre-commit hook installer, changelog bot ✓
 - Cat 8 (documentation) — `CODE_TOUR.md`, `TELEMETRY_REFERENCE.md`, `DEVELOPER_TESTING_GUIDE.md`, `MENTOR_GUIDE.md`, `FAQ.md`, `GLOSSARY.md`, `SIM_QUICKSTART.md`, `docs/sim-tuning-reference.md`, `docs/advantagescope-setup.md`, 10 ADRs, `CHANGELOG.md` ✓
