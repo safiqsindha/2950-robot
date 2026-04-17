@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #88  audit(diagnostics): delete 3 never-instantiated classes + 1 doc fix
 - 2026-04-17  #87  chore: delete stale .cursorrules (superseded by AGENTS.md)
 - 2026-04-17  #86  refactor(migration): 2025→2026 terminology pass (source + docs) + fix missed 2-fuel intake binding
 - 2026-04-17  #85  docs(migration): flag 2025 scoring poses + document AprilTag filter rationale
