@@ -76,6 +76,30 @@ class HelperTest {
         slopeLeft, slopeRight, 1.0, "Slope must be continuous at the X2 calibration point");
   }
 
+  @Test
+  void testRpmFromMeters_knownC1DiscontinuityAtX3_stayedBelowBudget() {
+    // DOCUMENTATION TEST (session audit, PR #8 + #23): Lagrange-to-linear transition at X3 has
+    // an accepted slope discontinuity. Audit-derived budget:
+    //   - Quadratic slope at X3 ≈ 514.6 RPM/m
+    //   - Linear-tail slope   ≈ 636.1 RPM/m  (= (Y3-Y2)/(X3-X2))
+    //   - Jump ≈ 121.5 RPM/m ≈ 24 % relative
+    //
+    // If this assertion starts failing it means someone tightened the curve (good — maybe swap
+    // the linear tail for a C1-matching slope) or loosened it (bad — investigate). Either way,
+    // the test forces a conscious choice.
+    double h = 1e-4;
+    double slopeLeft = (Helper.rpmFromMeters(X3) - Helper.rpmFromMeters(X3 - h)) / h;
+    double slopeRight = (Helper.rpmFromMeters(X3 + h) - Helper.rpmFromMeters(X3)) / h;
+    double jump = slopeRight - slopeLeft;
+    // The jump is positive (linear tail is steeper) and should stay in a 30 % relative band.
+    assertTrue(jump > 100.0 && jump < 150.0,
+        "C1 slope jump at X3 must stay near 121 RPM/m; observed " + jump);
+    double relative = jump / slopeLeft;
+    assertTrue(
+        relative > 0.15 && relative < 0.30,
+        "Relative slope jump at X3 must stay ≈ 24 %; observed " + (relative * 100) + " %");
+  }
+
   // ── Clamping ──────────────────────────────────────────────────────────────
 
   @Test
