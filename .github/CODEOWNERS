@@ -1,0 +1,42 @@
+# Code owners for FRC Team 2950 robot code.
+#
+# GitHub uses this file to automatically request reviews from the listed
+# users / teams whenever a PR touches the matching paths. The OWNERS of
+# each area should actually own that area — it's not a rubber-stamp list.
+#
+# Syntax reminder:
+#   path            — match files at any depth under the path
+#   path/*          — direct children only
+#   *.java          — glob against the filename anywhere in the repo
+#   Left-most match wins if multiple rules apply
+#
+# See https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ─── Default owner ─────────────────────────────────────────────────────────
+*                                       @safiqsindha
+
+# ─── Core library (frc.lib) — narrower review, agnostic-safe ──────────────
+# Changes here must stay HAL-free and preserve the ArchUnit contracts.
+/src/main/java/frc/lib/                 @safiqsindha
+
+# ─── CI / build infrastructure ─────────────────────────────────────────────
+# Tooling + workflow tweaks — easy to break silently, pair-review encouraged.
+/build.gradle                           @safiqsindha
+/.github/workflows/                     @safiqsindha
+/.github/CODEOWNERS                     @safiqsindha
+/config/spotbugs-exclude.xml            @safiqsindha
+
+# ─── Safety-critical constants + docs ─────────────────────────────────────
+# These files influence what the physical robot does — extra eyes are cheap,
+# mistakes here show up in the pit.
+/src/main/java/frc/robot/Constants.java @safiqsindha
+/CAN_ID_REFERENCE.md                    @safiqsindha
+/vendordeps/                            @safiqsindha
+
+# ─── Autonomous routines ───────────────────────────────────────────────────
+# Changes to auto mode affect match strategy — flag for review even on docs.
+/src/main/java/frc/robot/commands/ChoreoAutoCommand.java   @safiqsindha
+/src/main/java/frc/robot/commands/FullAutonomousCommand.java @safiqsindha
+/src/main/java/frc/robot/autos/         @safiqsindha
+/src/main/deploy/choreo/                @safiqsindha
+/src/main/deploy/navgrid.json           @safiqsindha

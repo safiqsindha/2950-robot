@@ -68,6 +68,30 @@ jobs:
           path: build/reports/spotbugs/
           retention-days: 7
 
+      # ─── PR-size comment ─────────────────────────────────────────────────
+      # Posts a rough size summary on PRs so reviewers can budget their
+      # attention. Not a gate — a 2000-line PR can be trivial (generated
+      # code, docs) and a 50-line PR can be terrifying. The comment just
+      # surfaces the number.
+      - name: PR size summary
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          additions=$(gh pr view ${{ github.event.pull_request.number }} --json additions -q .additions)
+          deletions=$(gh pr view ${{ github.event.pull_request.number }} --json deletions -q .deletions)
+          files=$(gh pr view ${{ github.event.pull_request.number }} --json changedFiles -q .changedFiles)
+          # Bucket for at-a-glance size — thresholds calibrated for this repo.
+          total=$((additions + deletions))
+          if   [ "$total" -lt 100  ]; then bucket="XS"
+          elif [ "$total" -lt 400  ]; then bucket="S"
+          elif [ "$total" -lt 1000 ]; then bucket="M"
+          elif [ "$total" -lt 2500 ]; then bucket="L"
+          else                              bucket="XL"
+          fi
+          echo "### PR size: $bucket ($total lines across $files files, +$additions / -$deletions)" >> "$GITHUB_STEP_SUMMARY"
+
       # ─── Headless simulator smoke test ────────────────────────────────────
       # Boots ./gradlew simulateJavaRelease under Xvfb, tails output for 20 s,
       # and fails if the process crashes or an Exception / ERROR line appears.

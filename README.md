@@ -7,6 +7,11 @@ strategy-driven autonomous, full physics simulation, and event-day diagnostics. 
 Java 17 on WPILib 2026 with AdvantageKit deterministic logging.
 
 [![Build & Test](https://github.com/safiqsindha/2950-robot/actions/workflows/build.yml/badge.svg)](https://github.com/safiqsindha/2950-robot/actions/workflows/build.yml)
+[![WPILib](https://img.shields.io/badge/WPILib-2026-blue)](https://docs.wpilib.org/)
+[![Java](https://img.shields.io/badge/Java-17-orange)](https://adoptium.net/temurin/releases/?version=17)
+[![License](https://img.shields.io/badge/License-WPILib--BSD-green)](MANIFEST.MF)
+[![AdvantageKit](https://img.shields.io/badge/AdvantageKit-enabled-purple)](https://github.com/Mechanical-Advantage/AdvantageKit)
+[![YAGSL](https://img.shields.io/badge/YAGSL-2026.3.14-success)](https://github.com/Yet-Another-Software-Suite)
 
 ---
 
