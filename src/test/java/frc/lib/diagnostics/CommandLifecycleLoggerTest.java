@@ -148,7 +148,8 @@ class CommandLifecycleLoggerTest {
 
   @Test
   void defaultConstructor_doesNotThrow() {
-    assertDoesNotThrow(CommandLifecycleLogger::new);
+    // Lambda instead of method reference — two ctors make `CommandLifecycleLogger::new` ambiguous.
+    assertDoesNotThrow(() -> new CommandLifecycleLogger());
   }
 
   // ─── Counters start at zero on a fresh instance ──────────────────────────
