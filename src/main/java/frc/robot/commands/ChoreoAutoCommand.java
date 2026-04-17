@@ -4,15 +4,19 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import frc.lib.trajectory.HolonomicTrajectorySample;
+import frc.lib.trajectory.TrajectoryFollower;
 import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelStatic;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.SuperstructureStateMachine;
 import frc.robot.subsystems.SwerveSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Factory for Choreo trajectory-following autonomous routines.
@@ -56,21 +60,59 @@ public final class ChoreoAutoCommand {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Create a configured {@link AutoFactory} bound to the given swerve subsystem.
+   * Create a configured {@link AutoFactory} bound to the given swerve subsystem. Uses a shared
+   * {@link TrajectoryFollower} so the feedforward coming out of Choreo is augmented by PID
+   * correction on pose error — without this, a trajectory whose sampled speeds don't quite
+   * match reality (e.g., after a bump or a pose reset) would drift for the whole run.
    *
-   * <p><b>Important:</b> The controller lambda explicitly unwraps {@link SwerveSample} to {@link
-   * edu.wpi.first.math.kinematics.ChassisSpeeds}. Passing {@code swerve::driveRobotRelative}
-   * directly would be a type mismatch — {@code AutoFactory} calls the consumer with a {@link
-   * SwerveSample}, not a {@link edu.wpi.first.math.kinematics.ChassisSpeeds}.
+   * <p>The controller lambda:
+   *
+   * <ol>
+   *   <li>Unwraps {@link SwerveSample} into a {@link HolonomicTrajectorySample}.
+   *   <li>Asks the follower for a {@link ChassisSpeeds} that combines sample FF + PID correction.
+   *   <li>Pushes the corrected speeds into {@code swerve.driveRobotRelative}.
+   *   <li>Logs both target + actual pose and the raw/corrected speeds under {@code Auto/}.
+   * </ol>
    *
    * @param swerve the swerve subsystem
    * @return a configured, alliance-aware {@link AutoFactory}
    */
   public static AutoFactory factory(SwerveSubsystem swerve) {
+    TrajectoryFollower follower = TrajectoryFollower.withDefaultGains();
     return new AutoFactory(
         swerve::getPose,
         swerve::resetOdometry,
-        (SwerveSample sample) -> swerve.driveRobotRelative(sample.getChassisSpeeds()),
+        (SwerveSample sample) -> {
+          // Wrap Choreo's SwerveSample as a HolonomicTrajectorySample so the follower can compute
+          // FF + PID correction in one pass. Choreo samples are field-relative by design.
+          HolonomicTrajectorySample wrapped =
+              new HolonomicTrajectorySample(
+                  sample.getTimestamp(), sample.getPose(), sample.getChassisSpeeds());
+          ChassisSpeeds correctedFieldRel = follower.computeSpeeds(wrapped, swerve.getPose());
+
+          // driveRobotRelative expects robot-frame speeds — convert explicitly. The previous
+          // implementation forwarded Choreo's field-relative speeds directly, which silently
+          // broke any trajectory that rotated the robot. Now the drivetrain correctly sees
+          // intended motion regardless of heading.
+          ChassisSpeeds correctedRobotRel =
+              ChassisSpeeds.fromFieldRelativeSpeeds(correctedFieldRel, swerve.getHeading());
+          swerve.driveRobotRelative(correctedRobotRel);
+
+          // ── Auto telemetry ──────────────────────────────────────────────
+          // AdvantageScope can plot Target/Actual pose as an overlaid field widget; the speeds
+          // let a mentor compare raw trajectory velocities against the corrected output and see
+          // exactly when the PID is working hard to cover a pose error.
+          Logger.recordOutput("Auto/TargetPose", sample.getPose());
+          Logger.recordOutput("Auto/ActualPose", swerve.getPose());
+          Logger.recordOutput("Auto/TrajectoryTime", sample.getTimestamp());
+          Logger.recordOutput("Auto/SampleVxFieldRel", sample.getChassisSpeeds().vxMetersPerSecond);
+          Logger.recordOutput(
+              "Auto/CorrectedVxFieldRel", correctedFieldRel.vxMetersPerSecond);
+          Logger.recordOutput(
+              "Auto/CorrectedVyFieldRel", correctedFieldRel.vyMetersPerSecond);
+          Logger.recordOutput(
+              "Auto/CorrectedOmegaRadPerSec", correctedFieldRel.omegaRadiansPerSecond);
+        },
         true, // flip coordinates for red alliance
         swerve);
   }
