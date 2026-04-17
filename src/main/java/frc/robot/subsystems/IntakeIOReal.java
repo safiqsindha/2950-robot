@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
+import frc.robot.diagnostics.SparkAlertLogger;
 
 /**
  * Real SPARK MAX hardware implementation of {@link IntakeIO}.
@@ -39,6 +40,7 @@ public class IntakeIOReal implements IntakeIO {
 
   private final RelativeEncoder leftEncoder;
   private final RelativeEncoder rightEncoder;
+  private final SparkAlertLogger sparkAlerts = new SparkAlertLogger();
 
   public IntakeIOReal() {
     leftArm = new SparkMax(Constants.Intake.kLeftArmId, MotorType.kBrushless);
@@ -70,6 +72,12 @@ public class IntakeIOReal implements IntakeIO {
     leftArm.configure(lConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightArm.configure(rConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     wheel.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    // Register every Spark for fault/warning visibility on the driver dashboard.
+    sparkAlerts
+        .register(leftArm, "Intake/leftArm")
+        .register(rightArm, "Intake/rightArm")
+        .register(wheel, "Intake/wheel");
   }
 
   @Override
@@ -79,6 +87,7 @@ public class IntakeIOReal implements IntakeIO {
     inputs.rightArmPositionRotations = rightEncoder.getPosition();
     inputs.wheelCurrentAmps = wheel.getOutputCurrent();
     inputs.wheelAppliedVoltage = wheel.getBusVoltage() * wheel.getAppliedOutput();
+    sparkAlerts.periodic();
   }
 
   @Override
