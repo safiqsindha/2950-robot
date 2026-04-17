@@ -16,11 +16,19 @@ import org.littletonrobotics.junction.Logger;
  * <ul>
  *   <li>{@link State#IDLE} — No game piece, mechanisms at rest.
  *   <li>{@link State#INTAKING} — Intake deployed, wheels spinning; waiting for game piece.
- *   <li>{@link State#STAGING} — Game piece acquired; staging in conveyor for scoring.
+ *       Auto-idles after {@link Constants.Superstructure#kIntakingTimeoutSeconds} if no piece is
+ *       detected, so the driver doesn't need to remember to release the button.
+ *   <li>{@link State#STAGING} — Game piece acquired; staging in conveyor for scoring. Auto-idles
+ *       after {@link Constants.Superstructure#kStagingTimeoutSeconds} so a stale STAGING doesn't
+ *       mislead downstream LED / dashboard indicators.
  *   <li>{@link State#SCORING} — Flywheel spinning up, feeding, or ejecting. Auto-exits to IDLE
  *       after {@link Constants.Superstructure#kScoringTimeoutSeconds} if no {@link #requestIdle()}
  *       is received, preventing a missed command from permanently locking the superstructure.
  * </ul>
+ *
+ * <p>Every state entry stamps a timestamp; {@code Superstructure/TimeInStateSec} surfaces the
+ * current dwell to AdvantageScope so a mentor can see how long the machine has been stuck at a
+ * glance.
  *
  * <p>Game piece detection uses a current-spike heuristic: when the intake wheel current exceeds
  * {@link Constants.Superstructure#kGamePieceCurrentThresholdAmps}, a game piece is assumed to have
@@ -43,8 +51,8 @@ public class SuperstructureStateMachine extends SubsystemBase {
 
   private State currentState = State.IDLE;
 
-  // Time at which the SCORING state was last entered; used to compute the auto-exit duration.
-  private double scoringEntryTimeSeconds = 0.0;
+  /** FPGA seconds of the most recent state transition — used for "time in state" telemetry. */
+  private double stateEntryTimeSeconds = 0.0;
 
   // Whether scoring was requested externally (e.g. AutoScoreCommand or driver button)
   private boolean scoreRequested = false;
@@ -72,8 +80,8 @@ public class SuperstructureStateMachine extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double scoringDuration =
-        (currentState == State.SCORING) ? timeSource.getAsDouble() - scoringEntryTimeSeconds : 0.0;
+    double now = timeSource.getAsDouble();
+    double timeInState = now - stateEntryTimeSeconds;
 
     State nextState =
         computeNextState(
@@ -82,16 +90,20 @@ public class SuperstructureStateMachine extends SubsystemBase {
             Constants.Superstructure.kGamePieceCurrentThresholdAmps,
             intakeRequested,
             scoreRequested,
-            scoringDuration);
+            timeInState);
 
     if (nextState != currentState) {
-      Logger.recordOutput("Superstructure/StateTransition", currentState + " → " + nextState);
-      if (nextState == State.SCORING) {
-        scoringEntryTimeSeconds = timeSource.getAsDouble();
-      }
+      Logger.recordOutput(
+          "Superstructure/StateTransition",
+          currentState + " → " + nextState + " (after " + timeInState + "s)");
+      Logger.recordOutput("Superstructure/StateTransitionTime", now);
+      Logger.recordOutput("Superstructure/StateTransitionTo", nextState.name());
       currentState = nextState;
+      stateEntryTimeSeconds = now;
+      timeInState = 0.0;
     }
     Logger.recordOutput("Superstructure/State", currentState.name());
+    Logger.recordOutput("Superstructure/TimeInStateSec", timeInState);
     Logger.recordOutput("Superstructure/ScoreRequested", scoreRequested);
     Logger.recordOutput("Superstructure/IntakeRequested", intakeRequested);
     Logger.recordOutput("Superstructure/IntakeWheelCurrentAmps", intake.getWheelCurrent());
@@ -105,7 +117,7 @@ public class SuperstructureStateMachine extends SubsystemBase {
    * @param currentThresholdAmps game piece detection threshold in amps
    * @param intakeReq whether intake is requested
    * @param scoreReq whether score is requested
-   * @param scoringDurationSeconds how long the machine has been in SCORING (0 if not in SCORING)
+   * @param timeInStateSeconds how long the machine has been in {@code state}
    * @return the next state
    */
   static State computeNextState(
@@ -114,7 +126,7 @@ public class SuperstructureStateMachine extends SubsystemBase {
       double currentThresholdAmps,
       boolean intakeReq,
       boolean scoreReq,
-      double scoringDurationSeconds) {
+      double timeInStateSeconds) {
     switch (state) {
       case IDLE:
         if (intakeReq) return State.INTAKING;
@@ -126,18 +138,27 @@ public class SuperstructureStateMachine extends SubsystemBase {
         if (wheelCurrentAmps > currentThresholdAmps) {
           return State.STAGING;
         }
+        // Safety net — if the driver forgot to release the button and no piece landed, idle out.
+        if (timeInStateSeconds >= Constants.Superstructure.kIntakingTimeoutSeconds) {
+          return State.IDLE;
+        }
         return State.INTAKING;
 
       case STAGING:
         if (scoreReq) return State.SCORING;
         // If intake command was cancelled before scoring, return to idle
         if (!intakeReq) return State.IDLE;
+        // Stale-staging safety: if we've been here too long without a score request, idle.
+        // The piece physically stays in the conveyor — this only affects the state label.
+        if (timeInStateSeconds >= Constants.Superstructure.kStagingTimeoutSeconds) {
+          return State.IDLE;
+        }
         return State.STAGING;
 
       case SCORING:
         // Auto-exit to IDLE if the scoring window has elapsed. This prevents a missed requestIdle()
         // call from permanently locking the superstructure in the SCORING state.
-        if (scoringDurationSeconds >= Constants.Superstructure.kScoringTimeoutSeconds) {
+        if (timeInStateSeconds >= Constants.Superstructure.kScoringTimeoutSeconds) {
           return State.IDLE;
         }
         return State.SCORING;
@@ -186,5 +207,14 @@ public class SuperstructureStateMachine extends SubsystemBase {
   /** Whether the superstructure has a staged game piece ready to score. */
   public boolean hasGamePiece() {
     return currentState == State.STAGING || currentState == State.SCORING;
+  }
+
+  /**
+   * @return seconds since the current state was entered — useful for time-based command decisions
+   *     (e.g. "don't fire until STAGING has settled for 0.2 s"). Package-private; primary exposure
+   *     is via {@code Superstructure/TimeInStateSec} in AdvantageScope.
+   */
+  double getTimeInStateSeconds() {
+    return timeSource.getAsDouble() - stateEntryTimeSeconds;
   }
 }

@@ -185,4 +185,51 @@ class SuperstructureStateMachineTest {
     double injectedCurrent = 30.0; // matches Intake.simulationPeriodic() at full output
     assertEquals(State.STAGING, next(State.INTAKING, injectedCurrent, true, false));
   }
+
+  // ── Per-state timeout safety nets (SSM hardening) ────────────────────────
+
+  @Test
+  void intaking_autoIdlesAfterTimeoutWhenNoPieceDetected() {
+    // Driver forgot to release the intake button; no current spike. After kIntakingTimeoutSeconds
+    // the SSM bails out rather than fishing forever.
+    double timeout = Constants.Superstructure.kIntakingTimeoutSeconds;
+    assertEquals(
+        State.IDLE,
+        nextWithDuration(State.INTAKING, 0.0, /* intake */ true, /* score */ false, timeout));
+  }
+
+  @Test
+  void intaking_pieceDetectionBeatsTimeout() {
+    // Even right at the timeout boundary, if the current spike is present the transition wins.
+    double timeout = Constants.Superstructure.kIntakingTimeoutSeconds;
+    assertEquals(
+        State.STAGING,
+        nextWithDuration(State.INTAKING, THRESHOLD + 5.0, true, false, timeout + 0.1));
+  }
+
+  @Test
+  void staging_autoIdlesAfterTimeoutWhenNoScoreRequest() {
+    // Stale staging — nobody asked to score. The piece stays physically in the conveyor; only the
+    // state label is reset.
+    double timeout = Constants.Superstructure.kStagingTimeoutSeconds;
+    assertEquals(
+        State.IDLE, nextWithDuration(State.STAGING, 0.0, /* intake */ true, false, timeout));
+  }
+
+  @Test
+  void staging_scoreRequestBeatsTimeout() {
+    // If score lands exactly at the timeout, we still advance to SCORING (score takes priority).
+    double timeout = Constants.Superstructure.kStagingTimeoutSeconds;
+    assertEquals(
+        State.SCORING,
+        nextWithDuration(State.STAGING, 0.0, true, /* score */ true, timeout + 5.0));
+  }
+
+  @Test
+  void staging_cancelBeatsTimeout() {
+    // If the intake command is cancelled before the timeout we route to IDLE via the normal
+    // "intake cancelled" path, not the timeout path — both lead to the same state but for
+    // different reasons.
+    assertEquals(State.IDLE, nextWithDuration(State.STAGING, 0.0, false, false, 0.5));
+  }
 }
