@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #86  refactor(migration): 2025→2026 terminology pass (source + docs) + fix missed 2-fuel intake binding
 - 2026-04-17  #85  docs(migration): flag 2025 scoring poses + document AprilTag filter rationale
 - 2026-04-17  #84  fix(migration): field width 8.211 → 8.069 for 2026 REBUILT WELDED
 - 2026-04-17  #83  docs(followups): expand 2025→2026 — deep migration, not rename
