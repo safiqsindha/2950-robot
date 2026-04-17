@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.LoggedTunableNumber;
+import frc.lib.control.AsymmetricRateLimiter;
 import frc.lib.control.LinearProfile;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -46,6 +47,24 @@ public class Intake extends SubsystemBase {
   private final LinearProfile armProfile =
       new LinearProfile(Constants.Intake.kMaxArmAccelRotPerSec, 0.02);
 
+  /**
+   * Caller's goal wheel percent — stored so {@link #periodic()} can slew it. A direct write from
+   * {@link #setWheel} would bypass the rate limiter.
+   */
+  private double goalWheelPercent = 0.0;
+
+  /** Most recent ramped wheel percent pushed to the IO — for telemetry. */
+  private double setpointWheelPercent = 0.0;
+
+  /**
+   * Asymmetric rate limiter on the wheel percent — ramps UP at {@link
+   * Constants.Intake#kMaxWheelAccelPerSec} but snaps down when going to a smaller magnitude. The
+   * asymmetric behaviour is deliberate: a panic-button {@code setWheel(0)} should stop the wheel
+   * <i>now</i>, not ramp down over 0.25 s.
+   */
+  private final AsymmetricRateLimiter wheelLimiter =
+      new AsymmetricRateLimiter(Constants.Intake.kMaxWheelAccelPerSec, 0.02);
+
   // ─── Tunable PID gains (visible and editable via AdvantageScope / NT) ───
   private final LoggedTunableNumber tunableKP =
       new LoggedTunableNumber("Intake/kP", Constants.Intake.kP);
@@ -56,6 +75,11 @@ public class Intake extends SubsystemBase {
   private final LoggedTunableNumber tunableMaxArmAccel =
       new LoggedTunableNumber(
           "Intake/kMaxArmAccelRotPerSec", Constants.Intake.kMaxArmAccelRotPerSec);
+
+  /** Tunable wheel slew rate. */
+  private final LoggedTunableNumber tunableMaxWheelAccel =
+      new LoggedTunableNumber(
+          "Intake/kMaxWheelAccelPerSec", Constants.Intake.kMaxWheelAccelPerSec);
 
   public Intake(IntakeIO io) {
     this.io = io;
@@ -70,14 +94,23 @@ public class Intake extends SubsystemBase {
     armSetpointRotations = armProfile.calculate(goalArmPositionRotations);
     io.updateTargetAngle(armSetpointRotations);
 
-    // Live-tune the slew rate if someone retuned it from NT.
+    // Asymmetric wheel slew — ramps up, snaps down.
+    setpointWheelPercent = wheelLimiter.calculate(goalWheelPercent);
+    io.setWheel(setpointWheelPercent);
+
+    // Live-tune the slew rates if someone retuned them from NT.
     if (tunableMaxArmAccel.hasChanged(hashCode())) {
       armProfile.setMaxAccel(tunableMaxArmAccel.get());
+    }
+    if (tunableMaxWheelAccel.hasChanged(hashCode())) {
+      wheelLimiter.setMaxAccel(tunableMaxWheelAccel.get());
     }
 
     // Derived telemetry
     Logger.recordOutput("Intake/GoalArmPositionRot", goalArmPositionRotations);
     Logger.recordOutput("Intake/SetpointArmPositionRot", armSetpointRotations);
+    Logger.recordOutput("Intake/GoalWheelPercent", goalWheelPercent);
+    Logger.recordOutput("Intake/SetpointWheelPercent", setpointWheelPercent);
 
     // Apply updated PID gains if any tunable changed since last check.
     // IntakeIOSim.setPid() is a no-op — no isSimulation() guard needed.
@@ -87,13 +120,15 @@ public class Intake extends SubsystemBase {
   }
 
   /**
-   * Set intake wheel percent output. Open-loop — not rate-limited because the caller may need to
-   * snap the wheel to zero on interrupt without a ramp-down.
+   * Set intake wheel percent output. Stored as a goal; {@link #periodic()} slews toward it via
+   * {@link AsymmetricRateLimiter} — ramping up at {@link Constants.Intake#kMaxWheelAccelPerSec}
+   * but snapping to the commanded value on ramp-down so a panic {@code setWheel(0)} stops the
+   * motor immediately.
    *
    * @param percent output (-1 to 1)
    */
   public void setWheel(double percent) {
-    io.setWheel(percent);
+    goalWheelPercent = percent;
   }
 
   /**
@@ -109,11 +144,15 @@ public class Intake extends SubsystemBase {
   /** Reset both arm encoders to zero. Call at the start of autonomous and teleop. */
   public void resetEncoder() {
     io.resetEncoder();
-    // Also reset the profile so the first post-reset ramp starts from zero — otherwise the
-    // profile's last value would drive a phantom commanded position based on the pre-reset state.
+    // Also reset the profile + wheel limiter so the first post-reset ramp starts from zero —
+    // otherwise stale limiter state would drive a phantom commanded output based on the
+    // pre-reset goal.
     armProfile.reset(0.0);
     goalArmPositionRotations = 0.0;
     armSetpointRotations = 0.0;
+    wheelLimiter.reset(0.0);
+    goalWheelPercent = 0.0;
+    setpointWheelPercent = 0.0;
   }
 
   /**

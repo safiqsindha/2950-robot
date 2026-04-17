@@ -174,6 +174,18 @@ public final class Constants {
      * <p>Live-tunable at runtime via {@code Intake/kMaxArmAccelRotPerSec} on NT.
      */
     public static final double kMaxArmAccelRotPerSec = 100.0;
+
+    /**
+     * Maximum rate of change of the intake wheel percent output (percent / s). Feeds an
+     * {@link frc.lib.control.AsymmetricRateLimiter} in {@code Intake.periodic()} — ramps UP at
+     * this rate but snaps to the commanded value when going to a smaller magnitude, so a panic
+     * interrupt's {@code setWheel(0)} is instant. 4.0 /s reaches full output in 0.25 s, slow
+     * enough to smooth the SPARK MAX's input spike but fast enough that no human-driven trigger
+     * pull feels laggy.
+     *
+     * <p>Live-tunable via {@code Intake/kMaxWheelAccelPerSec} on NT.
+     */
+    public static final double kMaxWheelAccelPerSec = 4.0;
   }
 
   /** Conveyor subsystem CAN IDs. */

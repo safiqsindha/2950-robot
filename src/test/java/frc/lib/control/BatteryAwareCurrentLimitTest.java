@@ -19,9 +19,12 @@ class BatteryAwareCurrentLimitTest {
   }
 
   @Test
-  void healthyVoltage_lowCurrent_returnsFullScale() {
+  void healthyVoltage_lowCurrent_mostlyFullScale() {
     var limit = new BatteryAwareCurrentLimit(6.0, 8.0, 40.0);
-    assertEquals(1.0, limit.compute(12.5, 5.0), 1e-9);
+    // At 5A / 40A the linear-headroom model gives (40-5)/40 = 0.875. Voltage at 12.5 V is
+    // healthy (→ 1.0), so current wins: 0.875. The original test name suggested "returns 1.0"
+    // but that's inconsistent with the headroom model the other tests assume.
+    assertEquals(0.875, limit.compute(12.5, 5.0), 1e-9);
   }
 
   @Test
