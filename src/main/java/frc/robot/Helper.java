@@ -150,7 +150,37 @@ public class Helper {
     return virtualTarget.getNorm();
   }
 
-  /** Configure Limelight to filter for the relevant AprilTag IDs for 2026 REBUILT hub targets. */
+  /**
+   * Configure Limelight to filter for the relevant AprilTag IDs for 2026 REBUILT HUB targets.
+   *
+   * <p>The 2026 REBUILT WELDED layout has 16 HUB tags total — 8 per HUB at z=1.124 m, arranged
+   * on the four faces of each (square) HUB structure (two tags per face):
+   *
+   * <pre>
+   *   Red HUB  (center ≈ 12.0, 4.0): {2, 3, 4, 5, 8, 9, 10, 11}
+   *   Blue HUB (center ≈ 4.5,  4.0): {18, 19, 20, 21, 24, 25, 26, 27}
+   * </pre>
+   *
+   * <p>The filter selects one tag from each of three faces per HUB, excluding the face that
+   * points toward the opposing alliance wall:
+   *
+   * <pre>
+   *   Red:  {2  (N face, yaw +90°),  5 (S face, yaw 270°), 10 (E face, yaw   0°)}
+   *                                                        — W face excluded
+   *   Blue: {18 (S face, yaw 270°), 21 (N face, yaw +90°), 26 (W face, yaw 180°)}
+   *                                                        — E face excluded
+   * </pre>
+   *
+   * <p>The excluded-face tags would only be visible when the robot is on the wrong side of
+   * the HUB (past midfield on the opposing alliance's side); seeing them during normal play
+   * would indicate an odometry error and could corrupt the pose estimate. Capping the filter
+   * also reduces Limelight processing load vs. accepting all 16 HUB tags.
+   *
+   * <p>Verified against WPILib {@code 2026-rebuilt-welded.json} in {@code wpilibsuite/allwpilib}.
+   * Non-HUB tags ({13,14,15,16,29,30,31,32} are short-z TOWER/OUTPOST tags; {1,6,7,12,17,22,23,28}
+   * are z=0.889 m TRENCH tags) are deliberately excluded — this Limelight is configured for
+   * HUB-only tracking; if we need TOWER tracking at climb time it would be a separate pipeline.
+   */
   public static void llSetup() {
     getLl().getSettings().withAprilTagIdFilter(List.of(2, 5, 10, 18, 21, 26)).save();
   }

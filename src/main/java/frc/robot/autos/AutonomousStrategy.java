@@ -28,9 +28,43 @@ public final class AutonomousStrategy {
 
   // Fixed field locations defined in blue-alliance coordinates.
   // evaluateTargets() flips these via AllianceFlip when GameState.isRedAlliance() is true.
+  //
+  // ⚠ 2025-era placeholders — strategic update pending for 2026 REBUILT ⚠
+  // Tracked in FOLLOWUPS.md step 6. Changing these values requires re-authoring
+  // the Choreo .traj paths that approach them — coordinate with trajectory PR.
+  //
+  // Authoritative 2026 REBUILT WELDED reference data (from WPILib
+  // apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json
+  // in wpilibsuite/allwpilib), blue-alliance-origin coords:
+  //
+  //   Blue HUB center (avg of 8 face tags 18,19,20,21,24,25,26,27 at z=1.124 m):
+  //     (4.537, 4.035) — typical scoring approach would sit ~1 m west, e.g. (3.5, 4.0)
+  //   Red HUB center (tags 2,3,4,5,8,9,10,11, mirrored after AllianceFlip):
+  //     (12.004, 4.035)
+  //   Blue TOWER tags (29,30,31,32 on west wall at x=0.008, z=0.552 m):
+  //     y = 0.666 / 1.098 (pair 1) and 3.746 / 4.178 (pair 2)
+
+  /**
+   * Blue HUB scoring pose. 2025-era placeholder — (3.39, 4.11) was the 2025 Blue Reef center.
+   * 2026 Blue HUB center is at (4.537, 4.035); appropriate approach pose depends on shot
+   * strategy (front-face vs flank, moving-shot vs static). See FOLLOWUPS.md step 6.
+   */
   private static final Pose2d HUB_POSE = new Pose2d(3.39, 4.11, new Rotation2d());
+
+  /**
+   * Blue climbing pose. 2025-era placeholder — (8.23, 4.11) is approximately field center,
+   * which is not where any 2026 REBUILT TOWER sits. Blue TOWERs are on the west wall
+   * (x=0.008); a reasonable approach pose is ~(1.0, 4.0) for the upper TOWER pair.
+   * See FOLLOWUPS.md step 6.
+   */
   private static final Pose2d CLIMB_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
-  // Default fallback collect pose when no FUEL is detected (blue-alliance coords).
+
+  /**
+   * Default fallback collect pose when no FUEL is detected. Currently duplicate of
+   * CLIMB_POSE (both field-center placeholders). Intent was probably "go to a safe
+   * neutral spot"; with real 2026 poses this should diverge from CLIMB_POSE — e.g. a
+   * staging area near the FUEL intake. See FOLLOWUPS.md step 6.
+   */
   private static final Pose2d DEFAULT_COLLECT_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
 
   /**
