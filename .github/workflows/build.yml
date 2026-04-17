@@ -67,3 +67,32 @@ jobs:
           name: spotbugs-reports
           path: build/reports/spotbugs/
           retention-days: 7
+
+      # ─── Headless simulator smoke test ────────────────────────────────────
+      # Boots ./gradlew simulateJavaRelease under Xvfb, tails output for 20 s,
+      # and fails if the process crashes or an Exception / ERROR line appears.
+      # Catches startup regressions (bad YAGSL config, missing deploy files,
+      # null-dereferences in RobotContainer) that a normal build doesn't see.
+      #
+      # continue-on-error at first: the smoke test is new and we want to see
+      # it exercise real PRs before making it required. Flip to `false` once
+      # we've observed it catch at least one real bug.
+      - name: Install Xvfb (virtual display for WPILib Sim GUI)
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Headless sim smoke test (20 s)
+        id: sim_smoke
+        continue-on-error: true
+        timeout-minutes: 3
+        run: xvfb-run -a --server-args="-screen 0 1280x800x24" python3 tools/sim_smoke_test.py --duration 20
+
+      - name: Upload sim smoke test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-smoke-log
+          path: |
+            build/*.log
+            build/simulation*.log
+          retention-days: 7
+          if-no-files-found: ignore
