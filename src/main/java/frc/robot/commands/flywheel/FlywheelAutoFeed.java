@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Helper;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Flywheel;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Spins up the flywheel to the distance-predicted RPM and auto-feeds once within 10% of target.
@@ -39,7 +40,8 @@ public class FlywheelAutoFeed extends Command {
     double distance = Helper.getAprilTagDist();
     double predictedRpm = Helper.rpmFromMeters(distance);
 
-    Helper.printRpmDistance(predictedRpm, distance);
+    Logger.recordOutput("Flywheel/DebugRpm", predictedRpm);
+    Logger.recordOutput("Flywheel/DebugDist", distance);
     flywheel.setTargetRpm(predictedRpm);
 
     if (rpmReady) {

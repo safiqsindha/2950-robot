@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.lib.AllianceFlip;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -135,6 +136,62 @@ class AutonomousStrategyTest {
         AutonomousStrategy.shouldAbortTarget(
             robotDistToTarget, robotSpeed, opponentDistToTarget, opponentSpeed);
     assertFalse(shouldAbort, "Should not abort when robot arrives first");
+  }
+
+  // ── Alliance flip tests ────────────────────────────────────────────────────
+
+  @Test
+  void redAlliance_hubTargetPoseIsFlipped() {
+    // Blue HUB_POSE.x = 3.39 m → Red should be FIELD_LENGTH - 3.39 ≈ 13.15 m
+    double fieldLength = AllianceFlip.getFieldLengthMeters();
+    double blueHubX = 3.39;
+    double expectedRedHubX = fieldLength - blueHubX;
+
+    GameState redState =
+        new GameState()
+            .withRobotPose(new Pose2d(fieldLength - 4.0, 4.0, new Rotation2d()))
+            .withFuelHeld(1)
+            .withHubActive(true)
+            .withTimeRemaining(60.0)
+            .withRedAlliance(true);
+
+    List<ScoredTarget> targets = strategy.evaluateTargets(redState);
+    ScoredTarget scoreTarget =
+        targets.stream()
+            .filter(t -> t.actionType() == ActionType.SCORE)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Expected a SCORE target for red alliance"));
+
+    assertEquals(
+        expectedRedHubX,
+        scoreTarget.targetPose().getX(),
+        0.01,
+        "Red alliance HUB target X should be flipped to " + expectedRedHubX + " m");
+    assertEquals(4.11, scoreTarget.targetPose().getY(), 0.01, "Y should be unchanged after flip");
+  }
+
+  @Test
+  void blueAlliance_hubTargetPoseIsNotFlipped() {
+    // Default (blue) should use the raw HUB_POSE.x = 3.39 m
+    GameState blueState =
+        new GameState()
+            .withRobotPose(new Pose2d(4.0, 4.0, new Rotation2d()))
+            .withFuelHeld(1)
+            .withHubActive(true)
+            .withTimeRemaining(60.0); // isRedAlliance() defaults to false
+
+    List<ScoredTarget> targets = strategy.evaluateTargets(blueState);
+    ScoredTarget scoreTarget =
+        targets.stream()
+            .filter(t -> t.actionType() == ActionType.SCORE)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Expected a SCORE target for blue alliance"));
+
+    assertEquals(
+        3.39,
+        scoreTarget.targetPose().getX(),
+        0.01,
+        "Blue alliance HUB target X should remain 3.39 m (no flip)");
   }
 
   @Test

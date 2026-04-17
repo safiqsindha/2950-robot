@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import frc.robot.Constants;
 
 /**
  * Static utility that computes heading offset to compensate for lateral robot movement while
@@ -14,8 +15,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
  */
 public final class MovingShotCompensation {
 
-  /** Approximate ball exit velocity from flywheel (m/s). */
-  private static final double BALL_EXIT_VELOCITY_MPS = 12.0;
+  /** Approximate ball exit velocity from flywheel (m/s). Single source: Constants.Flywheel. */
+  static final double BALL_EXIT_VELOCITY_MPS = Constants.Flywheel.kBallExitVelocityMps;
 
   /** Maximum compensation angle (radians). Clamp to prevent wild corrections. */
   private static final double MAX_COMPENSATION_RAD = Math.toRadians(15.0);

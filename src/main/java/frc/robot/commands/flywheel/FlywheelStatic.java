@@ -5,6 +5,7 @@ import frc.robot.Constants;
 import frc.robot.Helper;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Flywheel;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Spins up the flywheel to a fixed RPM setpoint and auto-feeds once within 10% of target. Used for
@@ -40,7 +41,8 @@ public class FlywheelStatic extends Command {
   public void execute() {
     Helper.updateFilters();
     double distance = Helper.getAprilTagDist();
-    Helper.printRpmDistance(targetRpm, distance);
+    Logger.recordOutput("Flywheel/DebugRpm", targetRpm);
+    Logger.recordOutput("Flywheel/DebugDist", distance);
 
     if (rpmReady) {
       flywheel.setLower(kFeederPercent);

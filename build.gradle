@@ -69,6 +69,11 @@ simulateJavaRelease {
 
 dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
+
+    // AdvantageKit @AutoLog annotation processor — generates XxxIOInputsAutoLogged classes
+    def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
+    annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
+
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 

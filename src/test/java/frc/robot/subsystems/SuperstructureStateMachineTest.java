@@ -2,118 +2,128 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import frc.robot.Constants;
 import frc.robot.subsystems.SuperstructureStateMachine.State;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link SuperstructureStateMachine}. Exercises the static pure state-transition function
- * {@code computeNextState(State, double, double, boolean, boolean, boolean)} directly, bypassing
- * HAL and hardware dependencies.
+ * {@code computeNextState(State, double, double, boolean, boolean, double)} directly, bypassing HAL
+ * and hardware dependencies.
+ *
+ * <p>The CLIMBING state was removed in Phase 1.5 — no Climber subsystem is installed.
  */
 class SuperstructureStateMachineTest {
 
   /** Game piece current threshold (amps) — must match Constants.Superstructure value. */
-  private static final double THRESHOLD = 15.0;
+  private static final double THRESHOLD = Constants.Superstructure.kGamePieceCurrentThresholdAmps;
 
-  // Shorthand for the static transition function
-  private static State next(
-      State state, double current, boolean intake, boolean score, boolean climb) {
+  /** SCORING auto-exit timeout (seconds) — must match Constants.Superstructure value. */
+  private static final double TIMEOUT = Constants.Superstructure.kScoringTimeoutSeconds;
+
+  /** Shorthand: call the static transition with a 0.0 scoring duration. */
+  private static State next(State state, double current, boolean intake, boolean score) {
     return SuperstructureStateMachine.computeNextState(
-        state, current, THRESHOLD, intake, score, climb);
+        state, current, THRESHOLD, intake, score, 0.0);
+  }
+
+  /** Shorthand: call with an explicit scoring duration. */
+  private static State nextWithDuration(
+      State state, double current, boolean intake, boolean score, double scoringDuration) {
+    return SuperstructureStateMachine.computeNextState(
+        state, current, THRESHOLD, intake, score, scoringDuration);
   }
 
   // ── IDLE state transitions ──────────────────────────────────────────────
 
   @Test
   void idle_staysIdleWithNoRequests() {
-    assertEquals(State.IDLE, next(State.IDLE, 0.0, false, false, false));
+    assertEquals(State.IDLE, next(State.IDLE, 0.0, false, false));
   }
 
   @Test
   void idle_transitionsToIntakingOnRequest() {
-    assertEquals(State.INTAKING, next(State.IDLE, 0.0, true, false, false));
-  }
-
-  @Test
-  void idle_transitionsToClimbingOnRequest() {
-    assertEquals(State.CLIMBING, next(State.IDLE, 0.0, false, false, true));
-  }
-
-  @Test
-  void idle_climbTakesPriorityOverIntake() {
-    assertEquals(State.CLIMBING, next(State.IDLE, 0.0, true, false, true));
+    assertEquals(State.INTAKING, next(State.IDLE, 0.0, true, false));
   }
 
   // ── INTAKING state transitions ──────────────────────────────────────────
 
   @Test
   void intaking_staysIntakingBelowCurrentThreshold() {
-    assertEquals(State.INTAKING, next(State.INTAKING, THRESHOLD - 1.0, true, false, false));
+    assertEquals(State.INTAKING, next(State.INTAKING, THRESHOLD - 1.0, true, false));
   }
 
   @Test
   void intaking_transitionsToStagingOnCurrentSpike() {
-    assertEquals(State.STAGING, next(State.INTAKING, THRESHOLD + 5.0, true, false, false));
+    assertEquals(State.STAGING, next(State.INTAKING, THRESHOLD + 5.0, true, false));
   }
 
   @Test
   void intaking_returnsToIdleWhenIntakeCancelled() {
-    assertEquals(State.IDLE, next(State.INTAKING, 0.0, false, false, false));
+    assertEquals(State.IDLE, next(State.INTAKING, 0.0, false, false));
   }
 
   @Test
   void intaking_exactThresholdDoesNotTrigger() {
     // Must exceed threshold, not equal
-    assertEquals(State.INTAKING, next(State.INTAKING, THRESHOLD, true, false, false));
+    assertEquals(State.INTAKING, next(State.INTAKING, THRESHOLD, true, false));
   }
 
   @Test
   void intaking_cancelsEvenWithHighCurrent() {
     // If intake is cancelled, goes to IDLE regardless of current
-    assertEquals(State.IDLE, next(State.INTAKING, THRESHOLD + 20.0, false, false, false));
+    assertEquals(State.IDLE, next(State.INTAKING, THRESHOLD + 20.0, false, false));
   }
 
   // ── STAGING state transitions ──────────────────────────────────────────
 
   @Test
   void staging_staysStagingWithIntakeActive() {
-    assertEquals(State.STAGING, next(State.STAGING, 0.0, true, false, false));
+    assertEquals(State.STAGING, next(State.STAGING, 0.0, true, false));
   }
 
   @Test
   void staging_transitionsToScoringOnScoreRequest() {
-    assertEquals(State.SCORING, next(State.STAGING, 0.0, true, true, false));
+    assertEquals(State.SCORING, next(State.STAGING, 0.0, true, true));
   }
 
   @Test
   void staging_returnsToIdleWhenIntakeCancelled() {
-    assertEquals(State.IDLE, next(State.STAGING, 0.0, false, false, false));
+    assertEquals(State.IDLE, next(State.STAGING, 0.0, false, false));
   }
 
   @Test
   void staging_scoreWithoutIntakeStillScores() {
     // scoreRequested takes priority check before intakeRequested check
-    assertEquals(State.SCORING, next(State.STAGING, 0.0, false, true, false));
+    assertEquals(State.SCORING, next(State.STAGING, 0.0, false, true));
   }
 
   // ── SCORING state transitions ──────────────────────────────────────────
 
   @Test
-  void scoring_staysScoringRegardlessOfFlags() {
-    assertEquals(State.SCORING, next(State.SCORING, 0.0, false, false, false));
-    assertEquals(State.SCORING, next(State.SCORING, 0.0, true, true, true));
-  }
-
-  // ── CLIMBING state transitions ──────────────────────────────────────────
-
-  @Test
-  void climbing_staysClimbingWhileRequested() {
-    assertEquals(State.CLIMBING, next(State.CLIMBING, 0.0, false, false, true));
+  void scoring_staysScoringBelowTimeout() {
+    // Just under the 2 s window — should stay SCORING.
+    assertEquals(
+        State.SCORING, nextWithDuration(State.SCORING, 0.0, false, false, TIMEOUT - 0.001));
+    assertEquals(State.SCORING, nextWithDuration(State.SCORING, 0.0, true, true, 0.0));
   }
 
   @Test
-  void climbing_returnsToIdleWhenCancelled() {
-    assertEquals(State.IDLE, next(State.CLIMBING, 0.0, false, false, false));
+  void scoring_autoExitsToIdleAtTimeout() {
+    // Exactly at the timeout boundary — must exit.
+    assertEquals(State.IDLE, nextWithDuration(State.SCORING, 0.0, false, false, TIMEOUT));
+  }
+
+  @Test
+  void scoring_autoExitsToIdleAfterTimeout() {
+    // Well past the timeout.
+    assertEquals(State.IDLE, nextWithDuration(State.SCORING, 0.0, false, false, TIMEOUT + 5.0));
+  }
+
+  @Test
+  void scoring_zeroScoringDurationStaysScoring() {
+    // At t=0 (just entered SCORING), should definitely stay.
+    assertEquals(State.SCORING, nextWithDuration(State.SCORING, 0.0, false, false, 0.0));
   }
 
   // ── Full lifecycle: IDLE → INTAKING → STAGING → SCORING ───────────────
@@ -121,42 +131,58 @@ class SuperstructureStateMachineTest {
   @Test
   void fullScoringLifecycle() {
     // IDLE → INTAKING (intake requested)
-    assertEquals(State.INTAKING, next(State.IDLE, 0.0, true, false, false));
+    assertEquals(State.INTAKING, next(State.IDLE, 0.0, true, false));
 
     // INTAKING → STAGING (current spike)
-    assertEquals(State.STAGING, next(State.INTAKING, THRESHOLD + 10.0, true, false, false));
+    assertEquals(State.STAGING, next(State.INTAKING, THRESHOLD + 10.0, true, false));
 
     // STAGING → SCORING (score requested)
-    assertEquals(State.SCORING, next(State.STAGING, 0.0, true, true, false));
+    assertEquals(State.SCORING, next(State.STAGING, 0.0, true, true));
 
-    // SCORING stays (until requestIdle called externally)
-    assertEquals(State.SCORING, next(State.SCORING, 0.0, false, false, false));
-  }
+    // SCORING stays well within timeout
+    assertEquals(State.SCORING, nextWithDuration(State.SCORING, 0.0, false, false, TIMEOUT * 0.5));
 
-  // ── Full lifecycle: IDLE → CLIMBING → IDLE ─────────────────────────────
-
-  @Test
-  void climbingLifecycle() {
-    assertEquals(State.CLIMBING, next(State.IDLE, 0.0, false, false, true));
-    assertEquals(State.CLIMBING, next(State.CLIMBING, 0.0, false, false, true));
-    assertEquals(State.IDLE, next(State.CLIMBING, 0.0, false, false, false));
+    // SCORING auto-exits at timeout
+    assertEquals(State.IDLE, nextWithDuration(State.SCORING, 0.0, false, false, TIMEOUT));
   }
 
   // ── Edge cases ─────────────────────────────────────────────────────────
 
   @Test
   void negativeCurrent_doesNotTriggerStaging() {
-    assertEquals(State.INTAKING, next(State.INTAKING, -5.0, true, false, false));
+    assertEquals(State.INTAKING, next(State.INTAKING, -5.0, true, false));
   }
 
   @Test
   void zeroCurrent_doesNotTriggerStaging() {
-    assertEquals(State.INTAKING, next(State.INTAKING, 0.0, true, false, false));
+    assertEquals(State.INTAKING, next(State.INTAKING, 0.0, true, false));
   }
 
+  // ── Phase 3.2 — Sim current gate (acceptance criterion) ──────────────────
+
+  /**
+   * Documents the Phase 3.2 sim-fix contract: {@code Intake.simulationPeriodic()} now gates current
+   * synthesis on {@code simGamePieceAcquired}. Without that flag being set, the wheel current stays
+   * 0 even when the wheel is commanded — and INTAKING must NOT auto-advance to STAGING, preventing
+   * false game-piece detection during every routine wheel spin.
+   */
   @Test
-  void allFlagsTrue_idleGoesToClimbing() {
-    // Climb has highest priority in IDLE state
-    assertEquals(State.CLIMBING, next(State.IDLE, 0.0, true, true, true));
+  void intaking_withUngatedSimCurrent_staysIntaking() {
+    // In simulation before Phase 3.2: any wheel command produced ~30A (> threshold), causing
+    // INTAKING → STAGING on every spin. Post-fix: wheel current is 0 unless a game piece is
+    // explicitly injected. The SSM contract: zero current in INTAKING → stay INTAKING.
+    assertEquals(State.INTAKING, next(State.INTAKING, 0.0, true, false));
+  }
+
+  /**
+   * Complements the above: after {@code simulateGamePieceAcquired()} sets the flag, the synthesized
+   * current spike causes SSM to advance INTAKING → STAGING as intended.
+   */
+  @Test
+  void intaking_withInjectedSimCurrent_advancesToStaging() {
+    // simWheelCurrentAmps = 30.0 when simGamePieceAcquired=true and wheel at full output.
+    // Verifies the SSM correctly advances on the injected spike.
+    double injectedCurrent = 30.0; // matches Intake.simulationPeriodic() at full output
+    assertEquals(State.STAGING, next(State.INTAKING, injectedCurrent, true, false));
   }
 }

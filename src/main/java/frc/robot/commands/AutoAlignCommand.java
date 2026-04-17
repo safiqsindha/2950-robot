@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Helper;
+import frc.robot.Robot;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import java.util.function.DoubleSupplier;
@@ -62,7 +63,8 @@ public class AutoAlignCommand extends Command {
     double yInput =
         MathUtil.applyDeadband(translationYSupplier.getAsDouble(), Constants.OI.kDriveDeadband);
     Translation2d translation =
-        new Translation2d(xInput, yInput).times(Constants.Swerve.kMaxSpeedMetersPerSec);
+        new Translation2d(xInput, yInput)
+            .times(Constants.Swerve.kMaxSpeedMetersPerSec * Robot.getBrownoutScale());
 
     // Auto rotation toward AprilTag target
     double txOffset = Helper.getAprilTagAim();

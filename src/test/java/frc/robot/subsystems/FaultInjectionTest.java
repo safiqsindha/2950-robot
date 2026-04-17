@@ -20,11 +20,12 @@ class FaultInjectionTest {
 
   // Hardcoded from Constants.Superstructure (do NOT import Constants)
   private static final double THRESHOLD = 15.0;
+  private static final double SCORING_TIMEOUT = 2.0;
 
   private static State next(
-      State state, double current, boolean intake, boolean score, boolean climb) {
+      State state, double current, boolean intake, boolean score, double scoringDuration) {
     return SuperstructureStateMachine.computeNextState(
-        state, current, THRESHOLD, intake, score, climb);
+        state, current, THRESHOLD, intake, score, scoringDuration);
   }
 
   // ── FuelDetectionConsumer fault injection ──────────────────────────────────
@@ -103,19 +104,19 @@ class FaultInjectionTest {
     for (int i = 0; i < 1000; i++) {
       boolean intake = (i % 3 == 0);
       boolean score = (i % 5 == 0);
-      boolean climb = (i % 7 == 0);
+      // Vary scoring duration across the timeout boundary to exercise both branches
+      double scoringDuration = (i % 7 == 0) ? SCORING_TIMEOUT + 1.0 : 0.0;
       double current = (i % 11 == 0) ? THRESHOLD + 10.0 : 0.0;
       state =
           SuperstructureStateMachine.computeNextState(
-              state, current, THRESHOLD, intake, score, climb);
+              state, current, THRESHOLD, intake, score, scoringDuration);
       assertNotNull(state, "State should never be null at iteration " + i);
-      // Verify it is one of the known enum values
+      // Verify it is one of the known enum values (CLIMBING removed in Phase 1.5)
       assertTrue(
           state == State.IDLE
               || state == State.INTAKING
               || state == State.STAGING
-              || state == State.SCORING
-              || state == State.CLIMBING,
+              || state == State.SCORING,
           "State should be a known enum value at iteration " + i);
     }
   }
@@ -123,17 +124,17 @@ class FaultInjectionTest {
   @Test
   void stateMachine_doubleRequestScore_noIllegalState() {
     // IDLE -> INTAKING -> STAGING -> SCORING (first score) -> SCORING (second score, no crash)
-    State state = next(State.IDLE, 0.0, true, false, false);
+    State state = next(State.IDLE, 0.0, true, false, 0.0);
     assertEquals(State.INTAKING, state);
 
-    state = next(state, THRESHOLD + 10.0, true, false, false);
+    state = next(state, THRESHOLD + 10.0, true, false, 0.0);
     assertEquals(State.STAGING, state);
 
-    state = next(state, 0.0, true, true, false);
+    state = next(state, 0.0, true, true, 0.0);
     assertEquals(State.SCORING, state);
 
-    // Second score request while already scoring — should stay in SCORING
-    state = next(state, 0.0, true, true, false);
+    // Second score request while already scoring and within timeout — should stay in SCORING
+    state = next(state, 0.0, true, true, 0.0);
     assertEquals(State.SCORING, state, "Double score request should not cause illegal state");
   }
 

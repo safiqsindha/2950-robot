@@ -15,13 +15,21 @@ import frc.robot.commands.DriveCommand;
 import frc.robot.commands.DriveToGamePieceCommand;
 import frc.robot.commands.FullAutonomousCommand;
 import frc.robot.commands.IntakeControl;
+import frc.robot.commands.PanicCommand;
+import frc.robot.commands.SystemTestCommand;
 import frc.robot.commands.flywheel.FlywheelAim;
 import frc.robot.commands.flywheel.FlywheelAutoFeed;
 import frc.robot.commands.flywheel.FlywheelDynamic;
 import frc.robot.commands.flywheel.FlywheelStatic;
 import frc.robot.subsystems.Conveyor;
+import frc.robot.subsystems.ConveyorIOReal;
+import frc.robot.subsystems.ConveyorIOSim;
 import frc.robot.subsystems.Flywheel;
+import frc.robot.subsystems.FlywheelIOReal;
+import frc.robot.subsystems.FlywheelIOSim;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.IntakeIOReal;
+import frc.robot.subsystems.IntakeIOSim;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.LEDs.AnimationType;
 import frc.robot.subsystems.SuperstructureStateMachine;
@@ -40,9 +48,19 @@ public class RobotContainer {
   private final SwerveSubsystem swerve = new SwerveSubsystem();
   public final VisionSubsystem vision = new VisionSubsystem(swerve);
   private final LEDs leds = new LEDs();
-  public final Intake intake = new Intake();
-  private final Conveyor conveyor = new Conveyor();
-  private final Flywheel flywheel = new Flywheel();
+  public final Intake intake =
+      new Intake(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation() ? new IntakeIOSim() : new IntakeIOReal());
+  private final Conveyor conveyor =
+      new Conveyor(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation()
+              ? new ConveyorIOSim()
+              : new ConveyorIOReal());
+  private final Flywheel flywheel =
+      new Flywheel(
+          edu.wpi.first.wpilibj.RobotBase.isSimulation()
+              ? new FlywheelIOSim()
+              : new FlywheelIOReal());
   private final SuperstructureStateMachine ssm = new SuperstructureStateMachine(intake);
 
   // ─── Controllers ───
@@ -64,6 +82,7 @@ public class RobotContainer {
     configureDefaultCommands();
     configureDriverBindings();
     configureAutonomous();
+    configureTestMode();
   }
 
   private void configureDefaultCommands() {
@@ -134,9 +153,13 @@ public class RobotContainer {
     // X: automated vision-aligned scoring sequence
     driver.x().onTrue(AutoScoreCommand.build(swerve, flywheel, conveyor, vision, ssm, leds));
 
-    // Back + Start together: teleport robot back to scenario start pose (sim practice reset)
-    // Uses combo to prevent accidental resets — Pro Controller ZR maps to Xbox Start (button 8)
-    driver.back().and(driver.start()).onTrue(Commands.runOnce(practiceMode::resetToStart));
+    // Back + Start together: PANIC BUTTON — cancel every scheduled command, force SSM to IDLE,
+    // flash LEDs red. Works while disabled so the driver can abort everything from the stand.
+    driver.back().and(driver.start()).onTrue(PanicCommand.build(ssm, leds));
+
+    // Start + POV-Up together: teleport robot back to scenario start pose (sim practice reset).
+    // Relocated from back+start so the panic combo owns the "two-finger emergency" gesture.
+    driver.start().and(driver.povUp()).onTrue(Commands.runOnce(practiceMode::resetToStart));
   }
 
   private void configureAutonomous() {
@@ -213,6 +236,13 @@ public class RobotContainer {
                 .withTimeout(3.0)));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
+
+  /** Registers SmartDashboard buttons and bindings available in test mode. */
+  private void configureTestMode() {
+    // "Run System Test" button on SmartDashboard — tests motor connectivity and response.
+    // Safe to press only when the robot is in a clear area; command self-limits to low output.
+    SmartDashboard.putData("Run System Test", new SystemTestCommand(flywheel, intake, conveyor));
   }
 
   public Command getAutonomousCommand() {

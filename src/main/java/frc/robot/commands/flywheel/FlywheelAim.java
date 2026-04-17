@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Helper;
 import frc.robot.subsystems.SwerveSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Rotates the robot to aim at the hub target using Limelight AprilTag tracking. Uses a simple P
@@ -32,7 +33,8 @@ public class FlywheelAim extends Command {
     Helper.updateFilters();
     double xDist = Helper.getAprilTagAim();
     double rotation = kSign * (xDist * kP);
-    Helper.printRpmDistance(xDist, rotation);
+    Logger.recordOutput("Flywheel/DebugAimError", xDist);
+    Logger.recordOutput("Flywheel/DebugAimRotation", rotation);
     swerve.drive(new Translation2d(), rotation, false);
   }
 

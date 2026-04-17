@@ -40,9 +40,9 @@ public class FlywheelDynamic extends Command {
     double trigger = Math.abs(triggerAxis.getAsDouble());
 
     if (trigger > kFirstThreshold) {
-      flywheel.leftVortex.set(1);
+      flywheel.setVortexOutput(1);
     } else {
-      flywheel.leftVortex.set(0);
+      flywheel.setVortexOutput(0);
     }
 
     flywheel.setLower(kFeederPercent * (trigger > kSecondThreshold ? 1 : 0));

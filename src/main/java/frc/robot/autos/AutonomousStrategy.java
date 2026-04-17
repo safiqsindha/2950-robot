@@ -3,6 +3,7 @@ package frc.robot.autos;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.lib.AllianceFlip;
 import frc.robot.Constants;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,9 +26,12 @@ import java.util.List;
  */
 public final class AutonomousStrategy {
 
-  // Fixed field locations (blue alliance; flip for red in the caller)
+  // Fixed field locations defined in blue-alliance coordinates.
+  // evaluateTargets() flips these via AllianceFlip when GameState.isRedAlliance() is true.
   private static final Pose2d HUB_POSE = new Pose2d(3.39, 4.11, new Rotation2d());
   private static final Pose2d CLIMB_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
+  // Default fallback collect pose when no FUEL is detected (blue-alliance coords).
+  private static final Pose2d DEFAULT_COLLECT_POSE = new Pose2d(8.23, 4.11, new Rotation2d());
 
   /**
    * Evaluate all candidate targets given the current game state and return them ranked by utility
@@ -39,21 +43,26 @@ public final class AutonomousStrategy {
   public List<ScoredTarget> evaluateTargets(GameState state) {
     List<ScoredTarget> targets = new ArrayList<>();
     Translation2d robotPos = state.getRobotPose().getTranslation();
+    boolean isRed = state.isRedAlliance();
+
+    // Flip fixed poses to match the current alliance origin.
+    Pose2d hubPose = AllianceFlip.flip(HUB_POSE, isRed);
+    Pose2d climbPose = AllianceFlip.flip(CLIMB_POSE, isRed);
 
     // ── CLIMB — dominates when time is low ──
     if (state.getTimeRemaining() <= Constants.Pathfinding.kClimbTimeThresholdSeconds) {
-      double dist = robotPos.getDistance(CLIMB_POSE.getTranslation());
+      double dist = robotPos.getDistance(climbPose.getTranslation());
       // High base utility; still distance-weighted so nearer is better
       double utility = 100.0 - dist;
-      targets.add(new ScoredTarget(ActionType.CLIMB, CLIMB_POSE, utility));
+      targets.add(new ScoredTarget(ActionType.CLIMB, climbPose, utility));
     }
 
     // ── SCORE — when HUB is active and robot holds FUEL ──
     if (state.isHubActive() && state.getFuelHeld() > 0) {
-      double dist = robotPos.getDistance(HUB_POSE.getTranslation());
+      double dist = robotPos.getDistance(hubPose.getTranslation());
       // Base utility 50 + fuel bonus; penalize by distance
       double utility = 50.0 + state.getFuelHeld() * 5.0 - dist;
-      targets.add(new ScoredTarget(ActionType.SCORE, HUB_POSE, utility));
+      targets.add(new ScoredTarget(ActionType.SCORE, hubPose, utility));
     }
 
     // ── COLLECT — one target per detected FUEL position ──
@@ -66,10 +75,11 @@ public final class AutonomousStrategy {
       targets.add(new ScoredTarget(ActionType.COLLECT, collectPose, utility));
     }
 
-    // If nothing else, still offer COLLECT at default field positions
+    // If nothing else, still offer COLLECT at the default fallback position (flipped for alliance).
     if (targets.isEmpty()) {
       targets.add(
-          new ScoredTarget(ActionType.COLLECT, new Pose2d(8.23, 4.11, new Rotation2d()), 0.0));
+          new ScoredTarget(
+              ActionType.COLLECT, AllianceFlip.flip(DEFAULT_COLLECT_POSE, isRed), 0.0));
     }
 
     targets.sort(Comparator.comparingDouble(ScoredTarget::utility).reversed());
