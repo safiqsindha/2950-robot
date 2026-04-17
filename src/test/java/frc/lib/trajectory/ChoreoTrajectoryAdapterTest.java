@@ -14,15 +14,20 @@ import org.junit.jupiter.api.Test;
  */
 class ChoreoTrajectoryAdapterTest {
 
-  /** Builds a sample at time {@code t} with a pose at {@code (t, 2·t)} and constant forward speed. */
+  /**
+   * Builds a sample at time {@code t} with a pose at {@code (t, 2·t)} and matching constant
+   * velocities {@code (vx=1, vy=2)}. Choreo's {@code SwerveSample.interpolate} uses the prior
+   * sample's (v, a) to kinematically integrate intermediate poses, so for linearly-interpolated
+   * test results the velocities must be consistent with the pose trajectory.
+   */
   private static SwerveSample sampleAt(double t) {
     return new SwerveSample(
         t, // timestamp
         t, // x
         2 * t, // y
         0.0, // heading
-        1.0, // vx
-        0.0, // vy
+        1.0, // vx — matches dx/dt of this path
+        2.0, // vy — matches dy/dt of this path (y = 2t)
         0.0, // omega
         0.0, // ax
         0.0, // ay
@@ -71,6 +76,7 @@ class ChoreoTrajectoryAdapterTest {
     assertEquals(0.5, sample.get().pose().getX(), 1e-6);
     assertEquals(1.0, sample.get().pose().getY(), 1e-6);
     assertEquals(1.0, sample.get().fieldRelativeSpeeds().vxMetersPerSecond, 1e-9);
+    assertEquals(2.0, sample.get().fieldRelativeSpeeds().vyMetersPerSecond, 1e-9);
   }
 
   @Test
