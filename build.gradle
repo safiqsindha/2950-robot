@@ -92,7 +92,7 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     // JUnit 5 for testing
-    testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
+    testImplementation "org.junit.jupiter:junit-jupiter:6.0.3"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     // ArchUnit — enforce package-dependency rules at test time.
