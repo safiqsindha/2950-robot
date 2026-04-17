@@ -156,14 +156,37 @@ Check these first, in order:
 
 ---
 
+## Trajectory / auto
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Robot drives in roughly the right direction but rotates oddly during auto | Choreo `SwerveSample` speeds are field-relative; code passing them as robot-relative | Fixed in PR #39 — factory lambda now converts via `ChassisSpeeds.fromFieldRelativeSpeeds(...)`. If regressed, check `ChoreoAutoCommand.factory` |
+| Auto pose drifts continuously during trajectory | `TrajectoryFollower` PID gains too soft (or zero) | Check `Constants`-side overrides / `TrajectoryFollower.DEFAULT_*`. Default is 4.0 (translation) / 3.0 (heading). Bump translation kP first. |
+| Sample FF and actual robot velocity diverge early in the trajectory | Pose estimator hasn't converged after `resetOdometry` | Vision is inhibited for `kResetInhibitionSeconds` after reset. Confirm `Vision/InhibitedAfterReset` is the expected false by time of first correction. |
+| `Auto/TargetPose` vs `Auto/ActualPose` plot shows >50cm lag | Robot is slower than trajectory assumes | Either retune the Choreo profile in the desktop app (lower `Max Velocity`), or increase `TrajectoryFollower` translation kP |
+
+---
+
+## Telemetry: "where is key X logged?"
+
+See [`TELEMETRY_REFERENCE.md`](TELEMETRY_REFERENCE.md) — every published key lives there, grouped by top-level namespace. Before adding a new log key, grep for an existing one:
+
+```bash
+grep -rn "Logger.recordOutput" src/main/java | grep "PrefixYouWant/"
+```
+
+---
+
 ## Docs navigation
 
 For a new team member / LLM agent opening this repo:
 
 1. [`README.md`](README.md) — overview, stack, controllers, CAN bus summary
 2. [`AGENTS.md`](AGENTS.md) — command + convention contract (read first for agents)
-3. [`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md) — step-by-step pre-event testing
-4. [`CAN_ID_REFERENCE.md`](CAN_ID_REFERENCE.md) — wiring truth
-5. [`PLAN.md`](PLAN.md) + [`STATUS.md`](STATUS.md) — what's been shipped
-6. [`AUDIT_2026-04-16.md`](AUDIT_2026-04-16.md) — the 50-finding audit
-7. This file — when things break
+3. [`CODE_TOUR.md`](CODE_TOUR.md) — where things live and why
+4. [`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md) — step-by-step pre-event testing
+5. [`CAN_ID_REFERENCE.md`](CAN_ID_REFERENCE.md) — wiring truth
+6. [`TELEMETRY_REFERENCE.md`](TELEMETRY_REFERENCE.md) — every log key this robot publishes
+7. [`PLAN.md`](PLAN.md) + [`STATUS.md`](STATUS.md) — what's been shipped
+8. [`AUDIT_2026-04-16.md`](AUDIT_2026-04-16.md) — the 50-finding audit
+9. This file — when things break
