@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #84  fix(migration): field width 8.211 → 8.069 for 2026 REBUILT WELDED
 - 2026-04-17  #83  docs(followups): expand 2025→2026 — deep migration, not rename
 - 2026-04-17  #82  docs(followups): add 2025→2026 terminology sweep
 - 2026-04-17  #81  docs: add FOLLOWUPS.md for next-session todo queue
