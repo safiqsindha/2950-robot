@@ -4,13 +4,13 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.autos.AutonomousStrategy;
+import frc.robot.autos.LoggedAutoChooser;
 import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.AutoScoreCommand;
 import frc.robot.commands.ChoreoAutoCommand;
@@ -82,7 +82,12 @@ public class RobotContainer {
 
   // ─── Autonomous ───
   private final AutoFactory autoFactory = ChoreoAutoCommand.factory(swerve);
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  /**
+   * Logged auto-routine chooser. Replaces the plain {@code SendableChooser} so the selected
+   * option name flows into AdvantageKit every cycle; also exposes a deterministic
+   * {@code selectRandom} for practice sessions.
+   */
+  private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
   private final AutonomousStrategy autonomousStrategy = new AutonomousStrategy();
 
   // ─── Driver Practice (simulation only) ───
@@ -262,7 +267,12 @@ public class RobotContainer {
                         leds))
                 .withTimeout(Constants.Autonomous.kSafeModeSpinupDurationSeconds)));
 
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    autoChooser.publish();
+  }
+
+  /** Tick the auto-chooser logger. Called from {@link Robot#robotPeriodic()}. */
+  public void tickAutoLog() {
+    autoChooser.periodic();
   }
 
   /** Registers SmartDashboard buttons and bindings available in test mode. */
