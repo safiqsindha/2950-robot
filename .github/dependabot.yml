@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # GitHub Actions — keep workflows on currently-supported runner + action versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Gradle — WPILib + vendor deps update annually; dependabot surfaces anything else
+  # (junit, archunit, spotless, spotbugs) before it's two versions stale.
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    # Ignore WPILib / vendor bumps — those must be done in lockstep with kickoff or
+    # a vendor announcement, not by a bot.
+    ignore:
+      - dependency-name: "edu.wpi.first.*"
+      - dependency-name: "com.ctre.*"
+      - dependency-name: "com.revrobotics.*"
+      - dependency-name: "org.photonvision.*"
+      - dependency-name: "choreo.*"
