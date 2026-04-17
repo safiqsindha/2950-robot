@@ -56,7 +56,10 @@ Format:
 
 [2026-04-16 23:10] [SONNET] [4.3] — Conveyor IO layer refactored (2590 pattern). ConveyorIO + ConveyorIOInputs (@AutoLog). ConveyorIOReal wraps brushed conveyor + brushless spindexer SPARK MAX (both open-loop, no PID). ConveyorIOSim: pure Java — tracks percent output; currents always 0 (matches SPARK MAX sim behaviour). Conveyor thin consumer reads currents from inputs struct. 9 HAL-free tests. Phase 4 complete. Weight: 6.0h ✓
 
-█ CURRENT: Phase 4 complete — Phase 5 ready    ████████████████████  ~95%  (37.5 / 40.0h)
-█ OVERALL: Phase 0-3 done + Phase 4 done (all IO layers)
+
+[2026-04-16 23:45] [SONNET] [5.1] — 604 QuixSwerveDriveSimulation investigated. Report: INVESTIGATION_604_QUIXLIB.md. Key finding: 604's per-module force model is genuinely better than stock maple-sim's chassis-level friction (eliminates the drift-when-stopped bug) but has a hard CTRE TalonFX dependency (getTorqueCurrent() on TalonFXSimState) and tight QuixSwerveModule coupling. Cannot be used with REV SPARK motors or YAGSL without rewriting the swerve layer. Recommendation: keep existing manual kinematic bypass; track maple-sim issue #96 for an upstream fix. Weight: 3.0h ✓
+
+█ CURRENT: ALL PHASES COMPLETE    ████████████████████  100%  (40.0 / 40.0h)
+█ OVERALL: Phase 0 + 1 + 2 + 3 + 4 + 5 done — all 18 tasks complete
 █ IN FLIGHT: —
-█ LAST DONE: 4.3 Conveyor IO layer (ConveyorIO/Real/Sim, thin consumer, 9 tests)
+█ LAST DONE: 5.1 604 QuixSwerveDriveSimulation investigation (INVESTIGATION_604_QUIXLIB.md)
