@@ -6,31 +6,44 @@ Intent queue for work surfaced during a session but not done in that session. Ad
 
 ## 2026-04-18 — next session
 
-- [ ] **2025→2026 terminology sweep.** The codebase is in a mixed state: some classes correctly use 2026 REBUILT terminology (FUEL game piece, HUB scoring, TOWER climbing — see `ShotSimulation` / `RebuiltFuelOnFly`, `IntakeSimulationAdapter`, `FuelDetectionConsumer`, maple-sim's `rebuilt2026` package) while autonomous routines + dashboards + many docs are still stuck on 2025 Reefscape (Coral game piece, Reef scoring, Coral Station). **136 lines across 37 files.**
+- [ ] **2025→2026 deep migration (NOT just a rename).** This is the largest single outstanding item on the repo. The codebase claims to be for 2026 REBUILT (top-level docs, README, a few sim classes using `RebuiltFuelOnFly`), but the substance — field map, AprilTag IDs, flywheel calibration, trajectory waypoints, scoring poses — is all 2025 Reefscape. The robot as currently coded would not score on a 2026 REBUILT field.
 
-  Split the cleanup into two PRs:
+  **Evidence of 2025-ness in supposedly-2026 code:**
+  - `Helper.llSetup()` filters tags `{2, 5, 10, 18, 21, 26}` — these are 2025 Reefscape tag IDs. Comment says "2026 REBUILT hub targets"; comment is wrong.
+  - `src/main/deploy/navgrid.json` — 16.46m × 8.23m field (2025 Reefscape size) with obstacle layout tracing the 2025 Reef hexagons + Coral Stations. `Constants.kFieldLengthMeters = 16.541` disagrees with navgrid by 8 cm — even the 2025 values aren't consistent with each other.
+  - `Helper.rpmFromMeters` Lagrange points (1.125 → 2500, 1.714 → 3000, 2.500 → 3500) were measured against 2025 Coral launching into 2025 Reef heights. FUEL has different mass/shape — curve is wrong.
+  - Choreo `.traj` file contents are 2025 Reef + Coral Station waypoints.
+  - `Constants.Autonomous.kSafeModeStaticShotRpm = 2800` / `kAutoStaticShotRpm = 3000` — Coral numbers.
 
-  **PR-A — cosmetic renames (low risk, ~3 hours):**
-  - `ChoreoAutoCommand.twoCoralRoutine` → `twoFuelRoutine`; same for `threeCoralRoutine`, `scoreAndLeaveRoutine` and any test-side references. Update `RobotContainer` call sites + auto-chooser labels.
-  - `.traj` file renames: `reefToStation.traj` → `hubToIntake.traj` (or the team's preferred naming), `stationToReef.traj` → `intakeToHub.traj`, `leaveStart.traj` → keep (neutral). Update `TRAJ_*` string constants accordingly.
-  - `advantagescope-layout.json`: change `"game": "2026Reefscape"` → `"game": "2026REBUILT"` (verify AdvantageScope's supported game-name string for 2026 — may still be `"Reefscape"` if AS hasn't updated).
-  - `docs/advantagescope-setup.md`: "2026 Reefscape field" → "2026 REBUILT field."
-  - `GLOSSARY.md`: Reef entry → HUB entry with correct description; add FUEL + TOWER entries.
-  - Replace "coral"/"station"/"reef" example poses in `AllianceFlipTest`, `MatchPhaseOverlayTest`, `DriverPracticeModeTest`, `FuelDetectionConsumerTest` with 2026 field coordinates.
-  - Update README, ARCHITECTURE, PRACTICE_SESSION_PLAYBOOK, PIT_CHECKLIST, SIM_VALIDATION_SCRIPT for terminology consistency.
+  **Migration work order:**
 
-  **PR-B — trajectory rewrites (requires Choreo desktop + 2026 field knowledge):**
-  - The `.traj` file contents themselves are 2025 Reefscape waypoints. Even after renaming the files, the paths still drive to the 2025 Coral Reef locations, not the 2026 HUB. Re-author each path in the Choreo desktop app against the 2026 REBUILT field layout. This needs either (a) the 2026 field JSON from Choreo's update, or (b) measured waypoints from practice.
-  - Verify Choreo's `ReefscapeCoralAlgaeStack` vs 2026 REBUILT's equivalent in the trajectory-author's game-piece-aware features.
+  1. **Find the truth.** Pull the official 2026 REBUILT field JSON from FRC / Choreo's release. Note: field length, width, AprilTag placement, HUB + TOWER + Fuel Intake coordinates, allowed starting zones.
 
-  **Search command for the sweep:**
-  ```
-  grep -rn "coral\|reef\|station\b" src/ *.md docs/ advantagescope-layout.json \
-    --include=*.java --include=*.md --include=*.json \
-    | grep -vE "swervelib|RebuiltFuel"
-  ```
+  2. **Replace field data** — PR scope: `navgrid.json`, `Constants.kFieldLengthMeters` / `kFieldWidthMeters`, regenerate via `tools/navgrid_generator.py` (or manual if no tool exists yet).
 
-  Note: some "station" mentions are non-game (e.g. "test station" in PRACTICE_SESSION_PLAYBOOK, "driver station" in everything) — triage with grep `-v`.
+  3. **Replace AprilTag filter** — PR scope: `Helper.llSetup()` tag ID list. Update `STUDENT_TESTING_GUIDE.md` tag reference (currently lists 2025 IDs).
+
+  4. **Re-calibrate flywheel** — requires hardware + practice session. Measure 3+ (distance, RPM) pairs with real 2026 FUEL against the 2026 HUB. Use `tools/rpm_curve_fit.py` to regenerate Lagrange constants.
+
+  5. **Re-author trajectories** — requires Choreo desktop + 2026 field layout. New paths for HUB approach + Fuel Intake approach. Delete the old `.traj` files; create new ones with game-appropriate names.
+
+  6. **Scoring pose constants** — audit every hard-coded pose in `Constants.*` + `AutonomousStrategy` for 2025-specific coordinates. Replace with 2026 equivalents.
+
+  7. **Auto routine redesign** — scoring strategy likely needs a rewrite. 2/3-coral pattern (preload + 2 station cycles) may not be the right 2026 strategy. Depends on REBUILT scoring rules + point values.
+
+  8. **Vision pose gates** — re-tune `Constants.Vision.kMaxTagDistM`, `kMaxCorrectionAutoMeters`, `kMaxLinearSpeedForVisionMps` if 2026 HUB scoring happens at different distances from 2025 Reef scoring.
+
+  9. **Terminology pass (cosmetic, do last)** — rename `twoCoralRoutine` → `twoFuelRoutine`; `advantagescope-layout.json` game string; GLOSSARY Reef → HUB; test example poses; docs. Run the search:
+     ```
+     grep -rn "coral\|reef\|station\b" src/ *.md docs/ advantagescope-layout.json \
+       --include=*.java --include=*.md --include=*.json \
+       | grep -vE "swervelib|RebuiltFuel"
+     ```
+     (136 lines across 37 files. "station" has non-game mentions — driver station, test station — triage with grep `-v`.)
+
+  **Cannot be done in a single PR.** Items 1-8 touch behaviour; item 9 is cosmetic. Even item 9 alone is two PRs (source renames vs trajectory-file renames). Expect ~8-12 PRs total over several sessions, ordered so each lands as a working unit (e.g., ship the new field data + tag IDs together or vision breaks in isolation).
+
+  **Risk of not doing it:** every claim that this codebase is "for 2026 REBUILT" is marketing; the event-day behaviour would be incorrect in every game-specific dimension. The robot would still drive (swerve is game-agnostic), but auto wouldn't score, vision wouldn't lock, flywheel RPMs would be wrong.
 
 - [ ] **Delete `.cursorrules`.** Stale from April 8, predates the offseason refactor. Lies in three specific ways — claims CTRE Phoenix 6 / Kraken drivetrain (we're REV-only), forbids software-side PIDs (contradicted by `LinearProfile`, `AsymmetricRateLimiter`, `TrajectoryFollower`, `BatteryAwareCurrentLimit`), forbids IO interfaces broadly (we deliberately adopted the 2590 IO-layer pattern for every mechanism except Swerve). Any Cursor agent reading both the file and `AGENTS.md` would hit contradictions. Successor docs already maintained: `AGENTS.md`, `DEVELOPER_TESTING_GUIDE.md`, `MENTOR_GUIDE.md`, `CODE_TOUR.md`, 10 ADRs.
 
