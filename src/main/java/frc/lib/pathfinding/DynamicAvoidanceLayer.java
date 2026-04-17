@@ -23,16 +23,16 @@ import java.util.List;
  *
  * <p>This class lives in {@code frc.lib.pathfinding} and has no robot-specific dependencies — the
  * tuning constants flow through the constructor so the class stays reusable across seasons. The
- * {@code DEFAULT_*} constants below match the 2026 Reef tuning (see {@code
+ * {@code DEFAULT_*} constants below match the 2026 HUB tuning (see {@code
  * Constants.Pathfinding}) so existing tests and the no-arg convenience constructor keep the same
  * behavior.
  */
 public final class DynamicAvoidanceLayer {
 
-  /** Default opponent influence radius (m) — 2026 Reef tuning. */
+  /** Default opponent influence radius (m) — 2026 HUB tuning. */
   public static final double DEFAULT_OPPONENT_INFLUENCE_RADIUS_M = 2.0;
 
-  /** Default max robot speed (m/s) — 2026 Reef tuning. */
+  /** Default max robot speed (m/s) — 2026 HUB tuning. */
   public static final double DEFAULT_MAX_ROBOT_SPEED_MPS = 4.5;
 
   /** Default attractive gain toward waypoint. */

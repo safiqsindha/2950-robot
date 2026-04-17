@@ -219,13 +219,13 @@ public class RobotContainer {
         ChoreoAutoCommand.scoreAndLeaveRoutine(autoFactory, flywheel, conveyor, swerve).cmd());
 
     autoChooser.addOption(
-        "2 Coral",
-        ChoreoAutoCommand.twoCoralRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
+        "2 Fuel",
+        ChoreoAutoCommand.twoFuelRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
             .cmd());
 
     autoChooser.addOption(
-        "3 Coral",
-        ChoreoAutoCommand.threeCoralRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
+        "3 Fuel",
+        ChoreoAutoCommand.threeFuelRoutine(autoFactory, flywheel, conveyor, intake, ssm, swerve)
             .cmd());
 
     // ── Full Autonomous (Phase 3) ─────────────────────────────────────────────

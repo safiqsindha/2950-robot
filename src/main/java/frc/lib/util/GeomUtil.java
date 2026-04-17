@@ -14,7 +14,7 @@ import java.util.List;
  * <ul>
  *   <li>{@link #getClosestPose} — nearest waypoint by Euclidean distance
  *   <li>{@link #getClosestFuturePose} — same, but evaluated at "where I'll be in Δt" instead of
- *       "where I am now". Essential for reef-aligners and scoring-pose selectors — eliminates the
+ *       "where I am now". Essential for HUB-aligners and scoring-pose selectors — eliminates the
  *       race between target selection and robot motion.
  * </ul>
  */

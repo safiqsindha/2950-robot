@@ -36,7 +36,7 @@
       "type": "odometry",
       "title": "Field",
       "controller": {
-        "game": "2026Reefscape",
+        "game": "2026Rebuilt",
         "fields": [
           {
             "key": "AdvantageKit/RealOutputs/Drive/Pose",

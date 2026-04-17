@@ -41,7 +41,7 @@ import java.util.Optional;
  */
 public final class TrajectoryFollower {
 
-  /** Default translation kP — tuned for the 2026 Reef (4.5 m/s cap, 22"×22" chassis). */
+  /** Default translation kP — tuned for the 2026 HUB (4.5 m/s cap, 22"×22" chassis). */
   public static final double DEFAULT_TRANSLATION_KP = 4.0;
 
   /** Default heading kP — radians of error → rad/s of correction. */

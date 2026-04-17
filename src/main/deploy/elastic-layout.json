@@ -67,7 +67,7 @@
             "type": "Field",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Drive/Pose",
-              "field_game": "Reefscape",
+              "field_game": "Rebuilt",
               "robot_width": 0.85,
               "robot_length": 0.85,
               "show_other_objects": true,

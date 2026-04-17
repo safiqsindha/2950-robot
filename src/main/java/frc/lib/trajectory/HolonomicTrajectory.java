@@ -9,7 +9,7 @@ import java.util.Optional;
  *
  * <p>Decouples trajectory <em>followers</em> from trajectory <em>sources</em>. A {@link
  * ChoreoTrajectoryAdapter} wraps a Choreo {@code Trajectory<SwerveSample>} today; a future
- * adapter could wrap PathPlanner, a runtime reef-aligner, or a hand-rolled trapezoid — the
+ * adapter could wrap PathPlanner, a runtime HUB-aligner, or a hand-rolled trapezoid — the
  * follower doesn't have to change.
  *
  * <p>All methods return {@link Optional} because some adapters can't produce a sample for every
