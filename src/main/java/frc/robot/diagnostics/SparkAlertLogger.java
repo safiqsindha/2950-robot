@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Maps each REV SPARK sticky fault and warning bit to a WPILib {@link Alert}. When a bit becomes
@@ -15,6 +16,11 @@ import java.util.function.BooleanSupplier;
  * <p>Adapted from Team 4481 Rembrandts' SparkAlertLogger pattern. Uses sticky bits so faults
  * remain visible after the underlying condition recovers (call {@code clearFaults()} on the Spark
  * to reset).
+ *
+ * <p>Also publishes a cumulative <b>transition count</b> per bit under
+ * {@code Faults/&lt;motorName&gt;/&lt;bitName&gt;_Count}. Each false→true transition increments
+ * the counter so post-match replay can see "this Spark tripped brownout 4 times" even after
+ * {@code clearFaults()} resets the sticky state between increments.
  *
  * <p>Usage in an IOReal constructor:
  *
@@ -105,15 +111,51 @@ public final class SparkAlertLogger {
   private void addMonitor(
       String motorName, String bitName, AlertType type, BooleanSupplier reader) {
     Alert alert = new Alert(ALERT_GROUP, motorName + ": " + bitName, type);
-    monitors.add(new BitMonitor(reader, alert));
+    monitors.add(new BitMonitor(motorName, bitName, reader, alert));
   }
 
-  /** Polls every registered bit and updates its Alert's active state. Call once per robot cycle. */
+  /**
+   * Polls every registered bit, updates its Alert's active state, and increments a cumulative
+   * transition counter on every false→true edge. Call once per robot cycle.
+   */
   public void periodic() {
     for (BitMonitor m : monitors) {
-      m.alert.set(m.reader.getAsBoolean());
+      boolean current = m.reader.getAsBoolean();
+      if (current && !m.lastState) {
+        m.transitions++;
+      }
+      m.lastState = current;
+      m.alert.set(current);
+      Logger.recordOutput(
+          "Faults/" + m.motorName + "/" + m.bitName + "_Count", m.transitions);
     }
   }
 
-  private record BitMonitor(BooleanSupplier reader, Alert alert) {}
+  /**
+   * Total transition count across every registered bit. Package-private; main exposure is via
+   * the per-bit {@code Faults/.../*_Count} keys.
+   */
+  long totalTransitions() {
+    long total = 0;
+    for (BitMonitor m : monitors) {
+      total += m.transitions;
+    }
+    return total;
+  }
+
+  private static final class BitMonitor {
+    final String motorName;
+    final String bitName;
+    final BooleanSupplier reader;
+    final Alert alert;
+    boolean lastState = false;
+    long transitions = 0;
+
+    BitMonitor(String motorName, String bitName, BooleanSupplier reader, Alert alert) {
+      this.motorName = motorName;
+      this.bitName = bitName;
+      this.reader = reader;
+      this.alert = alert;
+    }
+  }
 }
