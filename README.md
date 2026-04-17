@@ -243,13 +243,16 @@ Full physics simulation via maple-sim 0.4.0-beta + YAGSL's built-in drive bridge
 - **ControllerAdapter** — Xbox vs Nintendo Pro Controller auto-detect, macOS axis-offset calibration
 - **Per-subsystem sim IO** — Flywheel, Intake, Conveyor each have a pure-Java `XxxIOSim`
   that plugs into the same `@AutoLog` inputs as real
-- **`ShotSimulation`** — wraps `RebuiltFuelOnFly`, fires projectiles when the real robot
-  shoots; regression-tests the Lagrange curve + moving-shot compensation in sim
-  *(**pure sim infrastructure** — not yet wired into scoring commands; see PR #7 for the
-  wrapper class, follow-up PR for wiring)*
-- **`IntakeSimulationAdapter`** — wraps `IntakeSimulation.InTheFrameIntake`, replaces
-  the hardcoded 30 A current-synthesis with real arena-driven pickup events *(pure sim
-  infrastructure — follow-up PR to wire into `IntakeIOSim`)*
+- **`ShotSimulation`** — wraps `RebuiltFuelOnFly`, fires projectiles when the flywheel hits
+  its commanded setpoint in sim. Wired into `Robot.simulationPeriodic()`; logs
+  `Sim/Shots/Fired` + `Sim/Shots/Scored` for AdvantageScope replay.
+- **`IntakeSimulationAdapter`** — wraps `IntakeSimulation.InTheFrameIntake`. Wired into
+  `IntakeIOSim`: when arena fuel overlaps the intake rectangle, `hasGamePiece()` flips and
+  SSM auto-advances INTAKING → STAGING. Flag-based `simGamePieceAcquired` preserved as
+  fallback for unit tests.
+- **`MAPLE_SIM_BUG_REPORT.md` kinematic bypass** — gated behind
+  `Constants.Swerve.kUseMapleSimKinematicBypass` (default `true`). Flip to `false` once
+  upstream maple-sim fixes the REV NEO sign-convention bug.
 
 maple-sim physics is gravity-only (no drag, no spin). Use sim to verify **aim logic**,
 not ballistic tuning. Production RPM calibration still happens on hardware.
@@ -272,7 +275,7 @@ The robot logs to three surfaces simultaneously:
 |---|---|---|
 | **`CommandLifecycleLogger`** | Team 3005 `DataLogger` | Every command init / finish / interrupt → `Commands/Last*`, `Commands/ActiveCount`, `Commands/Durations/<name>` |
 | **`JvmLogger`** | Team 3005 `LoggedJVM` | Heap used / max / non-heap, cumulative GC count + time → `JVM/*`. Correlate loop overruns with GC spikes. |
-| **`SparkAlertLogger`** | Team 4481 Rembrandts | 15 alert slots per Spark (7 faults + 8 warnings) — 9 motors × 15 = 135 alert slots. When CAN drops on one motor, the dashboard says exactly which one and why. |
+| **`SparkAlertLogger`** | Team 4481 Rembrandts | 15 alert slots per Spark (7 faults + 8 warnings) — **17 motors × 15 = 255 alert slots** (9 mechanism + 8 YAGSL swerve). When CAN drops on one motor, the dashboard says exactly which one and why. |
 
 ### Pose / speed telemetry
 
@@ -390,8 +393,11 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
       lib/                              # Pure-logic utilities — 80 %+ coverage
         LoggedTunableNumber.java        # NT-tunable double, per-caller hasChanged tracking
         AllianceFlip.java               # Pose / translation / rotation alliance mirroring
+        control/                        # LinearProfile (6328 acceleration-limited slew)
         diagnostics/                    # CommandLifecycleLogger, JvmLogger (3005 patterns)
         pathfinding/                    # A*, NavigationGrid, DynamicAvoidanceLayer
+        trajectory/                     # HolonomicTrajectory + ChoreoTrajectoryAdapter (4481)
+        util/                           # Hysteresis, AreWeThereYetDebouncer, GeomUtil, RobotName
       robot/
         Robot.java                      # LoggedRobot lifecycle + brownout + JVM telemetry
         RobotContainer.java             # Subsystem init, command bindings, auto chooser
@@ -404,13 +410,46 @@ uploaded — download via `gh run download <run-id> --name <artifact>`.
         autos/                          # AutonomousStrategy, GameState, CycleTracker, …
         diagnostics/                    # SparkAlertLogger (4481 pattern)
         simulation/                     # ShotSimulation, IntakeSimulationAdapter (maple-sim)
-  src/test/                             # 28 test files; mirrors src/main/java layout
+  src/test/                             # 35+ test files; mirrors src/main/java layout
 ```
+
+### Pure-logic utilities in `frc.lib` (available, not all wired yet)
+
+| Class | Source | Purpose |
+|---|---|---|
+| `LoggedTunableNumber` | 6328 / 5940 | NT-tunable double with per-caller `hasChanged` |
+| `AllianceFlip` | consensus | Pose/translation/rotation red-blue mirror |
+| `control.LinearProfile` | 6328 | Acceleration-limited setpoint slew (flywheel anti-brownout) |
+| `trajectory.HolonomicTrajectory` + `ChoreoTrajectoryAdapter` | 4481 | Planner-agnostic trajectory interface — allows future swap of Choreo / PathPlanner / custom aligner without follower rewrite |
+| `util.Hysteresis` | 3005 | Symmetric schmitt-trigger for boundary stability |
+| `util.AreWeThereYetDebouncer` | 1619 | "At goal" debounce that resets on target change |
+| `util.GeomUtil` | 4481 | `getClosestPose` / `getClosestFuturePose` (Lie-algebra extrapolation) |
+| `util.RobotName` | 3005 | File-backed per-bot enum (`/home/lvuser/ROBOT_NAME` → `COMP`/`PRACTICE`/…) |
+| `pathfinding.*` | 2950 | A* navigation grid + dynamic avoidance |
+| `diagnostics.CommandLifecycleLogger` | 3005 | Command init/finish/interrupt → AdvantageKit |
+| `diagnostics.JvmLogger` | 3005 | Heap + GC telemetry |
+
+### Deferred backlog (queued for the next session)
+
+Still on the shelf, not yet shipped:
+
+- **TrajectoryFollower** (4481) — closed-loop follower using `HolonomicTrajectory`. Foundation is in place; follower + auto migration is next.
+- **`@AutoRoutine` annotation + reflective `AutoSelector`** (4481) — declarative auto registration
+- **`FlywheelAutoFeed` 2D upgrade** — thread Limelight `tx` into `rpmFromMeters(d, θ, speeds)` so the 971 fixed-point compensation is actually used
+- **Drive-feel polish** — 2056 jerk-limited slew, 2056 350 ms heading-hold release gate, 2056 `UpdateDepartPose` post-score anchor
+- **HAL-init test harness** — one canary class with `HAL.initialize(500, 0)` in `@BeforeAll` to unlock physics tests in IOSim
+- **971 CapU current-limiting** — dynamic battery-aware ceiling
+- **971 hybrid EKF with replay buffer** — the big one; highest effort, highest intellectual leverage
+- **CI polish** — `./gradlew wrapper` to clear the comp-purge warning, Node 24 migration
+
+See `PRACTICE_SESSION_PLAYBOOK.md` for how to use the existing tooling to de-risk practice.
 
 ---
 
 ## Additional docs
 
+- **[`AGENTS.md`](AGENTS.md)** — authoritative command + convention contract for Claude / Cursor / agent sessions
+- **[`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md)** — stepwise guide (Phase A smoke → Phase B calibration → Phase C auto rehearsal)
 - **[`CAN_ID_REFERENCE.md`](CAN_ID_REFERENCE.md)** — complete CAN bus wiring
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — system design + subsystem interactions
 - [`STUDENT_TESTING_GUIDE.md`](STUDENT_TESTING_GUIDE.md) — how to write + run tests
