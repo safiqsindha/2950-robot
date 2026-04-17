@@ -49,8 +49,6 @@ Intent queue for work surfaced during a session but not done in that session. Ad
 
   **Risk of not doing it:** event-day behaviour would still be incorrect in: navgrid pathfinding (avoids wrong obstacles), flywheel RPMs (if Lagrange points really are 2025), scoring poses (CLIMB_POSE likely placeholder), trajectory waypoints. Would NOT be incorrect in: field dimension constants (fixed this PR), AprilTag filter (was already correct).
 
-- [ ] **Delete `.cursorrules`.** Stale from April 8, predates the offseason refactor. Lies in three specific ways — claims CTRE Phoenix 6 / Kraken drivetrain (we're REV-only), forbids software-side PIDs (contradicted by `LinearProfile`, `AsymmetricRateLimiter`, `TrajectoryFollower`, `BatteryAwareCurrentLimit`), forbids IO interfaces broadly (we deliberately adopted the 2590 IO-layer pattern for every mechanism except Swerve). Any Cursor agent reading both the file and `AGENTS.md` would hit contradictions. Successor docs already maintained: `AGENTS.md`, `DEVELOPER_TESTING_GUIDE.md`, `MENTOR_GUIDE.md`, `CODE_TOUR.md`, 10 ADRs.
-
 - [ ] **Line-by-line audit of every source file.** Walk every `*.java` in `src/main/java/` and `src/test/java/`, plus every Python file in `tools/`, plus every markdown doc, and for each line ask: is this needed? Specifically look for:
   - Dead imports that Spotless missed (rare but possible after major refactors)
   - Stale `// TODO` / `// FIXME` referring to already-fixed issues
