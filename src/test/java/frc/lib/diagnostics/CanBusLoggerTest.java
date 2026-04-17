@@ -64,6 +64,10 @@ class CanBusLoggerTest {
   void defaultConstructor_doesNotThrow() {
     // The no-arg ctor wires the supplier to RobotController::getCANStatus. We can't actually
     // call the supplier without HAL, but constructing the logger must be safe.
-    assertDoesNotThrow(CanBusLogger::new);
+    //
+    // Explicit lambda (not a `::new` method reference) — CanBusLogger has two constructors and
+    // the method-reference form makes `assertDoesNotThrow` ambiguous between Executable and
+    // ThrowingSupplier<T>.
+    assertDoesNotThrow(() -> new CanBusLogger());
   }
 }
