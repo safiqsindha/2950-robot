@@ -115,7 +115,10 @@ class VisionSubsystemTest {
 
   @Test
   void testPoseAtFarFieldCorner_passes() {
-    double[] botpose = validBotpose(16.54, 8.21, 180.0, 10.0, 1, 1.0);
+    // Just inside the 2026 REBUILT WELDED corner (16.541 × 8.069 per kFieldLengthMeters /
+    // kFieldWidthMeters). Pre-migration value was (16.54, 8.21) which sat inside the stale
+    // 2024 Crescendo width 8.211 but outside the real 2026 WELDED width 8.069.
+    double[] botpose = validBotpose(16.54, 8.06, 180.0, 10.0, 1, 1.0);
     assertTrue(
         VisionSubsystem.isValidBotpose(botpose, MIN_TAG_COUNT, MAX_LATENCY_MS, MAX_TAG_DIST_M));
   }
