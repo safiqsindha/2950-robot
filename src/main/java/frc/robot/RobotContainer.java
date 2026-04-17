@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.autos.AutonomousStrategy;
 import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.AutoScoreCommand;
@@ -266,6 +267,37 @@ public class RobotContainer {
     // "Run System Test" button on SmartDashboard — tests motor connectivity and response.
     // Safe to press only when the robot is in a clear area; command self-limits to low output.
     SmartDashboard.putData("Run System Test", new SystemTestCommand(flywheel, intake, conveyor));
+
+    // ─── SysId characterization (YAGSL SwerveDriveTest routines) ──────────
+    // Four drive buttons + four steer buttons + 2 full-sweep buttons. Students run these
+    // one at a time in Test mode; the resulting DataLog is consumed by the WPILib SysId GUI
+    // to produce (kS, kV, kA) feedforward constants for the drive / steer PIDs.
+    //
+    // IMPORTANT: "drive" tests require ≥ 2 m of clear runway; "steer" tests require the
+    // robot on blocks with wheels off the ground. Read the docs before running.
+    SmartDashboard.putData(
+        "SysId/Drive Full Sweep (Quasi F/R + Dynamic F/R)", swerve.driveSysIdFullRoutine());
+    SmartDashboard.putData(
+        "SysId/Drive Quasi Forward",
+        swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    SmartDashboard.putData(
+        "SysId/Drive Quasi Reverse",
+        swerve.driveSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    SmartDashboard.putData(
+        "SysId/Drive Dynamic Forward", swerve.driveSysIdDynamic(SysIdRoutine.Direction.kForward));
+    SmartDashboard.putData(
+        "SysId/Drive Dynamic Reverse", swerve.driveSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    SmartDashboard.putData("SysId/Steer Full Sweep", swerve.steerSysIdFullRoutine());
+    SmartDashboard.putData(
+        "SysId/Steer Quasi Forward",
+        swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    SmartDashboard.putData(
+        "SysId/Steer Quasi Reverse",
+        swerve.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    SmartDashboard.putData(
+        "SysId/Steer Dynamic Forward", swerve.steerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    SmartDashboard.putData(
+        "SysId/Steer Dynamic Reverse", swerve.steerSysIdDynamic(SysIdRoutine.Direction.kReverse));
   }
 
   public Command getAutonomousCommand() {
