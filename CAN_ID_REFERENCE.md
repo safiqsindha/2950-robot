@@ -97,10 +97,22 @@ Note: Left and right arm PIDs are independent (no follow) due to mechanical loos
 
 All offsets are currently **0.0** — not yet calibrated on hardware.
 
+**🔴 Must calibrate before driving** — otherwise the robot won't drive straight.
+
 **To calibrate:**
-1. Deploy to robot, open SmartDashboard / Shuffleboard
-2. Point all modules forward
+1. Deploy to robot, open SmartDashboard / Shuffleboard / Elastic
+2. Point all modules forward (bevel gears pointing one consistent direction — see YAGSL docs)
 3. Read `Drive/Module X/Absolute Encoder Position` for each module
-4. Update `[encoder_offsets]` in `hardware_config.ini`
-5. Run `python tools/generate_configs.py` to update module JSON files
-6. Redeploy
+4. Update `"absoluteEncoderOffset"` in each `deploy/swerve/modules/<pos>.json` directly
+   (or if running via `python tools/generate_configs.py`: update `[encoder_offsets]` in
+   `hardware_config.ini` and re-run the generator)
+5. Redeploy
+
+See `PRACTICE_SESSION_PLAYBOOK.md` Phase A for the pre-drive checklist that covers this.
+
+## SideClaw CAN ID — must reflash before first drive
+
+SideClaw SPARK MAX needs to be flashed from ID **18 → 20** via REV Hardware Client.
+Code references `Constants.*.kClaw* = 20`; the physical module is still at 18 from last
+season. Procedure: REV Hardware Client → select the SideClaw Spark → Change CAN ID → 20
+→ save → power-cycle.
