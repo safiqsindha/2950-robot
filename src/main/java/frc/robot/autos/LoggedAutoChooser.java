@@ -14,13 +14,14 @@ import org.littletonrobotics.junction.Logger;
  * actually ran is indirect (state transitions, trajectory samples). With it, post-match replay
  * shows the student's explicit choice.
  *
- * <p>Also adds a tiny randomised-selection helper for practice sessions — {@link #selectRandom()}
- * picks one of the registered options deterministically (seedable) so students can rehearse
- * without the "always runs my favourite" bias.
+ * <p>Also adds a tiny randomised-selection helper for practice sessions — {@link
+ * #selectRandom(long)} picks one of the registered options deterministically (seedable) so
+ * students can rehearse without the "always runs my favourite" bias.
  *
- * <p>The wrapper owns the underlying {@link SendableChooser} so ownership + NT publishing stay
- * in one place. Call {@link #getSelected()} to read the chosen command at auto start; call
- * {@link #periodic()} once per robot loop to refresh the log key.
+ * <p><b>Testability:</b> the underlying {@link SendableChooser} is <i>lazily</i> created on
+ * {@link #publish()}. Constructing a {@code LoggedAutoChooser} in a JUnit test doesn't touch HAL;
+ * only calling {@link #publish()} does. Tests that exercise registration + selection logic stay
+ * HAL-free.
  *
  * <p>Log key: {@code Auto/SelectedName}. Matches the SmartDashboard entry name (if published) so
  * the dashboard and replay stay consistent.
@@ -28,11 +29,23 @@ import org.littletonrobotics.junction.Logger;
 public final class LoggedAutoChooser {
 
   private final String nameSmartDashboardKey;
-  private final SendableChooser<Command> chooser = new SendableChooser<>();
+
   /** Preserves insertion order so telemetry keys sort the way the author added them. */
   private final Map<String, Command> options = new LinkedHashMap<>();
 
+  /**
+   * Lazily instantiated in {@link #publish()} so HAL-free unit tests can construct a chooser,
+   * exercise {@link #addOption(String, Command)} / {@link #setDefaultOption(String, Command)} /
+   * {@link #selectByName(String)}, and never touch the underlying SendableChooser — whose
+   * constructor transitively loads WPILib's HAL.
+   */
+  private SendableChooser<Command> chooser;
+
+  /** Set by {@link #publish()} so subsequent addOption calls still propagate to the live chooser. */
+  private boolean published = false;
+
   private String defaultName = "";
+  private String programmaticSelection = "";
 
   /**
    * @param smartDashboardKey SmartDashboard key under which the chooser is published (e.g. "Auto
@@ -44,25 +57,51 @@ public final class LoggedAutoChooser {
 
   /** Adds a named option. Idempotent — re-adding a name replaces the command. */
   public void addOption(String name, Command command) {
-    chooser.addOption(name, command);
     options.put(name, command);
+    if (published) {
+      chooser.addOption(name, command);
+    }
   }
 
   /** Adds the default option — {@code getSelected()} returns this when no user selection. */
   public void setDefaultOption(String name, Command command) {
-    chooser.setDefaultOption(name, command);
     options.put(name, command);
     defaultName = name;
+    if (published) {
+      chooser.setDefaultOption(name, command);
+    }
   }
 
-  /** Push this chooser to SmartDashboard under the configured key. Call once after adding. */
+  /**
+   * Instantiate the underlying SendableChooser and push it to SmartDashboard under the configured
+   * key. Call once from {@code RobotContainer} after all options are added; subsequent
+   * {@code addOption} / {@code setDefaultOption} calls still propagate.
+   *
+   * <p>This is the only method that touches HAL. Tests must not call it.
+   */
   public void publish() {
+    chooser = new SendableChooser<>();
+    for (Map.Entry<String, Command> entry : options.entrySet()) {
+      if (entry.getKey().equals(defaultName)) {
+        chooser.setDefaultOption(entry.getKey(), entry.getValue());
+      } else {
+        chooser.addOption(entry.getKey(), entry.getValue());
+      }
+    }
+    published = true;
     SmartDashboard.putData(nameSmartDashboardKey, chooser);
   }
 
   /** @return the currently-selected command, or the default if nothing selected. */
   public Command getSelected() {
-    return chooser.getSelected();
+    if (published) {
+      return chooser.getSelected();
+    }
+    // Pre-publish fallback (test-mode): honour any programmatic selection, else default.
+    if (!programmaticSelection.isEmpty() && options.containsKey(programmaticSelection)) {
+      return options.get(programmaticSelection);
+    }
+    return options.get(defaultName);
   }
 
   /**
@@ -77,12 +116,16 @@ public final class LoggedAutoChooser {
     if (!options.containsKey(name)) {
       return false;
     }
-    // SendableChooser doesn't expose a programmatic setter, so we publish the name directly to
-    // NT under the chooser's own "selected" key.
-    NetworkTableInstance.getDefault()
-        .getStringTopic("/SmartDashboard/" + nameSmartDashboardKey + "/selected")
-        .publish()
-        .set(name);
+    programmaticSelection = name;
+    if (published) {
+      // SendableChooser doesn't expose a programmatic setter, so we publish the name directly to
+      // NT under the chooser's own "selected" key. Only safe after publish() has run because
+      // only then is the chooser owning that NT path.
+      NetworkTableInstance.getDefault()
+          .getStringTopic("/SmartDashboard/" + nameSmartDashboardKey + "/selected")
+          .publish()
+          .set(name);
+    }
     return true;
   }
 
@@ -104,8 +147,6 @@ public final class LoggedAutoChooser {
 
   /** Push the current selection to the AdvantageKit log. Call once per robot cycle. */
   public void periodic() {
-    // Reverse lookup — the chosen Command can show up in multiple options if authors aliased it,
-    // so we log the option name that best matches the current NT selection.
     String selectedName = selectedNameOrEmpty();
     Logger.recordOutput("Auto/SelectedName", selectedName);
     Logger.recordOutput("Auto/OptionCount", options.size());
@@ -116,6 +157,9 @@ public final class LoggedAutoChooser {
    *     tests; the production path is {@link #periodic()}.
    */
   String selectedNameOrEmpty() {
+    if (!published) {
+      return programmaticSelection.isEmpty() ? defaultName : programmaticSelection;
+    }
     // SendableChooser's NT-backed selected string lives at <key>/selected. Fall back to the
     // declared default if the subscription hasn't yielded yet.
     String nt =
