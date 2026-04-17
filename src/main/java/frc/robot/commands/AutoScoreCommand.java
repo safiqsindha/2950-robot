@@ -64,7 +64,7 @@ public class AutoScoreCommand extends Command {
             Commands.waitUntil(
                 () -> vision.isTargetValidFor(Constants.Superstructure.kVisionConfirmSeconds)));
 
-    Command feedShot = new FlywheelAutoFeed(flywheel, conveyor).withTimeout(2.0);
+    Command feedShot = new FlywheelAutoFeed(flywheel, conveyor, swerve).withTimeout(2.0);
 
     Command retract =
         Commands.runOnce(
