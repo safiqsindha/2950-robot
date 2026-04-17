@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.wpilibj.RobotBase;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
-import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.littletonrobotics.junction.Logger;
 
@@ -53,7 +52,7 @@ public final class IntakeSimulationAdapter {
 
   /**
    * Attaches this adapter to a maple-sim drivetrain simulation. Idempotent — second calls no-op.
-   * Must be called after the {@link SimulatedArena} is initialised.
+   * Must be called after the simulated arena is initialised.
    *
    * @param driveSim the swerve drive simulation from YAGSL's {@code getMapleSimDrive()}
    */
@@ -61,10 +60,11 @@ public final class IntakeSimulationAdapter {
     if (!RobotBase.isSimulation() || sim != null) {
       return;
     }
+    // The factory self-registers the IntakeSimulation with the arena — no explicit
+    // addIntakeSimulation call needed (the method is protected on SimulatedArena anyway).
     sim =
         IntakeSimulation.InTheFrameIntake(
             GAME_PIECE_TYPE, driveSim, Meters.of(INTAKE_WIDTH_METERS), IntakeSide.FRONT, CAPACITY);
-    SimulatedArena.getInstance().addIntakeSimulation(sim);
     Logger.recordOutput("Sim/Intake/Attached", true);
   }
 
