@@ -52,7 +52,24 @@ public final class SparkAlertLogger {
 
   private final List<BitMonitor> monitors = new ArrayList<>();
 
-  /** Registers all 15 fault + warning bits on a Spark. Fluent to allow chaining. */
+  /**
+   * Registers all 15 fault + warning bits on a Spark. Fluent to allow chaining.
+   *
+   * <p>The {@code motorName} appears in both the DS alert text <i>and</i> as part of the
+   * AdvantageKit log key: {@code Faults/&lt;motorName&gt;/&lt;bitName&gt;_Count}. Changing this
+   * name silently breaks any AdvantageScope layout or dashboard binding that referenced the old
+   * path. If you rename, update {@code advantagescope-layout.json}'s Spark-faults tab as well.
+   *
+   * <p>Canonical motor names used in this repo (keep these stable):
+   *
+   * <ul>
+   *   <li>{@code Flywheel/leftVortex}, {@code Flywheel/rightVortex}, {@code Flywheel/frontWheel},
+   *       {@code Flywheel/backWheel}
+   *   <li>{@code Intake/leftArm}, {@code Intake/rightArm}, {@code Intake/wheel}
+   *   <li>{@code Conveyor/conveyor}, {@code Conveyor/spindexer}
+   *   <li>{@code Swerve/Module&lt;N&gt;/drive}, {@code Swerve/Module&lt;N&gt;/angle} for N in 0..3
+   * </ul>
+   */
   public SparkAlertLogger register(SparkBase spark, String motorName) {
     // ─── Faults (errors) ─────────────────────────────────────────────────
     addMonitor(motorName, "Fault/Other", AlertType.kError, () -> spark.getStickyFaults().other);
@@ -117,10 +134,23 @@ public final class SparkAlertLogger {
   /**
    * Polls every registered bit, updates its Alert's active state, and increments a cumulative
    * transition counter on every false→true edge. Call once per robot cycle.
+   *
+   * <p>Defensive: an individual bit read that throws (e.g. REVLib returns null from
+   * {@code getStickyFaults()} during a transient CAN disconnect, or a lambda is invoked against
+   * a closed Spark) is caught per-bit and counted as "not active" for that tick. Without this
+   * guard, one misbehaving Spark could take down the whole robot loop via an NPE propagating
+   * into CommandScheduler.
    */
   public void periodic() {
     for (BitMonitor m : monitors) {
-      boolean current = m.reader.getAsBoolean();
+      boolean current;
+      try {
+        current = m.reader.getAsBoolean();
+      } catch (RuntimeException e) {
+        // Treat as false this tick; leave the Alert + counter untouched. A real persistent
+        // fault will show up via the other monitors (e.g. a Spark-disconnect alert elsewhere).
+        current = false;
+      }
       if (current && !m.lastState) {
         m.transitions++;
       }

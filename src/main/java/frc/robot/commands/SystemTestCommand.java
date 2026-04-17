@@ -35,7 +35,13 @@ public class SystemTestCommand extends Command {
 
   // ── Timing / output constants ─────────────────────────────────────────────
 
-  /** Duration (s) to run each motor before sampling results. */
+  /**
+   * Duration (s) to run each motor before sampling results. 350 ms is ~9× longer than the
+   * Intake wheel's rate-limiter ramp time ({@code Constants.Intake.kMaxWheelAccelPerSec = 4.0}
+   * → reaches {@code kWheelOutputPercent = 0.15} in 37.5 ms), so the current measurement lands
+   * well after the ramp has settled. If either constant is retuned aggressively, re-check that
+   * invariant: {@code kTestPhaseSecs > kWheelOutputPercent / kMaxWheelAccelPerSec × 3}.
+   */
   static final double kTestPhaseSecs = 0.35;
 
   /** Open-loop output for wheel/conveyor tests (small but enough to draw measurable current). */
