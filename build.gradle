@@ -4,7 +4,7 @@ plugins {
 
     // ── Spectrum 3847 pattern: build tooling ──
     // Spotless: auto-formats all Java code on every build (Google Java Format)
-    id "com.diffplug.spotless" version "7.0.2"
+    id "com.diffplug.spotless" version "8.4.0"
     // SpotBugs: static analysis catches common bugs before runtime
     id "com.github.spotbugs" version "6.1.3"
     // JaCoCo: test coverage measurement
