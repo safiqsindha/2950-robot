@@ -40,7 +40,8 @@ TRAJ_DIR = REPO_ROOT / "src" / "main" / "deploy" / "choreo"
 JAVA_ROOT = REPO_ROOT / "src" / "main" / "java"
 
 FIELD_LEN_METERS = 16.541
-FIELD_WIDTH_METERS = 8.211
+# 2026 REBUILT WELDED width. AndyMark variant is 8.043 m; adjust if your event uses AndyMark.
+FIELD_WIDTH_METERS = 8.069
 
 # Matches Choreo traj constants — e.g. `public static final String TRAJ_LEAVE_START = "leaveStart"`.
 _TRAJ_CONST = re.compile(

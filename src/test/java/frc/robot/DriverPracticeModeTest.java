@@ -58,7 +58,7 @@ class DriverPracticeModeTest {
   @Test
   void startPosesAreWithinFieldBounds() {
     double fieldLength = 16.541; // Constants.kFieldLengthMeters — hardcoded to avoid HAL JNI
-    double fieldWidth = 8.21;
+    double fieldWidth = 8.069; // Constants.kFieldWidthMeters — 2026 REBUILT WELDED
     for (Scenario s : Scenario.values()) {
       Pose2d pose = s.startPose;
       assertTrue(
