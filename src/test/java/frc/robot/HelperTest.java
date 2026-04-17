@@ -182,4 +182,144 @@ class HelperTest {
       assertTrue(rpm <= Constants.Flywheel.kMaxRpm, "RPM above max at vx=" + v);
     }
   }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // 971-style 3-iteration fixed-point moving shot — rpmFromMeters(d, θ, V)
+  // ═════════════════════════════════════════════════════════════════════════
+
+  @Test
+  void fixedPoint_stationaryRobot_matchesBaseOverload() {
+    double dist = 2.0;
+    assertEquals(
+        Helper.rpmFromMeters(dist),
+        Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(0, 0, 0)),
+        1e-9,
+        "Stationary robot: 3-arg overload must equal base rpmFromMeters");
+  }
+
+  @Test
+  void fixedPoint_stationaryRobot_bearingDoesNotMatter() {
+    // With zero velocity, the iteration has no work to do regardless of bearing.
+    double dist = 2.0;
+    double a = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(0, 0, 0));
+    double b = Helper.rpmFromMeters(dist, Math.PI / 4, new ChassisSpeeds(0, 0, 0));
+    double c = Helper.rpmFromMeters(dist, Math.PI / 2, new ChassisSpeeds(0, 0, 0));
+    assertEquals(a, b, 1e-9);
+    assertEquals(a, c, 1e-9);
+  }
+
+  @Test
+  void fixedPoint_movingTowardTarget_requiresLessRpm() {
+    // Bearing 0 = target straight ahead; vx > 0 = moving toward it.
+    double dist = 2.0;
+    double stationary = Helper.rpmFromMeters(dist);
+    double moving = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(1.0, 0, 0));
+    assertTrue(
+        moving < stationary,
+        "Moving TOWARD target should reduce RPM; stationary=" + stationary + ", moving=" + moving);
+  }
+
+  @Test
+  void fixedPoint_movingAwayFromTarget_requiresMoreRpm() {
+    double dist = 2.0;
+    double stationary = Helper.rpmFromMeters(dist);
+    // Target straight ahead, moving BACKWARD (negative vx = away from target)
+    double moving = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(-1.0, 0, 0));
+    assertTrue(moving > stationary, "Moving AWAY from target should raise RPM");
+  }
+
+  @Test
+  void fixedPoint_lateralStrafe_addsSmallCorrection() {
+    // Pure lateral velocity: virtual target drifts perpendicular, total distance
+    // grows via Pythagorean effect. RPM should be slightly higher than stationary.
+    double dist = 2.0;
+    double stationary = Helper.rpmFromMeters(dist);
+    double strafing = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(0, 2.0, 0));
+    assertTrue(strafing > stationary, "Lateral strafing increases effective distance");
+    // But not by much — the Pythagorean correction is second-order.
+    assertTrue(
+        (strafing - stationary) / stationary < 0.10,
+        "Lateral correction for 2 m/s strafe should be < 10%");
+  }
+
+  @Test
+  void fixedPoint_rotationDoesNotAffectResult() {
+    // Pure rotation (omega only) doesn't translate the robot — no effect on RPM.
+    double dist = 2.0;
+    double stationary = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(0, 0, 0));
+    double rotating = Helper.rpmFromMeters(dist, 0.0, new ChassisSpeeds(0, 0, 5.0));
+    assertEquals(stationary, rotating, 1e-9);
+  }
+
+  @Test
+  void fixedPoint_bearingAwayFromForward_swapsVxBehaviour() {
+    // With bearing = π (target BEHIND robot), moving forward (+vx) is moving AWAY,
+    // so RPM should be higher than stationary — opposite of bearing=0 case.
+    double dist = 2.0;
+    double stationary = Helper.rpmFromMeters(dist);
+    double forwardButTargetBehind = Helper.rpmFromMeters(dist, Math.PI, new ChassisSpeeds(1.0, 0, 0));
+    assertTrue(
+        forwardButTargetBehind > stationary,
+        "vx+ with target behind = moving away = more RPM");
+  }
+
+  @Test
+  void fixedPoint_staysWithinBoundsForAllScenarios() {
+    // Sweep: distances {0.5, 1.0, ..., 4.0}, bearings {-π, -3π/4, ..., π},
+    // speeds vx,vy ∈ {-3,-1,1,3}. Int loop counters (SpotBugs FL_FLOATS_AS_LOOP_COUNTERS).
+    for (int di = 1; di <= 8; di++) {
+      double d = di * 0.5;
+      for (int ti = -4; ti <= 4; ti++) {
+        double theta = ti * Math.PI / 4;
+        for (int vx = -3; vx <= 3; vx += 2) {
+          for (int vy = -3; vy <= 3; vy += 2) {
+            double rpm = Helper.rpmFromMeters(d, theta, new ChassisSpeeds(vx, vy, 0));
+            assertTrue(
+                rpm >= Constants.Flywheel.kMinRpm && rpm <= Constants.Flywheel.kMaxRpm,
+                "Out of bounds at d=" + d + " theta=" + theta + " vx=" + vx + " vy=" + vy);
+          }
+        }
+      }
+    }
+  }
+
+  @Test
+  void effectiveShotDistance_stationaryReturnsInputDistance() {
+    // Direct test of the pure-function iteration core.
+    var target = new edu.wpi.first.math.geometry.Translation2d(2.5, 0);
+    var velocity = new edu.wpi.first.math.geometry.Translation2d(0, 0);
+    assertEquals(2.5, Helper.effectiveShotDistanceMeters(target, velocity), 1e-9);
+  }
+
+  @Test
+  void effectiveShotDistance_movingTowardShortens() {
+    // Target at (2, 0), moving at (1, 0) = toward target. Effective distance should be less.
+    var target = new edu.wpi.first.math.geometry.Translation2d(2.0, 0);
+    var velocity = new edu.wpi.first.math.geometry.Translation2d(1.0, 0);
+    double effective = Helper.effectiveShotDistanceMeters(target, velocity);
+    assertTrue(effective < 2.0, "Moving toward target shortens effective distance");
+  }
+
+  @Test
+  void effectiveShotDistance_convergenceIsStable() {
+    // After 3 iterations, the result should be close to a converged fixed point.
+    // Run a reference 6-iter computation manually and compare.
+    var target = new edu.wpi.first.math.geometry.Translation2d(3.0, 1.0);
+    var velocity = new edu.wpi.first.math.geometry.Translation2d(1.5, 0.5);
+    double ballSpeed = Constants.Flywheel.kBallExitVelocityMps;
+
+    // Reference: 6-iter ground truth
+    var virtual = target;
+    for (int i = 0; i < 6; i++) {
+      double airTime = virtual.getNorm() / ballSpeed;
+      virtual = target.minus(velocity.times(airTime));
+    }
+    double groundTruth = virtual.getNorm();
+
+    double actual = Helper.effectiveShotDistanceMeters(target, velocity);
+    // Convergence ratio q = ||v|| / ballSpeed ≈ 0.13 for this test; after 3 iters the residual
+    // relative to 6-iter ground truth is ≈ q³ * initial_distance ≈ 2.3 mm for d=3 m. 1 mm is
+    // well within flywheel tuning noise, so a stricter tolerance would be false precision.
+    assertEquals(groundTruth, actual, 1e-3, "3-iter result must match 6-iter within 1 mm");
+  }
 }
