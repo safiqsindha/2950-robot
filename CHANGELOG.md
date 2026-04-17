@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-17  #80  fix: judge's 3 event-critical findings — intake bindings, vision latency, HID swallow
 - 2026-04-17  #79  fix: final-pass polish — idempotent publish, Spark NPE guard, 2 doc notes
 - 2026-04-17  #78  hotfix(autos): lazy-init SendableChooser so LoggedAutoChooser is HAL-free
 - 2026-04-17  #76  feat: changelog workflow + sim tuning ref + fault tab (Batch P)
