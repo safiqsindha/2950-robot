@@ -123,10 +123,19 @@ public class SystemTestCommand extends Command {
         if (elapsed >= kTestPhaseSecs) {
           double rpm = flywheel.getCurrentRpm();
           double amps = flywheel.getMotorCurrentAmps();
-          boolean pass = rpm > kMinFlywheelRpm;
+          // RPM-only check could silently pass a disconnected motor whose encoder is still
+          // spinning from inertia. Require current too — but skip the current check in sim
+          // where DCMotorSim's reported current depends on the specific motor model and
+          // isn't guaranteed to exceed a pit-realistic threshold.
+          boolean rpmPass = rpm > kMinFlywheelRpm;
+          boolean currentPass =
+              amps > kMinMotorCurrentAmps || edu.wpi.first.wpilibj.RobotBase.isSimulation();
+          boolean pass = rpmPass && currentPass;
           results.add(new TestResult("Flywheel", amps, pass));
           Logger.recordOutput("SystemTest/Flywheel/RPM", rpm);
           Logger.recordOutput("SystemTest/Flywheel/CurrentAmps", amps);
+          Logger.recordOutput("SystemTest/Flywheel/RpmPass", rpmPass);
+          Logger.recordOutput("SystemTest/Flywheel/CurrentPass", currentPass);
           Logger.recordOutput("SystemTest/Flywheel/Pass", pass);
 
           flywheel.setTargetRpm(0);
