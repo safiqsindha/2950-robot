@@ -1,6 +1,8 @@
 package frc.robot.autos;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,6 +50,15 @@ public final class LoggedAutoChooser {
 
   private String defaultName = "";
   private String programmaticSelection = "";
+
+  /**
+   * Cached NT publisher/subscriber for the chooser's {@code /selected} entry. Allocated once in
+   * {@link #publish()} and reused — avoids creating new NT handles on every {@link
+   * #selectByName(String)} call or every {@link #selectedNameOrEmpty()} call (which runs at 50 Hz).
+   */
+  private StringPublisher selectedPublisher;
+
+  private StringSubscriber selectedSubscriber;
 
   /**
    * @param smartDashboardKey SmartDashboard key under which the chooser is published (e.g. "Auto
@@ -98,6 +109,12 @@ public final class LoggedAutoChooser {
     }
     published = true;
     SmartDashboard.putData(nameSmartDashboardKey, chooser);
+
+    // Cache one publisher + subscriber for the chooser's /selected NT entry. Both are reused on
+    // every selectByName() call and every selectedNameOrEmpty() call (50 Hz periodic path).
+    String ntPath = "/SmartDashboard/" + nameSmartDashboardKey + "/selected";
+    selectedPublisher = NetworkTableInstance.getDefault().getStringTopic(ntPath).publish();
+    selectedSubscriber = NetworkTableInstance.getDefault().getStringTopic(ntPath).subscribe("");
   }
 
   /**
@@ -128,13 +145,9 @@ public final class LoggedAutoChooser {
     }
     programmaticSelection = name;
     if (published) {
-      // SendableChooser doesn't expose a programmatic setter, so we publish the name directly to
-      // NT under the chooser's own "selected" key. Only safe after publish() has run because
-      // only then is the chooser owning that NT path.
-      NetworkTableInstance.getDefault()
-          .getStringTopic("/SmartDashboard/" + nameSmartDashboardKey + "/selected")
-          .publish()
-          .set(name);
+      // SendableChooser doesn't expose a programmatic setter, so write directly to NT under the
+      // chooser's "selected" key. Uses the pre-allocated publisher — no per-call NT allocation.
+      selectedPublisher.set(name);
     }
     return true;
   }
@@ -171,12 +184,9 @@ public final class LoggedAutoChooser {
       return programmaticSelection.isEmpty() ? defaultName : programmaticSelection;
     }
     // SendableChooser's NT-backed selected string lives at <key>/selected. Fall back to the
-    // declared default if the subscription hasn't yielded yet.
-    String nt =
-        NetworkTableInstance.getDefault()
-            .getStringTopic("/SmartDashboard/" + nameSmartDashboardKey + "/selected")
-            .subscribe("")
-            .get();
+    // declared default if the subscription hasn't yielded yet. Uses the pre-allocated subscriber
+    // — no per-call NT allocation (this method runs every 50 Hz periodic tick).
+    String nt = selectedSubscriber.get();
     if (nt == null || nt.isEmpty()) {
       return defaultName;
     }

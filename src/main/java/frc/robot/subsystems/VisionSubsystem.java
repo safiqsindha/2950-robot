@@ -105,8 +105,6 @@ public class VisionSubsystem extends SubsystemBase {
     fuelDetection.updateFromRawArray(llpythonSub.get());
     Logger.recordOutput(
         "Vision/FuelDetectionCount", fuelDetection.getDetectedFuelPositions().size());
-    Logger.recordOutput(
-        "Vision/OpponentDetectionCount", fuelDetection.getDetectedOpponentPositions().size());
 
     double now = Timer.getFPGATimestamp();
 
@@ -235,10 +233,12 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
-   * Detected opponent robot positions from the Limelight neural detector. Single-frame confirmed
-   * (no persistence gate — opponents are immediate hazards). ≥80% confidence required.
+   * Opponent robot positions. Always returns an empty list — the YOLOv11n model is fuel-only and
+   * has no opponent class. The avoidance layer that consumes this feed is effectively inert until a
+   * real detection source is added (e.g., AprilTag-based pose comparison against known alliance
+   * station positions).
    *
-   * @return unmodifiable list of field-space opponent positions (meters)
+   * @return always an empty, unmodifiable list
    */
   public List<Translation2d> getOpponentPositions() {
     return fuelDetection.getDetectedOpponentPositions();

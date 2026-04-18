@@ -97,16 +97,12 @@ jobs:
       # and fails if the process crashes or an Exception / ERROR line appears.
       # Catches startup regressions (bad YAGSL config, missing deploy files,
       # null-dereferences in RobotContainer) that a normal build doesn't see.
-      #
-      # continue-on-error at first: the smoke test is new and we want to see
-      # it exercise real PRs before making it required. Flip to `false` once
-      # we've observed it catch at least one real bug.
       - name: Install Xvfb (virtual display for WPILib Sim GUI)
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
       - name: Headless sim smoke test (20 s)
         id: sim_smoke
-        continue-on-error: true
+        continue-on-error: false
         timeout-minutes: 3
         run: xvfb-run -a --server-args="-screen 0 1280x800x24" python3 tools/sim_smoke_test.py --duration 20
 
@@ -120,3 +116,44 @@ jobs:
             build/simulation*.log
           retention-days: 7
           if-no-files-found: ignore
+
+  # ─── HAL physics tests ─────────────────────────────────────────────────────
+  # Runs in a separate job so the HAL native libraries load in a clean JVM with
+  # no classloader history from the main test suite. Previously this isolation
+  # was missing, causing intermittent JVM crashes (PR #27).
+  hal-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: HAL physics tests (isolated JVM)
+        run: ./gradlew halTest
+
+      - name: Upload HAL test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hal-test-results
+          path: build/reports/tests/halTest/
+          retention-days: 7
