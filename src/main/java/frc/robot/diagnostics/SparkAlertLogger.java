@@ -53,6 +53,15 @@ public final class SparkAlertLogger {
   private final List<BitMonitor> monitors = new ArrayList<>();
 
   /**
+   * How often to poll fault bits, expressed as a call count. At a 20 ms robot loop, a divisor of 5
+   * means fault bits are read at ~100 ms — sufficient for event-day diagnosis without burning CAN
+   * bandwidth (15 bits × 17 motors = 255 boolean reads per cycle at full rate).
+   */
+  private static final int kPollDivisor = 5;
+
+  private int pollCounter = 0;
+
+  /**
    * Registers all 15 fault + warning bits on a Spark. Fluent to allow chaining.
    *
    * <p>The {@code motorName} appears in both the DS alert text <i>and</i> as part of the
@@ -126,13 +135,28 @@ public final class SparkAlertLogger {
    * CommandScheduler.
    */
   public void periodic() {
+    // Throttle CAN reads to kPollDivisor × loop period (~100 ms). Alert state and transition
+    // counts are still published every call so AdvantageScope sees them at 50 Hz, but the
+    // underlying getStickyFaults()/getStickyWarnings() CAN reads happen less frequently.
+    if (++pollCounter % kPollDivisor != 0) {
+      // Re-publish last-known state at full rate so dashboards don't see stale data.
+      for (BitMonitor m : monitors) {
+        m.alert.set(m.lastState);
+        Logger.recordOutput("Faults/" + m.motorName + "/" + m.bitName + "_Count", m.transitions);
+      }
+      return;
+    }
     for (BitMonitor m : monitors) {
       boolean current;
       try {
         current = m.reader.getAsBoolean();
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         // Treat as false this tick; leave the Alert + counter untouched. A real persistent
         // fault will show up via the other monitors (e.g. a Spark-disconnect alert elsewhere).
+        // Widened from RuntimeException: if getStickyFaults() returns null, the field access
+        // (.other etc.) throws NullPointerException (a RuntimeException), which IS caught. The
+        // wider Exception catch also handles any checked exceptions REVLib may add in future
+        // versions. We do not catch Error — a JVM-level crash is not recoverable here.
         current = false;
       }
       if (current && !m.lastState) {

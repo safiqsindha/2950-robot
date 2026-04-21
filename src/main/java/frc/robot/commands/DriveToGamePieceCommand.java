@@ -61,6 +61,12 @@ public class DriveToGamePieceCommand extends Command {
       }
     }
 
+    // Compute rotation first so it's available inside the boundary-blocked early-return path.
+    double rotInput =
+        MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.OI.kDriveDeadband);
+    double rotation =
+        rotInput * Constants.Swerve.kMaxAngularSpeedRadPerSec * Robot.getBrownoutScale();
+
     Translation2d translation;
     if (nearest != null && nearestDist > kArrivalThresholdM) {
       // Drive toward nearest fuel — proportional controller, capped at 1.0 (max speed)
@@ -75,6 +81,21 @@ public class DriveToGamePieceCommand extends Command {
             new Translation2d(toTarget.getX() / norm, toTarget.getY() / norm)
                 .times(speed * Constants.Swerve.kMaxSpeedMetersPerSec * Robot.getBrownoutScale());
       }
+
+      // Field boundary guard — one-timestep lookahead prevents driving into walls.
+      // Uses 0.02 s (one loop period) as the lookahead horizon.
+      double nextX = robotPos.getX() + translation.getX() * 0.02;
+      double nextY = robotPos.getY() + translation.getY() * 0.02;
+      if (nextX < 0
+          || nextX > Constants.kFieldLengthMeters
+          || nextY < 0
+          || nextY > Constants.kFieldWidthMeters) {
+        Logger.recordOutput("DriveToGamePiece/Status", "BOUNDARY_BLOCKED");
+        Logger.recordOutput("DriveToGamePiece/DistanceM", nearestDist);
+        swerve.drive(new Translation2d(), rotation, true);
+        return;
+      }
+
       Logger.recordOutput("DriveToGamePiece/Status", "DRIVING");
       Logger.recordOutput("DriveToGamePiece/TargetPos", nearest.toString());
       Logger.recordOutput("DriveToGamePiece/DistanceM", nearestDist);
@@ -82,12 +103,6 @@ public class DriveToGamePieceCommand extends Command {
       translation = new Translation2d();
       Logger.recordOutput("DriveToGamePiece/Status", nearest != null ? "ARRIVED" : "NO_DETECTION");
     }
-
-    // Driver keeps rotation
-    double rotInput =
-        MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.OI.kDriveDeadband);
-    double rotation =
-        rotInput * Constants.Swerve.kMaxAngularSpeedRadPerSec * Robot.getBrownoutScale();
 
     swerve.drive(translation, rotation, true);
   }
