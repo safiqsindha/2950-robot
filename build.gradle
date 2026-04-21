@@ -102,8 +102,36 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // HAL-dependent tests run in a dedicated fork (halTest task below) to avoid
+        // native-library conflicts that previously caused intermittent JVM crashes.
+        excludeTags("hal")
+    }
     systemProperty "junit.jupiter.extensions.autodetection.enabled", true
+}
+
+// Wire GradleRIO's native-library injection into the standard test task.
+// Without this, wpiHaljni (and other WPILib JNI libraries) cannot be found by the JVM
+// because GradleRIO does NOT auto-apply the injection — it must be called explicitly.
+// This matches the pattern used in the official WPILib FRC Java robot template.
+wpi.java.configureTestTasks(test)
+
+// Dedicated task for HAL-dependent tests. Runs in its own JVM process so native WPILib
+// libraries are loaded in a clean classloader — prevents the crash seen when HAL init
+// shares a JVM with non-HAL tests that loaded conflicting stubs.
+tasks.register("halTest", Test) {
+    group = "verification"
+    description = "Run HAL-dependent tests in an isolated JVM (separate from the main test task)."
+    useJUnitPlatform {
+        includeTags("hal")
+    }
+    systemProperty "junit.jupiter.extensions.autodetection.enabled", true
+    // GradleRIO's configureTestTasks must be called explicitly for every Test task that
+    // needs WPILib native libraries (wpiHaljni, wpiutil, ntcore, etc.).  The plugin does
+    // NOT auto-apply the injection via withType — it exposes a public API that must be
+    // wired in manually.  Without this, DYLD_LIBRARY_PATH / java.library.path are never
+    // set for the forked JVM and the HAL initialisation throws an IOException.
+    wpi.java.configureTestTasks(it)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
