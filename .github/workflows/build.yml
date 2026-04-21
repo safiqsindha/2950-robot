@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read       # checkout
+  pull-requests: read  # gh pr view in the PR-size summary step
+
 env:
   # Opt into Node 24 for GitHub Actions until the actions themselves bump major.
   # Silences the Node 20 deprecation warning logged every run.
