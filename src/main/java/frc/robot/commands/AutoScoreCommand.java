@@ -101,11 +101,26 @@ public class AutoScoreCommand extends Command {
             feedShot,
             retract);
 
-    // Race the full sequence against the timeout; on timeout run the error handler
+    // Race the full sequence against the timeout; on timeout run the error handler.
+    // finallyDo runs on BOTH normal completion and timeout — explicit zero-out ensures motors
+    // don't keep spinning if any command's end() is skipped during cancellation.
     return Commands.race(
-        sequence,
-        Commands.sequence(
-            Commands.waitSeconds(Constants.Superstructure.kAutoScoreTimeoutSeconds), onError));
+            sequence,
+            Commands.sequence(
+                Commands.waitSeconds(Constants.Superstructure.kAutoScoreTimeoutSeconds), onError))
+        .finallyDo(
+            (interrupted) -> {
+              // Belt-and-suspenders: stop flywheel + conveyor regardless of how the race ends.
+              // Under normal completion these are already zeroed by retract; under timeout the
+              // cancelled sequence may leave them spinning until their end() fires — this fires
+              // first and is guaranteed to run.
+              flywheel.setTargetRpm(0);
+              flywheel.setLower(0);
+              conveyor.setConveyor(0);
+              if (interrupted) {
+                Logger.recordOutput("AutoScore/Result", "CLEANUP_ON_INTERRUPT");
+              }
+            });
   }
 
   // Private constructor — use build() factory method

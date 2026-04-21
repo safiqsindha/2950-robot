@@ -48,6 +48,15 @@ public class Flywheel extends SubsystemBase {
   private boolean openLoopMode = false;
 
   /**
+   * Timestamp of the last {@link #io#setPid} call. Prevents rapid NT tuning from saturating the CAN
+   * bus — configure() is a blocking ~5-10 ms transaction.
+   */
+  private double lastPidUpdateTime = -Double.MAX_VALUE;
+
+  /** Minimum interval between live PID reconfigures (seconds). */
+  private static final double kMinPidUpdateIntervalSec = 1.0;
+
+  /**
    * Rate limiter that slews {@link #setpointRpm} toward {@link #goalRpm} in {@link #periodic()}.
    */
   private final LinearProfile profile =
@@ -95,10 +104,16 @@ public class Flywheel extends SubsystemBase {
 
     // Apply updated PID gains if any tunable changed since last check.
     // FlywheelIOSim.setPid() is a no-op — the isSimulation() guard is not needed here.
-    if (tunableKP.hasChanged(hashCode())
-        || tunableKI.hasChanged(hashCode())
-        || tunableKD.hasChanged(hashCode())) {
+    // Debounced: configure() is a blocking CAN transaction; rapid NT edits must not saturate the
+    // bus. kMinPidUpdateIntervalSec prevents more than one reconfigure per second even if the
+    // operator is quickly sweeping a gain slider in AdvantageScope.
+    double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+    if (now - lastPidUpdateTime >= kMinPidUpdateIntervalSec
+        && (tunableKP.hasChanged(hashCode())
+            || tunableKI.hasChanged(hashCode())
+            || tunableKD.hasChanged(hashCode()))) {
       io.setPid(tunableKP.get(), tunableKI.get(), tunableKD.get());
+      lastPidUpdateTime = now;
     }
   }
 

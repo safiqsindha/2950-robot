@@ -21,6 +21,17 @@ public class Conveyor extends SubsystemBase {
   private final ConveyorIO io;
   private final ConveyorIOInputsAutoLogged inputs = new ConveyorIOInputsAutoLogged();
 
+  /**
+   * Stall detector for the spindexer. Fires after 0.75 s above 30 A, indicating a jammed game
+   * piece. On detection, the spindexer is emergency-stopped to prevent thermal damage to the NEO.
+   *
+   * <p>Threshold rationale: spindexer free-spin current is ~5-8 A; a hard jam peaks above 35 A; 30
+   * A with 0.75 s hysteresis catches real jams without tripping on normal current spikes during
+   * game-piece agitation.
+   */
+  private final StallDetector spindexerStall =
+      new StallDetector("Conveyor/Spindexer", () -> inputs.spindexerCurrentAmps, 30.0, 0.75);
+
   public Conveyor(ConveyorIO io) {
     this.io = io;
   }
@@ -29,6 +40,14 @@ public class Conveyor extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Conveyor", inputs);
+
+    spindexerStall.update();
+    if (spindexerStall.isStalled()) {
+      io.stop();
+      Logger.recordOutput("Conveyor/SpindexerEmergencyStop", true);
+    } else {
+      Logger.recordOutput("Conveyor/SpindexerEmergencyStop", false);
+    }
   }
 
   /**
