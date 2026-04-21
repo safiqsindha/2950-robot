@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-21  #97  fix(safety): 6 hardened findings from external AI audit
 - 2026-04-17  #93  docs(concepts): new CONCEPTS.md for pre-calc students + format pass
 - 2026-04-17  #91  audit(autos+pathfinding): delete 5 classes + 1 annotation, never wired
 - 2026-04-17  #90  audit(commands): delete 2 unwired utility classes + 2 dead methods
