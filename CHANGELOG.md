@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-04-21  #94  Add 2026-04-17 event readiness regrade (second pass)
 - 2026-04-21  #96  docs(diagnostics): add 2027 world-class offseason backlog
 - 2026-04-21  #97  fix(safety): 6 hardened findings from external AI audit
 - 2026-04-17  #93  docs(concepts): new CONCEPTS.md for pre-calc students + format pass
