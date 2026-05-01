@@ -6,7 +6,7 @@ plugins {
     // Spotless: auto-formats all Java code on every build (Google Java Format)
     id "com.diffplug.spotless" version "7.0.2"
     // SpotBugs: static analysis catches common bugs before runtime
-    id "com.github.spotbugs" version "6.5.0"
+    id "com.github.spotbugs" version "6.5.1"
     // JaCoCo: test coverage measurement
     id "jacoco"
 }
