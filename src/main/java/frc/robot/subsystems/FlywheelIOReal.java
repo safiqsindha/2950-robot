@@ -60,7 +60,12 @@ public class FlywheelIOReal implements FlywheelIO {
         .kS(Constants.Flywheel.kS)
         .kV(Constants.Flywheel.kV)
         .kA(0);
-    lVortexConfig.closedLoop.maxMotion.maxAcceleration(1000);
+    lVortexConfig
+        .closedLoop
+        .maxMotion
+        .maxVelocity(Constants.Flywheel.kMaxRpm) // RPM — ceiling on closed-loop velocity target
+        .maxAcceleration(1000) // RPM/s — limits how fast the profile ramps
+        .allowedClosedLoopError(50); // RPM — deadband before the controller declares "at setpoint"
 
     SparkFlexConfig rVortexConfig = new SparkFlexConfig();
     rVortexConfig.apply(lVortexConfig).follow(leftVortex, true);

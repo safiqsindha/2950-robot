@@ -113,10 +113,6 @@ public final class SwerveSubsystem extends SubsystemBase {
     // explicit > implicit even if the library would enable it by default.
     swerveDrive.setChassisDiscretization(true, 0.02);
 
-    // Wire SysId characterization routine (pit-only; not invoked unless a dashboard button
-    // triggers it). Enables kS/kV/kA measurement for drive motors via SwerveDriveTest helpers.
-    SwerveDriveTest.setDriveSysIdRoutine(new SysIdRoutine.Config(), this, swerveDrive, 12.0, true);
-
     // In simulation, stop YAGSL's 4ms Notifier and drive odometry manually from periodic().
     // The Notifier does not fire reliably in HALSim — calling updateOdometry() from the 20ms
     // robot loop avoids missed physics steps and keeps simulated time advancing correctly.
