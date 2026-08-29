@@ -1,17 +1,39 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+    <img src="assets/banner-light.svg" alt="2950-robot" width="100%">
+  </picture>
+</p>
+
 # 2950-robot
 
-FRC Team 2950 **The Devastators** — robot code for the 2026 REBUILT season.
+**FRC Team 2950 *The Devastators* — competition robot code for the 2026 REBUILT season.**
 
-Swerve-drive competition robot with vision-assisted scoring, neural game-piece detection,
-strategy-driven autonomous, full physics simulation, and event-day diagnostics. Written in
-Java 17 on WPILib 2026 with AdvantageKit deterministic logging.
+A swerve-drive competition robot with vision-assisted scoring, neural game-piece detection, strategy-driven autonomous, full physics simulation, and event-day diagnostics. Java 17 on WPILib 2026, with AdvantageKit deterministic logging throughout.
+
+- **Every subsystem replays from a match log** — the 2590 IO-layer pattern (`XxxIO` + `@AutoLog` inputs + real/sim implementations) means any competition log can be re-run on a laptop
+- **Vision you can trust under pressure** — MegaTag2 pose fusion with 5-team consensus rejection, velocity gating, post-reset inhibition, and per-mode correction caps
+- **The whole robot runs without hardware** — maple-sim physics simulation covers drivetrain, intake, and game pieces, so autonomous is testable the week before bag
+- **Quality gates in CI, not in code review** — Spotless, SpotBugs, and 80% JaCoCo coverage enforced on `frc.lib` on every push
 
 [![Build & Test](https://github.com/safiqsindha/2950-robot/actions/workflows/build.yml/badge.svg)](https://github.com/safiqsindha/2950-robot/actions/workflows/build.yml)
-[![WPILib](https://img.shields.io/badge/WPILib-2026-blue)](https://docs.wpilib.org/)
-[![Java](https://img.shields.io/badge/Java-17-orange)](https://adoptium.net/temurin/releases/?version=17)
-[![License](https://img.shields.io/badge/License-WPILib--BSD-green)](MANIFEST.MF)
-[![AdvantageKit](https://img.shields.io/badge/AdvantageKit-enabled-purple)](https://github.com/Mechanical-Advantage/AdvantageKit)
-[![YAGSL](https://img.shields.io/badge/YAGSL-2026.3.14-success)](https://github.com/Yet-Another-Software-Suite)
+![WPILib](https://img.shields.io/badge/WPILib-2026-0891b2?style=flat-square)
+![Java](https://img.shields.io/badge/Java-17-F59E0B?style=flat-square)
+![License](https://img.shields.io/badge/license-WPILib--BSD-22c55e?style=flat-square)
+![AdvantageKit](https://img.shields.io/badge/AdvantageKit-enabled-7C3AED?style=flat-square)
+![YAGSL](https://img.shields.io/badge/YAGSL-2026.3.14-22c55e?style=flat-square)
+
+**[Architecture](ARCHITECTURE.md)** · **[Code tour](CODE_TOUR.md)** · **[Mentor guide](MENTOR_GUIDE.md)** · **[Sim quickstart](SIM_QUICKSTART.md)** · **[Troubleshooting](TROUBLESHOOTING.md)** · **[Pit checklist](PIT_CHECKLIST.md)**
+
+```bash
+./gradlew build            # build + tests + Spotless + SpotBugs + JaCoCo
+./gradlew simulateJava     # full physics simulation — no robot needed
+./gradlew deploy           # deploy to the roboRIO over USB / WiFi
+```
+
+New to the codebase? Start with **[`CODE_TOUR.md`](CODE_TOUR.md)**, then run the simulator. Mentors onboarding students should read **[`MENTOR_GUIDE.md`](MENTOR_GUIDE.md)**; students testing at practice want **[`STUDENT_TESTING_GUIDE.md`](STUDENT_TESTING_GUIDE.md)** and **[`PRACTICE_SESSION_PLAYBOOK.md`](PRACTICE_SESSION_PLAYBOOK.md)**.
+
+The meta-system that feeds this robot strategy — prediction, scouting, vision, alliance selection — is at **[safiqsindha/TheEngine](https://github.com/safiqsindha/TheEngine)**.
 
 ---
 
