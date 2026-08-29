@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-08-29  #110  docs: rewrite README header with a consistent house style
 - 2026-04-21  #95  Fix four event-readiness issues from second-pass review
 - 2026-04-21  #94  Add 2026-04-17 event readiness regrade (second pass)
 - 2026-04-21  #96  docs(diagnostics): add 2027 world-class offseason backlog
